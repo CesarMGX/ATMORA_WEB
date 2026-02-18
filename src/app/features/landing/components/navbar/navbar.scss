@@ -1,0 +1,180 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 15px 0;
+  z-index: 1000;
+  transition: all 0.4s ease;
+  
+  /* EFECTO GLASSMORPHISM */
+  background: rgba(15, 52, 96, 0.9); /* Un poco más oscuro para que contraste con el blanco */
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+  &.scrolled {
+    padding: 10px 0;
+    background: rgba(15, 52, 96, 0.95);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+/* MARCA / LOGO */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: white;
+
+  img {
+    height: 45px; 
+    width: auto;
+    object-fit: contain;
+  }
+
+  .brand-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: white;
+  }
+}
+
+/* CONTENEDOR DE NAVEGACIÓN */
+.nav-content {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+
+  @media (max-width: 768px) {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: #0f3460; /* Fondo sólido en móvil */
+    flex-direction: column;
+    padding: 30px;
+    gap: 25px;
+    clip-path: circle(0% at 100% 0);
+    transition: clip-path 0.5s ease-in-out;
+
+    &.active {
+      clip-path: circle(150% at 100% 0);
+    }
+  }
+}
+
+/* ENLACES DEL MENÚ */
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 30px;
+  margin: 0;
+  padding: 0;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  /* ESTILOS DE LOS LINKS (Aquí corregí la anidación) */
+  li a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s;
+    font-size: 1rem;
+    position: relative;
+    padding-bottom: 5px;
+
+    /* HOVER */
+    &:hover {
+      color: var(--cta-orange);
+    }
+
+    /* ESTADO ACTIVO (Scroll Spy) */
+    &.active-link {
+      color: var(--cta-orange);
+      font-weight: 700;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background-color: var(--cta-orange);
+        border-radius: 2px;
+        box-shadow: 0 0 8px rgba(247, 127, 0, 0.6);
+      }
+    }
+  }
+}
+
+/* BOTONES AUTH */
+.auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    width: 100%;
+    gap: 15px;
+  }
+
+  /* Botón Texto Simple */
+  .btn-login {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: color 0.3s;
+    
+    &:hover { color: var(--cta-orange); }
+  }
+
+  /* Botón Pastilla Naranja */
+  .btn-register {
+    background: var(--cta-orange);
+    color: white;
+    text-decoration: none;
+    padding: 10px 28px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(247, 127, 0, 0.3);
+
+    &:hover {
+      background: var(--cta-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(247, 127, 0, 0.5);
+    }
+  }
+}
+
+/* MOBILE TOGGLE */
+.mobile-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+
+  @media (max-width: 768px) {
+    display: block;
+  }
+}

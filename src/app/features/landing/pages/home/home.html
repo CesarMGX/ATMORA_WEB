@@ -1,0 +1,21 @@
+<app-navbar></app-navbar>
+
+<main>
+  <app-hero></app-hero>
+
+  <app-problema id="problema"></app-problema>
+  
+  <app-solucion id="solucion"></app-solucion>
+  
+  <app-beneficios id="beneficios"></app-beneficios>
+
+  <app-precios id="precios"></app-precios>
+  
+  <app-equipo id="equipo"></app-equipo>
+</main>
+
+<app-footer></app-footer>
+
+<button class="back-to-top" [class.show]="showBackToTop" (click)="scrollToTop()">
+  <i class='bx bx-up-arrow-alt'></i>
+</button>

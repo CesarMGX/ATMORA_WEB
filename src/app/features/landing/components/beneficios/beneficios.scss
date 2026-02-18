@@ -1,0 +1,58 @@
+.beneficios-section {
+  padding: 100px 20px;
+  background-color: #ffffff;
+  text-align: center;
+
+  .container { max-width: 1200px; margin: 0 auto; }
+}
+
+/* Reutilizamos estilos del header anterior, o los definimos aquí */
+.section-header {
+  margin-bottom: 60px;
+  h2 { font-size: 2.5rem; color: var(--primary-dark); margin-bottom: 10px; }
+  p { color: #666; max-width: 600px; margin: 0 auto; }
+  .tag { color: var(--cta-orange); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+}
+
+.b-card {
+  background: white;
+  padding: 40px 25px;
+  border-radius: 20px;
+  border-bottom: 5px solid transparent; /* Línea de color abajo */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+  }
+
+  /* Colores específicos por tarjeta */
+  &.social { border-bottom-color: #FF6B6B; .icon-wrapper { background: #FFF0F0; color: #FF6B6B; } }
+  &.science { border-bottom-color: #4ECDC4; .icon-wrapper { background: #E0F7FA; color: #4ECDC4; } }
+  &.tech { border-bottom-color: #45B7D1; .icon-wrapper { background: #E1F5FE; color: #45B7D1; } }
+  &.eco { border-bottom-color: #96CEB4; .icon-wrapper { background: #E8F5E9; color: #96CEB4; } }
+
+  .icon-wrapper {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    transition: transform 0.4s ease;
+  }
+  
+  &:hover .icon-wrapper { transform: rotateY(180deg); } /* Pequeño giro al pasar el mouse */
+
+  h3 { color: var(--primary-dark); margin-bottom: 15px; font-size: 1.4rem; }
+  p { font-size: 0.95rem; color: #555; line-height: 1.6; }
+}

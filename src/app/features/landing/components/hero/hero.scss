@@ -1,0 +1,159 @@
+.hero-container {
+  position: relative;
+  height: 90vh;
+  width: 100%;
+  
+  /* Tu imagen de fondo */
+  background-image: url('https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=2144&auto=format&fit=crop'); 
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: white;
+
+  /* --- NUEVO EFECTO DE DESVANECIDO --- */
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 150px; /* Qué tan alto quieres el desvanecido */
+    
+    /* El truco: Degradado de Transparente a Blanco sólido */
+    background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, #ffffff 100%);
+    
+    z-index: 2; /* Encima de la imagen y el overlay azul */
+    pointer-events: none; /* Para que no bloquee clicks si hay algo ahí */
+  }
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* Tu filtro azul oscuro original */
+  background: linear-gradient(135deg, rgba(15, 52, 96, 0.9) 0%, rgba(22, 36, 71, 0.8) 100%);
+  z-index: 1;
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  padding: 20px;
+  animation: fadeIn 1s ease-out;
+
+  h1 {
+    font-size: 3.5rem;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    font-weight: 700;
+    
+    @media (max-width: 768px) {
+      font-size: 2.2rem; /* Más pequeño en celular */
+    }
+  }
+
+  .subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 40px;
+    opacity: 0.9;
+    font-weight: 300;
+  }
+}
+
+/* Badge "En vivo" */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6px 16px;
+  border-radius: 30px;
+  margin-bottom: 24px;
+  font-size: 0.9rem;
+  border: 1px solid rgba(255,255,255,0.2);
+  backdrop-filter: blur(5px);
+
+  .pulse {
+    width: 8px;
+    height: 8px;
+    background-color: var(--cta-orange);
+    border-radius: 50%;
+    margin-right: 10px;
+    box-shadow: 0 0 0 rgba(247, 127, 0, 0.7);
+    animation: pulse 2s infinite;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* La ola de abajo */
+.wave-bottom {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  z-index: 2;
+  line-height: 0;
+  
+  svg {
+    width: 100%;
+    height: auto;
+    max-height: 100px;
+  }
+}
+
+/* Animaciones */
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(247, 127, 0, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(247, 127, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(247, 127, 0, 0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.content {
+  /* ... estilos existentes ... */
+  padding: 20px; /* Asegura que haya margen en los bordes en celular */
+  width: 100%;   /* Que no exceda el ancho */
+  
+  h1 {
+    font-size: 3.5rem;
+    /* ... */
+    
+    /* AJUSTE PARA MÓVIL */
+    @media (max-width: 768px) {
+      font-size: 2.2rem; /* Texto más pequeño en celular */
+      padding: 0 10px;   /* Margen seguro */
+    }
+  }
+
+  .subtitle {
+    /* AJUSTE PARA MÓVIL */
+    @media (max-width: 768px) {
+      font-size: 1rem;
+    }
+  }
+}
+
+/* La ola de abajo también puede causar scroll si es muy ancha */
+.wave-bottom svg {
+  display: block; /* Elimina espacios fantasma */
+  width: 100%;
+  height: auto;
+}

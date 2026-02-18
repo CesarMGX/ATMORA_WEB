@@ -1,0 +1,91 @@
+/* You can add global styles to this file, and also import other style files */
+/* src/styles.scss */
+
+/* Importa una fuente bonita de Google Fonts (opcional pero recomendado) */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+/* 1. EL RESET MÁGICO (Esto arregla el scroll horizontal) */
+*, *::before, *::after {
+  box-sizing: border-box; /* El padding ya no aumenta el ancho de las cajas */
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  overflow-x: hidden; /* ¡ESTO MATA EL SCROLL LATERAL! */
+  position: relative; /* Necesario para que el overflow funcione bien */
+}
+
+:root {
+  /* PALETA DE COLORES ATMORA */
+  --primary-dark: #0f3460;   /* Azul noche */
+  --primary-blue: #162447;   /* Azul principal */
+  --accent-blue: #78ace9;    /* Celeste aire limpio */
+  
+  --cta-orange: #f77f00;     /* Naranja (Botones/Alertas) */
+  --cta-hover: #fcbf49;      /* Naranja claro al pasar el mouse */
+
+  --text-main: #1a1a1a;
+  --text-light: #f8f9fa;     /* Blanco humo */
+  
+  --font-main: 'Poppins', sans-serif; /* O la que tú uses: 'Montaser Arabic' */
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-main);
+  background-color: #ffffff;
+}
+
+/* Estilos para botones que usaremos en el Hero */
+.btn-primary {
+  background: var(--cta-orange);
+  color: white;
+  padding: 12px 30px;
+  border-radius: 50px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: transform 0.2s;
+  display: inline-block;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-3px);
+    background: var(--cta-hover);
+    box-shadow: 0 10px 20px rgba(247, 127, 0, 0.3);
+  }
+}
+
+.btn-secondary {
+  background: transparent;
+  color: white;
+  border: 2px solid white;
+  padding: 10px 28px;
+  border-radius: 50px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s;
+  display: inline-block;
+  cursor: pointer;
+
+  &:hover {
+    background: white;
+    color: var(--primary-dark);
+  }
+}
+
+@import 'aos/dist/aos.css';
+
+/* SCROLL SUAVE GLOBAL */
+html {
+  scroll-behavior: smooth;
+}
+
+/* OFFSET PARA EL NAVBAR FIJO */
+/* Esto hace que el scroll se detenga 80px ANTES de la sección, 
+   para que el navbar no tape el título */
+#problema, #solucion, #beneficios, #equipo {
+  scroll-margin-top: 100px; /* Ajusta este número según el alto de tu navbar */
+}

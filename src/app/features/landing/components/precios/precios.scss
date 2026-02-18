@@ -1,0 +1,171 @@
+.pricing-section {
+  padding: 100px 20px;
+  /* Fondo oscuro degradado para dar profundidad */
+  background: linear-gradient(135deg, var(--primary-dark) 0%, #061830 100%);
+  color: white;
+  position: relative;
+  overflow: hidden;
+
+  /* Decoración de fondo (círculo difuminado) */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -10%; right: -5%;
+    width: 500px; height: 500px;
+    background: var(--cta-orange);
+    opacity: 0.1;
+    filter: blur(100px);
+    border-radius: 50%;
+  }
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 60px;
+  position: relative;
+  z-index: 2;
+
+  .tag {
+    color: var(--cta-orange);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.9rem;
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  h2 { font-size: 2.5rem; margin-bottom: 15px; }
+  p { color: rgba(255,255,255,0.7); max-width: 600px; margin: 0 auto; font-size: 1.1rem; }
+}
+
+.pricing-grid {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+  max-width: 1000px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+/* ESTILO BASE DE LAS TARJETAS */
+.card {
+  background: rgba(255, 255, 255, 0.05); /* Muy transparente */
+  backdrop-filter: blur(10px);           /* Efecto Vidrio */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 40px;
+  width: 350px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+
+  &:hover {
+    transform: translateY(-10px);
+  }
+
+  .card-header {
+    margin-bottom: 30px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 20px;
+    
+    h3 { font-size: 1.5rem; margin-bottom: 10px; }
+    .desc { font-size: 0.9rem; color: rgba(255,255,255,0.6); }
+    
+    .price {
+      display: flex; align-items: flex-start; margin: 15px 0;
+      .currency { font-size: 1.5rem; margin-top: 5px; }
+      .amount { font-size: 3.5rem; font-weight: 700; line-height: 1; }
+      .period { font-size: 1rem; color: rgba(255,255,255,0.5); align-self: flex-end; margin-bottom: 8px; margin-left: 5px;}
+    }
+  }
+
+  .features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 30px 0;
+    flex-grow: 1;
+
+    li {
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.9);
+
+      i { font-size: 1.2rem; color: var(--accent-blue); }
+
+      &.disabled {
+        color: rgba(255,255,255,0.3);
+        text-decoration: line-through;
+        i { color: rgba(255,255,255,0.3); }
+      }
+    }
+  }
+
+  .btn-plan {
+    text-align: center;
+    padding: 12px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+  }
+}
+
+/* --- ESTILOS ESPECÍFICOS: PLAN BÁSICO --- */
+.basic {
+  .btn-plan {
+    background: transparent;
+    border: 2px solid rgba(255,255,255,0.2);
+    color: white;
+    &:hover { background: white; color: var(--primary-dark); }
+  }
+}
+
+/* --- ESTILOS ESPECÍFICOS: PLAN PRO (DESTACADO) --- */
+.pro {
+  background: rgba(15, 52, 96, 0.6); /* Un poco más azulado */
+  border: 2px solid var(--cta-orange); /* EL BORDE NARANJA QUE QUERÍAS */
+  transform: scale(1.05); /* Un poco más grande por defecto */
+  box-shadow: 0 0 30px rgba(247, 127, 0, 0.15);
+
+  &:hover {
+    transform: scale(1.08) translateY(-10px);
+    box-shadow: 0 0 50px rgba(247, 127, 0, 0.3);
+  }
+
+  .popular-tag {
+    position: absolute;
+    top: -15px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--cta-orange);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  }
+
+  .features li i { color: var(--cta-orange); } /* Iconos naranjas */
+
+  .btn-plan {
+    background: var(--cta-orange);
+    color: white;
+    border: none;
+    &:hover { background: var(--cta-hover); }
+  }
+}
+
+/* RESPONSIVE */
+@media (max-width: 800px) {
+  .pricing-grid { flex-direction: column; align-items: center; }
+  .card { width: 100%; max-width: 350px; }
+  .pro { transform: scale(1); margin-top: 20px; }
+}

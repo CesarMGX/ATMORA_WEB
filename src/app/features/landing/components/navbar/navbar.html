@@ -1,0 +1,78 @@
+<nav class="navbar" [class.scrolled]="isScrolled">
+  <div class="container">
+    <a routerLink="/" class="brand">
+      <img src="/logo_atmora.png" alt="Logo Atmora" class="logo-img" />
+      <span class="brand-name">Atmora</span>
+    </a>
+
+    <button class="mobile-toggle" (click)="toggleMenu()">
+      <i class="bx" [class.bx-menu]="!menuOpen" [class.bx-x]="menuOpen"></i>
+    </button>
+
+    <div class="nav-content" [class.active]="menuOpen">
+      <ul class="nav-links">
+        <li>
+          <a
+            routerLink="/"
+            fragment="problema"
+            [class.active-link]="activeSection === 'problema'"
+            (click)="menuOpen = false"
+          >
+            El Problema
+          </a>
+        </li>
+
+        <li>
+          <a
+            routerLink="/"
+            fragment="solucion"
+            [class.active-link]="activeSection === 'solucion'"
+            (click)="menuOpen = false"
+          >
+            Solución
+          </a>
+        </li>
+
+        <li>
+          <a
+            routerLink="/"
+            fragment="beneficios"
+            [class.active-link]="activeSection === 'beneficios'"
+            (click)="menuOpen = false"
+          >
+            Beneficios
+          </a>
+        </li>
+
+        <li>
+          <a
+            routerLink="/"
+            fragment="precios"
+            [class.active-link]="activeSection === 'precios'"
+            (click)="menuOpen = false"
+          >
+            Precios
+          </a>
+        </li>
+
+        <li>
+          <a
+            routerLink="/"
+            fragment="equipo"
+            [class.active-link]="activeSection === 'equipo'"
+            (click)="menuOpen = false"
+          >
+            Equipo
+          </a>
+        </li>
+      </ul>
+
+      <div class="auth-buttons">
+        <a routerLink="/auth" class="btn-login">Iniciar Sesión</a>
+        <a routerLink="/auth" [queryParams]="{ mode: 'register' }" class="btn-register">
+          Registrarse
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
