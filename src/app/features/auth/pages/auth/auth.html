@@ -7,63 +7,114 @@
   <div class="forms-container">
     <div class="signin-signup">
       
-      <form class="sign-in-form">
+      <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="sign-in-form">
         <h2 class="title">Iniciar Sesión</h2>
         
-        <div class="input-field">
+        <div class="input-field" [class.invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
           <i class='bx bxs-user'></i>
-          <input type="email" placeholder="Correo Electrónico" />
+          <input type="email" placeholder="Correo Electrónico" formControlName="email" />
         </div>
-        <div class="input-field">
+        <span class="error-text" *ngIf="loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched">
+          El correo es obligatorio
+        </span>
+        <span class="error-text" *ngIf="loginForm.get('email')?.hasError('email') && loginForm.get('email')?.touched">
+          Formato de correo inválido
+        </span>
+
+        <div class="input-field password-field" [class.invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
           <i class='bx bxs-lock-alt'></i>
-          <input type="password" placeholder="Contraseña" />
+          <input [type]="hideLoginPassword ? 'password' : 'text'" placeholder="Contraseña" formControlName="password" />
+          <i class='bx' 
+             [class.bx-hide]="hideLoginPassword" 
+             [class.bx-show]="!hideLoginPassword"
+             (click)="hideLoginPassword = !hideLoginPassword"
+             style="cursor: pointer;"></i>
         </div>
+        <span class="error-text" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+          La contraseña es obligatoria
+        </span>
         
-        <button type="submit" class="btn solid">Entrar</button>
+        <button type="submit" class="btn solid">Ingresar</button>
       </form>
 
-      <form class="sign-up-form">
+
+      <form [formGroup]="registerForm" (ngSubmit)="onRegister()" class="sign-up-form">
         <h2 class="title">¡Regístrate!</h2>
         
-        <div class="input-field">
+        <div class="input-field" [class.invalid]="registerForm.get('name')?.invalid && registerForm.get('name')?.touched">
           <i class='bx bxs-user'></i>
-          <input type="text" placeholder="Nombre Completo" />
+          <input type="text" placeholder="Nombre Completo" formControlName="name" />
         </div>
-        <div class="input-field">
+        <span class="error-text" *ngIf="registerForm.get('name')?.hasError('required') && registerForm.get('name')?.touched">
+          El nombre es obligatorio
+        </span>
+        <span class="error-text" *ngIf="registerForm.get('name')?.hasError('pattern') && registerForm.get('name')?.touched">
+          Solo letras y espacios
+        </span>
+
+        <div class="input-field" [class.invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
           <i class='bx bxs-envelope'></i>
-          <input type="email" placeholder="Correo Electrónico" />
+          <input type="email" placeholder="Correo Electrónico" formControlName="email" />
         </div>
-        <div class="input-field">
+        <span class="error-text" *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+          Ingresa un correo válido
+        </span>
+
+        <div class="input-field password-field" [class.invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
           <i class='bx bxs-lock-alt'></i>
-          <input type="password" placeholder="Contraseña" />
+          <input [type]="hideRegisterPassword ? 'password' : 'text'" placeholder="Contraseña" formControlName="password" />
+          <i class='bx' 
+             [class.bx-hide]="hideRegisterPassword" 
+             [class.bx-show]="!hideRegisterPassword"
+             (click)="hideRegisterPassword = !hideRegisterPassword"
+             style="cursor: pointer;"></i>
         </div>
-        <div class="input-field">
-          <i class='bx bxs-lock-alt'></i>
-          <input type="password" placeholder="Validar Contraseña" />
+        
+        <div class="strength-meter" *ngIf="registerForm.get('password')?.value">
+          <div class="strength-bar">
+            <div class="strength-fill" 
+                 [style.width.%]="passwordStrengthPercent"
+                 [style.background-color]="passwordStrengthColor">
+            </div>
+          </div>
+          <span class="strength-label" [style.color]="passwordStrengthColor">{{ passwordStrengthLabel }}</span>
         </div>
+
+        <span class="error-text" *ngIf="registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched">
+          Mínimo 8 caracteres
+        </span>
+        <span class="error-text" *ngIf="registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched">
+          La contraseña es obligatoria
+        </span>
 
         <button type="submit" class="btn solid">Enviar</button>
       </form>
+
     </div>
   </div>
 
   <div class="panels-container">
-    
     <div class="panel left-panel">
       <div class="content">
         <h3>¿Nuevo en Atmora?</h3>
-        <p>Regístrate para monitorear la calidad del aire en tu zona en tiempo real.</p>
         <button class="btn transparent" (click)="toggleMode()">Registrarse</button>
       </div>
     </div>
-
     <div class="panel right-panel">
       <div class="content">
         <h3>¿Ya eres parte?</h3>
-        <p>Ingresa tus datos para inicar sesión.</p>
         <button class="btn transparent" (click)="toggleMode()">Iniciar Sesión</button>
       </div>
     </div>
-  
   </div>
+
+  <div class="modal-overlay" *ngIf="showSuccessModal">
+    <div class="modal-content">
+      <div class="icon-success"><i class='bx bx-check-circle'></i></div>
+      <h2>¡Registro Exitoso!</h2>
+      <p>Tu cuenta ha sido creada correctamente.</p>
+      <button class="btn solid" (click)="closeModalAndLogin()">Ir a Iniciar Sesión</button>
+    </div>
+  </div>
+
 </div>
