@@ -1,0 +1,19 @@
+<div class="loader-container" [class.fade-out]="isFadingOut">
+  <div class="content">
+    
+    <div class="logo-wrapper">
+      <img src="/logo_atmora.png" alt="Atmora Logo" class="logo-img">
+    </div>
+
+    <h1 class="brand-name">Atmora</h1>
+    <p class="tagline">Monitoreo ambiental inteligente</p>
+
+    <div class="progress-wrapper">
+      <div class="progress-bar">
+        <div class="fill" [style.width.%]="progress"></div>
+      </div>
+      <span class="percentage">{{ progress }}%</span>
+    </div>
+
+  </div>
+</div>

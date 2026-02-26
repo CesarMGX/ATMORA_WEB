@@ -1,2 +1,9 @@
+<app-loading 
+  *ngIf="isLoading" 
+  (finish)="onLoadingFinish()">
+</app-loading>
 
+<div [class.hidden]="isLoading">
+  <router-outlet></router-outlet>
+</div>
 <router-outlet />

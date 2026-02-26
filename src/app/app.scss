@@ -1,0 +1,8 @@
+div:not(.hidden) {
+  animation: fadeInApp 1s ease;
+}
+
+@keyframes fadeInApp {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
