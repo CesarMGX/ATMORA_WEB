@@ -168,7 +168,7 @@ export class Auth implements OnInit {
     }
   }
 
-  // --- 2. MODIFICADO: Guardar bloqueo en LocalStorage ---
+  // --- 2. Guardar bloqueo en LocalStorage ---
   handleLoginFailure() {
     this.failedAttempts++;
     const intentosRestantes = 3 - this.failedAttempts;

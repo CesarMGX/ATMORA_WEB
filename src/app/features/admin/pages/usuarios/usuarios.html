@@ -1,0 +1,89 @@
+<div class="users-container">
+
+  <div class="header-actions">
+    <div class="titles">
+      <h1>Gestión de Usuarios</h1>
+      <p>Administra el acceso a la plataforma ATMORA</p>
+    </div>
+    <button class="btn-add" (click)="openModal()">
+      <i class='bx bx-plus'></i> Nuevo Usuario
+    </button>
+  </div>
+
+  <div class="users-grid">
+    <div class="user-card" *ngFor="let user of usuarios">
+      
+      <div class="card-top">
+        <span class="badge" [class.admin]="user.rol === 'Admin'" [class.user]="user.rol === 'Usuario'">
+          {{ user.rol }}
+        </span>
+        <div class="options">
+          <button (click)="openModal(user)"><i class='bx bxs-pencil'></i></button>
+          <button class="delete-btn" (click)="deleteUser(user)"><i class='bx bxs-trash'></i></button>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="avatar-wrapper">
+          <img [src]="user.avatar" alt="Avatar">
+          <div class="status-dot" [class.active]="user.estado === 'Activo'"></div>
+        </div>
+        <h3>{{ user.nombre }}</h3>
+        <p>{{ user.correo }}</p>
+      </div>
+
+      <div class="card-footer">
+        <span class="status-text">
+          <i class='bx bxs-circle' [style.color]="user.estado === 'Activo' ? '#2ecc71' : '#e74c3c'"></i>
+          {{ user.estado }}
+        </span>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ isEditing ? 'Editar Usuario' : 'Nuevo Usuario' }}</h2>
+        <button class="close-btn" (click)="closeModal()">&times;</button>
+      </div>
+      
+      <form (ngSubmit)="saveUser()">
+        <div class="form-group">
+          <label>Nombre Completo</label>
+          <input type="text" [(ngModel)]="currentUser.nombre" name="nombre" placeholder="Ej. Juan Pérez" required>
+        </div>
+
+        <div class="form-group">
+          <label>Correo Electrónico</label>
+          <input type="email" [(ngModel)]="currentUser.correo" name="correo" placeholder="correo@atmora.com" required>
+        </div>
+
+        <div class="row">
+          <div class="form-group">
+            <label>Rol</label>
+            <select [(ngModel)]="currentUser.rol" name="rol">
+              <option value="Usuario">Usuario</option>
+              <option value="Admin">Administrador</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Estado</label>
+            <select [(ngModel)]="currentUser.estado" name="estado">
+              <option value="Activo">Activo</option>
+              <option value="Inactivo">Inactivo</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="closeModal()">Cancelar</button>
+          <button type="submit" class="btn-save">{{ isEditing ? 'Actualizar' : 'Guardar' }}</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+</div>

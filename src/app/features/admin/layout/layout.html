@@ -1,0 +1,49 @@
+<div class="admin-container">
+  
+  <aside class="sidebar">
+    <div class="logo-area">
+<img src="/logo_atmora.png" class="logo-img">
+<span>ATMORA</span>
+    </div>
+
+    <nav class="menu">
+      <ul>
+        <li *ngFor="let item of menuItems">
+          <a [routerLink]="item.route" 
+             routerLinkActive="active" 
+             [routerLinkActiveOptions]="{exact: false}">
+            <i [class]="item.icon"></i>
+            <span class="label">{{ item.label }}</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="logout-area">
+      <button (click)="logout()">
+        <i class='bx bx-log-out'></i>
+        <span>Cerrar Sesión</span>
+      </button>
+    </div>
+  </aside>
+
+
+  <main class="main-content">
+    
+    <header class="topbar">
+      <div class="welcome-text">
+        <h2>Panel de Control</h2>
+        <p>Bienvenido de nuevo, {{ adminName }}</p>
+      </div>
+      <div class="profile-pic">
+        <img src="https://ui-avatars.com/api/?name=Admin+Atmora&background=f77f00&color=fff" alt="Admin">
+      </div>
+    </header>
+
+    <div class="content-wrapper">
+      <router-outlet></router-outlet>
+    </div>
+
+  </main>
+
+</div>

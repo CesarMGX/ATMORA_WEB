@@ -1,0 +1,146 @@
+/* ... Estilos generales ... */
+.monitor-container { animation: fadeIn 0.5s ease-in; }
+.page-header { margin-bottom: 30px; h1 { color: #0f3460; margin-bottom: 5px; } p { color: #7f8c8d; } }
+
+.charts-grid {
+  display: grid;
+  /* Hacemos que por defecto sean anchas */
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); 
+  gap: 25px;
+}
+
+.chart-card {
+  background: white;
+  border-radius: 12px;
+  padding: 0; /* Quitamos padding general para manejarlo dentro */
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+  overflow: hidden; /* Para el borde redondeado */
+  display: flex;
+  flex-direction: column;
+
+  .card-header {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #eee;
+    i { font-size: 1.4rem; color: #f77f00; }
+    h3 { margin: 0; font-size: 1rem; color: #333; }
+  }
+
+  /* Cuerpo dividido: Gráfica a la Izq | Panel a la Der */
+  .card-body {
+    display: flex;
+    flex-wrap: wrap; 
+    
+    .chart-area {
+      flex: 1; /* Ocupa la mayor parte */
+      min-width: 300px;
+      border-right: 1px solid #f0f0f0;
+    }
+
+    .actions-panel {
+      width: 240px; /* Un poco más ancho para que quepan los datos */
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start; /* Alineamos todo arriba */
+      gap: 15px;
+      background-color: #fff;
+
+      h4 { margin: 0 0 5px 0; font-size: 0.85rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+      .desc { font-size: 0.8rem; color: #aaa; margin-bottom: 15px; line-height: 1.4; }
+
+      /* === ESTILOS NUEVOS: GRID DE ESTADÍSTICAS === */
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* 2 columnas */
+        gap: 8px;
+        margin-bottom: 10px;
+
+        .kpi-box {
+          background: #f8f9fa;
+          padding: 8px;
+          border-radius: 8px;
+          text-align: center;
+          border: 1px solid #eee;
+
+          .label { display: block; font-size: 0.7rem; color: #999; margin-bottom: 2px; }
+          .value { 
+            font-size: 1rem; font-weight: 700; color: #333; 
+            &.high { color: #e74c3c; } /* Rojo */
+            &.low { color: #27ae60; }  /* Verde */
+          }
+        }
+      }
+
+      .divider {
+        height: 1px;
+        background: #eee;
+        width: 100%;
+        margin: 5px 0;
+      }
+
+      .buttons-row {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+      }
+
+      .btn-action {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 15px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: 0.3s;
+
+        &.csv { background: #e8f5e9; color: #2e7d32; &:hover { background: #c8e6c9; } }
+        &.json { background: #e3f2fd; color: #1565c0; &:hover { background: #bbdefb; } }
+      }
+
+      .status-footer {
+        margin-top: auto; /* Empuja esto al final */
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        
+        small { font-size: 0.7rem; color: #aaa; }
+
+        .status-indicator {
+          display: flex;
+          align-items: center;
+          font-size: 0.75rem;
+          color: #666;
+          gap: 6px;
+          
+          .dot {
+            width: 8px; height: 8px; border-radius: 50%; display: block;
+            &.green { background: #2ecc71; box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.2); animation: pulse 2s infinite; }
+          }
+        }
+      }
+    }
+  }
+
+  /* En móviles, el panel de acciones baja y se adapta */
+  @media (max-width: 768px) {
+    .card-body { flex-direction: column; }
+    .chart-area { border-right: none; border-bottom: 1px solid #eee; }
+    .actions-panel { width: 100%; flex-direction: row; flex-wrap: wrap; align-items: center; }
+  }
+}
+
+.full-width { grid-column: 1 / -1; }
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}

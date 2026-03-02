@@ -1,0 +1,186 @@
+/* VARIABLES */
+$primary-color: #0f3460;
+$accent-color: #f77f00;
+$bg-light: #f4f6f8;
+$text-light: #ecf0f1;
+$sidebar-width: 260px;
+
+.admin-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden; /* Evita scroll doble */
+  background-color: $bg-light;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* --- SIDEBAR --- */
+.sidebar {
+  width: $sidebar-width;
+  background-color: $primary-color;
+  color: $text-light;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+  z-index: 100;
+  transition: all 0.3s ease;
+
+  .logo-area {
+    /* Ajustamos altura para que quepa el logo cómodamente */
+    height: 100px; 
+    display: flex;
+    flex-direction: column; /* Logo arriba, texto abajo */
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding: 10px;
+    gap: 8px;
+    
+    /* ESTILOS PARA TU LOGO */
+    .logo-img {
+      max-height: 50px; /* Controla el tamaño máximo de la imagen */
+      max-width: 90%;
+      width: auto;
+      object-fit: contain;
+    }
+
+    /* Estilo del texto "ATMORA" */
+    span {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 1.5px;
+    }
+  }
+
+  .menu {
+    flex: 1;
+    padding-top: 20px;
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      margin-bottom: 5px;
+    }
+
+    a {
+      display: flex;
+      align-items: center;
+      padding: 15px 25px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      transition: all 0.3s;
+      border-left: 4px solid transparent;
+      gap: 15px;
+
+      i { font-size: 1.4rem; }
+      .label { font-size: 0.95rem; font-weight: 500; }
+
+      &:hover {
+        background-color: rgba(255,255,255,0.05);
+        color: #fff;
+        padding-left: 30px; /* Efecto deslizamiento */
+      }
+
+      /* Clase automática de Angular cuando estás en esa ruta */
+      &.active {
+        background-color: rgba(247, 127, 0, 0.1); /* Naranja muy suave */
+        color: $accent-color;
+        border-left: 4px solid $accent-color;
+      }
+    }
+  }
+
+  .logout-area {
+    padding: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+
+    button {
+      width: 100%;
+      background: none;
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: 0.3s;
+      font-weight: 600;
+
+      &:hover {
+        background-color: #e74c3c; /* Rojo al salir */
+        border-color: #e74c3c;
+      }
+    }
+  }
+}
+
+/* --- MAIN CONTENT --- */
+.main-content {
+  flex: 1; /* Toma el resto del espacio */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  .topbar {
+    height: 80px;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+
+    .welcome-text {
+      h2 { margin: 0; font-size: 1.4rem; color: $primary-color; }
+      p { margin: 0; font-size: 0.85rem; color: #7f8c8d; }
+    }
+
+    .profile-pic img {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      border: 2px solid $accent-color;
+      cursor: pointer;
+      transition: transform 0.3s;
+      &:hover { transform: scale(1.1); }
+    }
+  }
+
+  .content-wrapper {
+    flex: 1;
+    overflow-y: auto; /* Scroll solo en el contenido, no en el menú */
+    padding: 30px;
+    /* Aquí se renderizan tus gráficas y tablas */
+  }
+}
+
+/* RESPONSIVE (Celulares) */
+@media (max-width: 768px) {
+  .admin-container { flex-direction: column; }
+  .sidebar { 
+    width: 100%; 
+    height: auto; 
+    flex-direction: row; 
+    align-items: center;
+    padding: 10px;
+    
+    .menu, .logout-area { display: none; } /* Ocultar menú en móvil */
+    
+    .logo-area { 
+        border: none; 
+        height: auto; 
+        flex-direction: row; /* Logo horizontal en móvil */
+        
+        .logo-img { max-height: 40px; }
+        span { font-size: 1.2rem; }
+    }
+  }
+}
