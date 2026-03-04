@@ -5,70 +5,120 @@
       <h1>Gestión de Usuarios</h1>
       <p>Administra el acceso a la plataforma ATMORA</p>
     </div>
-    <button class="btn-add" (click)="openModal()">
+    <button class="btn-add" (click)="openDrawer()">
       <i class='bx bx-plus'></i> Nuevo Usuario
     </button>
   </div>
 
-  <div class="users-grid">
-    <div class="user-card" *ngFor="let user of usuarios">
-      
-      <div class="card-top">
-        <span class="badge" [class.admin]="user.rol === 'Admin'" [class.user]="user.rol === 'Usuario'">
-          {{ user.rol }}
-        </span>
-        <div class="options">
-          <button (click)="openModal(user)"><i class='bx bxs-pencil'></i></button>
-          <button class="delete-btn" (click)="deleteUser(user)"><i class='bx bxs-trash'></i></button>
-        </div>
-      </div>
-
-      <div class="card-content">
-        <div class="avatar-wrapper">
-          <img [src]="user.avatar" alt="Avatar">
-          <div class="status-dot" [class.active]="user.estado === 'Activo'"></div>
-        </div>
-        <h3>{{ user.nombre }}</h3>
-        <p>{{ user.correo }}</p>
-      </div>
-
-      <div class="card-footer">
-        <span class="status-text">
-          <i class='bx bxs-circle' [style.color]="user.estado === 'Activo' ? '#2ecc71' : '#e74c3c'"></i>
-          {{ user.estado }}
-        </span>
-      </div>
-
+  <div class="toolbar">
+    <div class="search-box">
+      <i class='bx bx-search'></i>
+      <input type="text" placeholder="Buscar por nombre, correo o rol..." [(ngModel)]="searchTerm" (ngModelChange)="onSearch()">
     </div>
   </div>
 
-  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>{{ isEditing ? 'Editar Usuario' : 'Nuevo Usuario' }}</h2>
-        <button class="close-btn" (click)="closeModal()">&times;</button>
+  <div class="table-card">
+    <table class="modern-table">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Correo</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th>Registro</th>
+          <th class="text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of usuariosPaginados">
+          <td>
+            <div class="user-info">
+              <div class="avatar-wrapper">
+                <img [src]="user.avatar" alt="Avatar">
+                <div class="status-dot" [class.active]="user.estado === 'Activo'"></div>
+              </div>
+              <span class="fw-bold">{{ user.nombre }}</span>
+            </div>
+          </td>
+          <td class="text-muted">{{ user.correo }}</td>
+          <td>
+            <span class="badge" [ngClass]="user.rol === 'Admin' ? 'badge-admin' : 'badge-user'">
+              {{ user.rol }}
+            </span>
+          </td>
+          <td>
+            <div class="status-indicator">
+              <i class='bx bxs-circle' [style.color]="user.estado === 'Activo' ? '#2ecc71' : '#e74c3c'"></i>
+              {{ user.estado }}
+            </div>
+          </td>
+          <td class="text-muted">{{ user.fechaRegistro }}</td>
+          <td class="text-right actions-cell">
+            <button class="btn-icon edit" (click)="openDrawer(user)" title="Editar">
+              <i class='bx bx-pencil'></i>
+            </button>
+            <button class="btn-icon delete" (click)="deleteUser(user)" title="Eliminar">
+              <i class='bx bx-trash'></i>
+            </button>
+          </td>
+        </tr>
+        
+        <tr *ngIf="usuariosPaginados.length === 0">
+          <td colspan="6" class="empty-state">
+            <i class='bx bx-folder-open'></i>
+            <p>No se encontraron usuarios que coincidan con la búsqueda.</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pagination" *ngIf="usuariosFiltrados.length > 0">
+      <div class="page-info">
+        Mostrando {{ (currentPage - 1) * itemsPerPage + 1 }} a 
+        {{ (currentPage * itemsPerPage) > usuariosFiltrados.length ? usuariosFiltrados.length : (currentPage * itemsPerPage) }} 
+        de {{ usuariosFiltrados.length }} usuarios
       </div>
       
-      <form (ngSubmit)="saveUser()">
+      <div class="page-buttons">
+        <button (click)="cambiarPagina(currentPage - 1)" [disabled]="currentPage === 1">
+          <i class='bx bx-chevron-left'></i> Anterior
+        </button>
+        <div class="page-numbers">
+          <span class="current-page">Página {{ currentPage }} de {{ totalPages }}</span>
+        </div>
+        <button (click)="cambiarPagina(currentPage + 1)" [disabled]="currentPage === totalPages">
+          Siguiente <i class='bx bx-chevron-right'></i>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="drawer-overlay" *ngIf="isDrawerOpen" (click)="closeDrawer()"></div>
+  <div class="drawer-panel" [class.open]="isDrawerOpen">
+    <div class="drawer-header">
+      <h2>{{ isEditing ? 'Editar Usuario' : 'Nuevo Usuario' }}</h2>
+      <button class="close-btn" (click)="closeDrawer()"><i class='bx bx-x'></i></button>
+    </div>
+    <form (ngSubmit)="saveUser()" class="drawer-form-container">
+      <div class="drawer-body">
         <div class="form-group">
           <label>Nombre Completo</label>
           <input type="text" [(ngModel)]="currentUser.nombre" name="nombre" placeholder="Ej. Juan Pérez" required>
         </div>
-
         <div class="form-group">
           <label>Correo Electrónico</label>
           <input type="email" [(ngModel)]="currentUser.correo" name="correo" placeholder="correo@atmora.com" required>
         </div>
-
-        <div class="row">
-          <div class="form-group">
+        <div class="form-row">
+          <div class="form-group half">
             <label>Rol</label>
             <select [(ngModel)]="currentUser.rol" name="rol">
               <option value="Usuario">Usuario</option>
               <option value="Admin">Administrador</option>
             </select>
           </div>
-          <div class="form-group">
+          <div class="form-group half">
             <label>Estado</label>
             <select [(ngModel)]="currentUser.estado" name="estado">
               <option value="Activo">Activo</option>
@@ -76,14 +126,11 @@
             </select>
           </div>
         </div>
-
-        <div class="modal-actions">
-          <button type="button" class="btn-cancel" (click)="closeModal()">Cancelar</button>
-          <button type="submit" class="btn-save">{{ isEditing ? 'Actualizar' : 'Guardar' }}</button>
-        </div>
-      </form>
-
-    </div>
+      </div>
+      <div class="drawer-footer">
+        <button type="button" class="btn-cancel" (click)="closeDrawer()">Cancelar</button>
+        <button type="submit" class="btn-save">{{ isEditing ? 'Actualizar' : 'Guardar' }}</button>
+      </div>
+    </form>
   </div>
-
 </div>
