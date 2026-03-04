@@ -1,1 +1,30 @@
-<p>rosa-vientos works!</p>
+<div class="rosa-container">
+  <div class="header">
+    <h1>Análisis Meteorológico</h1>
+    <p>Visualización integral de datos del sensor.</p>
+  </div>
+
+  <div class="upload-zone" [class.uploaded]="fileName">
+    <i class='bx bx-cloud-upload'></i>
+    <h3>{{ fileName ? 'Archivo: ' + fileName : 'Sube tu CSV' }}</h3>
+    <label class="btn-upload">
+      Seleccionar Archivo
+      <input type="file" accept=".csv" (change)="onFileSelected($event)" hidden>
+    </label>
+  </div>
+
+  <div class="dashboard-grid" [style.display]="isChartReady ? 'grid' : 'none'">
+    <div class="chart-card full-width">
+      <div id="wind-rose" style="width: 100%; height: 450px;"></div>
+    </div>
+    <div class="chart-card">
+      <div id="temp-hum" style="width: 100%; height: 350px;"></div>
+    </div>
+    <div class="chart-card">
+      <div id="rain-rad" style="width: 100%; height: 350px;"></div>
+    </div>
+    <div class="chart-card full-width">
+      <div id="pressure" style="width: 100%; height: 300px;"></div>
+    </div>
+  </div>
+</div>

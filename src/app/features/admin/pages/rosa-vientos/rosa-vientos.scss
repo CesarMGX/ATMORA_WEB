@@ -1,0 +1,52 @@
+.rosa-container {
+  animation: fadeIn 0.5s ease-in;
+  padding: 20px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.header {
+  margin-bottom: 25px;
+  h1 { color: #0f3460; margin: 0; }
+  p { color: #64748b; }
+}
+
+.upload-zone {
+  background: white;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  margin-bottom: 20px;
+  &.uploaded { border-color: #2ecc71; background: #f0fff4; }
+  i { font-size: 3rem; color: #94a3b8; }
+  .btn-upload {
+    background: #0f3460; color: white;
+    padding: 10px 20px; border-radius: 8px;
+    cursor: pointer; display: inline-block; margin-top: 15px;
+    &:hover { background: #f77f00; }
+  }
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr; // Una sola columna para evitar scroll horizontal
+  gap: 20px;
+  width: 100%;
+
+  .chart-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    overflow: hidden;
+  }
+
+  // En pantallas grandes, permitimos 2 columnas para Temp/Hum y Lluvia/Rad
+  @media (min-width: 1024px) {
+    grid-template-columns: 1fr 1fr;
+    .full-width { grid-column: 1 / -1; }
+  }
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
