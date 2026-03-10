@@ -1,0 +1,57 @@
+<div class="profile-page-wrapper">
+  <div class="profile-container">
+    
+    <button class="btn-back" (click)="goBack()">
+      <i class='bx bx-arrow-back'></i> Volver
+    </button>
+
+    <div class="header-section">
+      <h1>Mi Perfil</h1>
+      <p>Administra tu información personal y foto de cuenta.</p>
+    </div>
+
+    <div class="profile-card">
+      
+      <div class="avatar-section">
+        <div class="avatar-wrapper">
+          <img [src]="previewUrl" alt="Foto de perfil">
+          
+          <label class="change-photo-btn" title="Cambiar foto">
+            <i class='bx bx-camera'></i>
+            <input type="file" accept="image/*" (change)="onFileSelected($event)" hidden>
+          </label>
+        </div>
+        <h3 class="display-name">{{ user.nombre }}</h3>
+      </div>
+
+      <div class="form-section">
+        <form (ngSubmit)="guardarCambios()">
+          
+          <div class="form-group">
+            <label>Nombre Completo</label>
+            <div class="input-with-icon">
+              <i class='bx bx-user'></i>
+              <input type="text" [(ngModel)]="user.nombre" name="nombre" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Correo Electrónico</label>
+            <div class="input-with-icon">
+              <i class='bx bx-envelope'></i>
+              <input type="email" [(ngModel)]="user.correo" name="correo" required>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-save">
+              <i class='bx bx-save'></i> Guardar Cambios
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>

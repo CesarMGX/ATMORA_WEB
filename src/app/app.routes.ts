@@ -7,20 +7,27 @@ import { Layout } from './features/admin/layout/layout';
 import { Monitor } from './features/admin/pages/monitor/monitor';
 import { Usuarios } from './features/admin/pages/usuarios/usuarios';
 import { RosaVientos } from './features/admin/pages/rosa-vientos/rosa-vientos';
+import { Perfil } from './features/admin/pages/perfil/perfil';
 
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'auth', component: Auth },
-{ 
-    path: 'admin', 
+  
+  // Admin
+  { 
+    path: 'admin',
     component: Layout,
-    canActivate: [adminGuard], // SE APLICA LA SEGURIDAD
+    canActivate: [adminGuard], 
     children: [
-      { path: '', redirectTo: 'monitor', pathMatch: 'full' }, // Por defecto abre el Monitor
-      { path: 'monitor', component: Monitor },       // Gráficas
-      { path: 'usuarios', component: Usuarios },     // CRUD Dinámico
-      { path: 'rosa-vientos', component: RosaVientos } // Excel
+      { path: '', redirectTo: 'monitor', pathMatch: 'full' },
+      { path: 'monitor', component: Monitor },
+      { path: 'usuarios', component: Usuarios },
+      { path: 'rosa-vientos', component: RosaVientos },
     ]
   },
+
+  // Perfil
+  { path: 'perfil', component: Perfil }, 
+
   { path: '**', redirectTo: '' }
 ];

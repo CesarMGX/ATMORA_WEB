@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule, AbstractControl, ValidationErrors } from '@angular/forms'; 
 import { ChangeDetectorRef } from '@angular/core'; 
+import { AuthService } from '../../../../core/services/auth';
 
 export function sqlInjectionValidator(control: AbstractControl): ValidationErrors | null {
   const value = control.value;
@@ -57,7 +58,8 @@ export class Auth implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private fb: FormBuilder,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email, sqlInjectionValidator, xssValidator]], 
@@ -81,26 +83,19 @@ export class Auth implements OnInit {
         this.isSignUpMode = true;
       }
     });
-
-    // --- 1. VERIFICAR BLOQUEO AL CARGAR LA PÁGINA ---
     this.checkLockoutStatus();
   }
 
-  // --- NUEVA FUNCIÓN: Revisar si hay un bloqueo pendiente ---
   checkLockoutStatus() {
     const lockoutEnd = localStorage.getItem('lockoutEndTime');
-    
     if (lockoutEnd) {
       const timeLeft = parseInt(lockoutEnd) - Date.now();
-      
       if (timeLeft > 0) {
-        // Todavía está castigado: Retomamos el bloqueo
         this.isLockedOut = true;
-        this.lockoutTimer = Math.ceil(timeLeft / 1000); // Convertir ms a segundos
+        this.lockoutTimer = Math.ceil(timeLeft / 1000);
         this.loginErrorMsg = `⛔ Bloqueo activo por intentos fallidos.`;
-        this.startLockoutTimer(); // Iniciar cuenta regresiva
+        this.startLockoutTimer();
       } else {
-        // El tiempo ya pasó mientras estaba fuera: Limpiamos
         localStorage.removeItem('lockoutEndTime');
         this.isLockedOut = false;
         this.failedAttempts = 0;
@@ -155,7 +150,7 @@ export class Auth implements OnInit {
 
       if (isValidUser) {
         this.failedAttempts = 0;
-        localStorage.removeItem('lockoutEndTime'); // Limpiar bloqueo si entra bien
+        localStorage.removeItem('lockoutEndTime');
         this.loginErrorMsg = '';
         this.pendingRedirectUrl = targetUrl;
         this.generateAndSendCode(email);
@@ -168,43 +163,32 @@ export class Auth implements OnInit {
     }
   }
 
-  // --- 2. Guardar bloqueo en LocalStorage ---
   handleLoginFailure() {
     this.failedAttempts++;
     const intentosRestantes = 3 - this.failedAttempts;
 
     if (this.failedAttempts >= 3) {
       this.isLockedOut = true;
-      this.lockoutTimer = 30; // 30 segundos
+      this.lockoutTimer = 30;
       this.loginErrorMsg = `⛔ Demasiados intentos. Bloqueo temporal activo.`;
-
-      // GUARDAMOS LA HORA EXACTA EN QUE TERMINA EL BLOQUEO
-      // (Hora actual + 30,000 milisegundos)
       const endTime = Date.now() + (30 * 1000);
       localStorage.setItem('lockoutEndTime', endTime.toString());
-      
       this.startLockoutTimer();
-
     } else {
       this.loginErrorMsg = `Credenciales incorrectas. Te quedan ${intentosRestantes} intentos.`;
     }
   }
 
-  // --- 3. NUEVO: Función auxiliar del temporizador ---
   startLockoutTimer() {
     const interval = setInterval(() => {
       this.lockoutTimer--;
       this.cdr.detectChanges(); 
-      
       if (this.lockoutTimer <= 0) {
         clearInterval(interval);
-        
-        // DESBLOQUEO
         this.isLockedOut = false;
         this.failedAttempts = 0;
         this.loginErrorMsg = '';
-        localStorage.removeItem('lockoutEndTime'); // Borramos la marca
-        
+        localStorage.removeItem('lockoutEndTime');
         this.cdr.detectChanges();
       }
     }, 1000);
@@ -219,12 +203,23 @@ export class Auth implements OnInit {
   verifyMfaCode() {
     if (this.userMfaInput === this.generatedCode) {
       this.showMfaModal = false;
+
+      // ==========================================
+      // CONEXIÓN CON EL SERVICIO DE AUTENTICACIÓN
+      // ==========================================
+      const emailForm = this.loginForm.get('email')?.value;
+      
+      // Llamamos al cerebro de la app para que Navbar y Layout detecten el login
+      this.authService.login(emailForm, 'password_ya_validada');
+
+      // Mantenemos tu lógica de roles original
       localStorage.removeItem('userRole');
       if (this.pendingRedirectUrl === '/admin') {
         localStorage.setItem('userRole', 'admin'); 
       } else {
         localStorage.setItem('userRole', 'user');
       }
+
       this.router.navigate([this.pendingRedirectUrl]);
     } else {
       this.mfaError = true;

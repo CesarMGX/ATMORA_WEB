@@ -67,12 +67,42 @@
         </li>
       </ul>
 
-      <div class="auth-buttons">
-        <a routerLink="/auth" class="btn-login">Iniciar Sesión</a>
-        <a routerLink="/auth" [queryParams]="{ mode: 'register' }" class="btn-register">
-          Registrarse
-        </a>
-      </div>
+      <ng-container *ngIf="currentUser$ | async as user; else loggedOut">
+        <div class="profile-menu-container">
+          <button class="profile-btn" (click)="toggleProfileMenu()">
+            <img [src]="user.avatar" alt="Perfil" class="avatar-img">
+          </button>
+
+          <div class="dropdown-menu" [class.show]="isProfileMenuOpen">
+            <div class="dropdown-header">
+              <span class="user-name">{{ user.nombre }}</span>
+              <span class="user-email">{{ user.correo }}</span>
+            </div>
+            <ul class="dropdown-links">
+              <li>
+                <a routerLink="/perfil" (click)="menuOpen = false; isProfileMenuOpen = false">
+                  <i class='bx bx-user-circle'></i> Editar Perfil
+                </a>
+              </li>
+              <li>
+                <button (click)="logout()" class="btn-logout-nav">
+                  <i class='bx bx-log-out'></i> Cerrar Sesión
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #loggedOut>
+        <div class="auth-buttons">
+          <a routerLink="/auth" class="btn-login" (click)="menuOpen = false">Iniciar Sesión</a>
+          <a routerLink="/auth" [queryParams]="{ mode: 'register' }" class="btn-register" (click)="menuOpen = false">
+            Registrarse
+          </a>
+        </div>
+      </ng-template>
+
     </div>
   </div>
 </nav>

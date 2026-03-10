@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Observable } from 'rxjs';
+import { AuthService, UserProfile } from '../../../core/services/auth';
 
 @Component({
   selector: 'app-layout',
@@ -10,8 +12,8 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 })
 export class Layout {
 
-  // Datos del usuario (Simulado por ahora, luego lo tomamos del localStorage real)
-  adminName = 'Admin Atmora'; 
+  // Escuchamos al servicio de forma reactiva
+  currentUser$: Observable<UserProfile | null>;
   
   // Menú de navegación
   menuItems = [
@@ -20,14 +22,20 @@ export class Layout {
     { label: 'Rosa de los Vientos', icon: 'bx bx-compass', route: '/admin/rosa-vientos' },
   ];
 
-  constructor(private router: Router) {}
+  constructor(private authService: AuthService, private router: Router) {
+    // Inicializamos la conexión con el "cerebro" de la app
+    this.currentUser$ = this.authService.currentUser$;
+  }
 
   logout() {
-    // Limpiar seguridad
+    // 1. Ejecutamos el cierre de sesión global del servicio
+    this.authService.logout();
+
+    // 2. Limpieza de seguridad adicional que ya tenías
     localStorage.removeItem('userRole');
-    localStorage.removeItem('lockoutEndTime'); // Opcional: limpiar castigos al salir
+    localStorage.removeItem('lockoutEndTime'); 
     
-    // Redirigir al login
+    // 3. Redirigir al login
     this.router.navigate(['/auth']);
   }
 

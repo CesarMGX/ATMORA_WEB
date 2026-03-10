@@ -2,8 +2,8 @@
   
   <aside class="sidebar">
     <div class="logo-area">
-<img src="/logo_atmora.png" class="logo-img">
-<span>ATMORA</span>
+      <img src="/logo_atmora.png" class="logo-img">
+      <span>ATMORA</span>
     </div>
 
     <nav class="menu">
@@ -30,13 +30,15 @@
 
   <main class="main-content">
     
-    <header class="topbar">
+    <header class="topbar" *ngIf="currentUser$ | async as user">
       <div class="welcome-text">
         <h2>Panel de Control</h2>
-        <p>Bienvenido de nuevo, {{ adminName }}</p>
+        <p>Bienvenido de nuevo, {{ user.nombre }}</p>
       </div>
       <div class="profile-pic">
-        <img src="https://ui-avatars.com/api/?name=Admin+Atmora&background=f77f00&color=fff" alt="Admin">
+        <a routerLink="/perfil">
+          <img [src]="user.avatar" [alt]="user.nombre">
+        </a>
       </div>
     </header>
 

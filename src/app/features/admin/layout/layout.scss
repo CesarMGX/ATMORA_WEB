@@ -26,25 +26,22 @@ $sidebar-width: 260px;
   transition: all 0.3s ease;
 
   .logo-area {
-    /* Ajustamos altura para que quepa el logo cómodamente */
     height: 100px; 
     display: flex;
-    flex-direction: column; /* Logo arriba, texto abajo */
+    flex-direction: column; 
     align-items: center;
     justify-content: center;
     border-bottom: 1px solid rgba(255,255,255,0.1);
     padding: 10px;
     gap: 8px;
     
-    /* ESTILOS PARA TU LOGO */
     .logo-img {
-      max-height: 50px; /* Controla el tamaño máximo de la imagen */
+      max-height: 50px; 
       max-width: 90%;
       width: auto;
       object-fit: contain;
     }
 
-    /* Estilo del texto "ATMORA" */
     span {
       font-size: 1.2rem;
       font-weight: 700;
@@ -63,9 +60,7 @@ $sidebar-width: 260px;
       margin: 0;
     }
 
-    li {
-      margin-bottom: 5px;
-    }
+    li { margin-bottom: 5px; }
 
     a {
       display: flex;
@@ -83,12 +78,11 @@ $sidebar-width: 260px;
       &:hover {
         background-color: rgba(255,255,255,0.05);
         color: #fff;
-        padding-left: 30px; /* Efecto deslizamiento */
+        padding-left: 30px; 
       }
 
-      /* Clase automática de Angular cuando estás en esa ruta */
       &.active {
-        background-color: rgba(247, 127, 0, 0.1); /* Naranja muy suave */
+        background-color: rgba(247, 127, 0, 0.1); 
         color: $accent-color;
         border-left: 4px solid $accent-color;
       }
@@ -115,7 +109,7 @@ $sidebar-width: 260px;
       font-weight: 600;
 
       &:hover {
-        background-color: #e74c3c; /* Rojo al salir */
+        background-color: #e74c3c; 
         border-color: #e74c3c;
       }
     }
@@ -124,7 +118,7 @@ $sidebar-width: 260px;
 
 /* --- MAIN CONTENT --- */
 .main-content {
-  flex: 1; /* Toma el resto del espacio */
+  flex: 1; 
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -143,22 +137,34 @@ $sidebar-width: 260px;
       p { margin: 0; font-size: 0.85rem; color: #7f8c8d; }
     }
 
-    .profile-pic img {
-      width: 45px;
-      height: 45px;
-      border-radius: 50%;
-      border: 2px solid $accent-color;
-      cursor: pointer;
-      transition: transform 0.3s;
-      &:hover { transform: scale(1.1); }
+    /* AJUSTE PARA EL PERFIL DINÁMICO */
+    .profile-pic {
+      a {
+        display: block;
+        line-height: 0;
+        border-radius: 50%;
+        transition: transform 0.3s ease;
+
+        &:hover {
+          transform: scale(1.1);
+        }
+      }
+
+      img {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        border: 2px solid $accent-color;
+        cursor: pointer;
+        object-fit: cover; /* Asegura que fotos no cuadradas se vean bien */
+      }
     }
   }
 
   .content-wrapper {
     flex: 1;
-    overflow-y: auto; /* Scroll solo en el contenido, no en el menú */
+    overflow-y: auto; 
     padding: 30px;
-    /* Aquí se renderizan tus gráficas y tablas */
   }
 }
 
@@ -172,12 +178,12 @@ $sidebar-width: 260px;
     align-items: center;
     padding: 10px;
     
-    .menu, .logout-area { display: none; } /* Ocultar menú en móvil */
+    .menu, .logout-area { display: none; } 
     
     .logo-area { 
         border: none; 
         height: auto; 
-        flex-direction: row; /* Logo horizontal en móvil */
+        flex-direction: row; 
         
         .logo-img { max-height: 40px; }
         span { font-size: 1.2rem; }

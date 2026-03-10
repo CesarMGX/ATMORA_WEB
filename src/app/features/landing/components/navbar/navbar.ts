@@ -1,7 +1,8 @@
 import { Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-
+import { RouterLink, Router } from '@angular/router';
+import { Observable } from 'rxjs';
+import { AuthService, UserProfile } from '../../../../core/services/auth';
 @Component({
   selector: 'app-navbar',
   imports: [CommonModule, RouterLink],
@@ -12,6 +13,15 @@ export class Navbar {
   isScrolled = false;
   menuOpen = false;
   activeSection: string = 'inicio';
+
+  // --- NUEVAS VARIABLES PARA AUTH ---
+  currentUser$: Observable<UserProfile | null>;
+  isProfileMenuOpen = false;
+
+  // Inyectamos el servicio de Auth y el Router
+  constructor(private authService: AuthService, private router: Router) {
+    this.currentUser$ = this.authService.currentUser$;
+  }
 
   @HostListener('window:scroll', [])
   onWindowScroll() {
@@ -37,5 +47,16 @@ export class Navbar {
 
   toggleMenu() {
     this.menuOpen = !this.menuOpen;
+  }
+
+  // --- NUEVAS FUNCIONES PARA EL PERFIL ---
+  toggleProfileMenu() {
+    this.isProfileMenuOpen = !this.isProfileMenuOpen;
+  }
+
+  logout() {
+    this.authService.logout();
+    this.isProfileMenuOpen = false;
+    this.router.navigate(['/']); // Redirigimos al inicio
   }
 }
