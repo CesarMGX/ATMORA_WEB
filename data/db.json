@@ -1,0 +1,60 @@
+{
+  "usuarios": [
+    {
+      "id": 1,
+      "nombre": "Cesar Mundo",
+      "correo": "cesar@atmora.com",
+      "rol": "Admin",
+      "estado": "Activo",
+      "fechaRegistro": "2025-08-10",
+      "avatar": "https://ui-avatars.com/api/?name=Cesar+Mundo&background=0f3460&color=fff"
+    },
+    {
+      "id": 2,
+      "nombre": "Alex Tadeo",
+      "correo": "alex@atmora.com",
+      "rol": "Usuario",
+      "estado": "Activo",
+      "fechaRegistro": "2025-09-15",
+      "avatar": "https://ui-avatars.com/api/?name=Alex+Tadeo&background=f77f00&color=fff"
+    },
+    {
+      "nombre": "Kevin Jimenez",
+      "correo": "perro@gmail.com",
+      "rol": "Usuario",
+      "estado": "Activo",
+      "avatar": "https://ui-avatars.com/api/?name=Kevin+Jimenez&background=random&color=fff",
+      "fechaRegistro": "2026-03-10",
+      "id": 3
+    },
+    {
+      "nombre": "Alex Tadeo Cuevas",
+      "correo": "loco@gmail.com",
+      "rol": "Usuario",
+      "estado": "Activo",
+      "avatar": "https://ui-avatars.com/api/?name=Alex+Tadeo Cuevas&background=random&color=fff",
+      "fechaRegistro": "2026-03-10",
+      "id": 4
+    },
+    {
+      "nombre": "Juan Gonzalez",
+      "correo": "loquito@gmail.com",
+      "password": "MUndo353",
+      "rol": "Usuario",
+      "estado": "Activo",
+      "fechaRegistro": "2026-03-10",
+      "avatar": "https://ui-avatars.com/api/?name=Juan+Gonzalez&background=0f3460&color=fff",
+      "id": 5
+    },
+    {
+      "nombre": "Juan Gonzalez",
+      "correo": "loquito@gmail.com",
+      "password": "MUndo353",
+      "rol": "Usuario",
+      "estado": "Activo",
+      "fechaRegistro": "2026-03-10",
+      "avatar": "https://ui-avatars.com/api/?name=Juan+Gonzalez&background=0f3460&color=fff",
+      "id": 6
+    }
+  ]
+}

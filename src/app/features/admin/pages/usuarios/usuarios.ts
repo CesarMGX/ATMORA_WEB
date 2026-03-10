@@ -1,10 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../../environments/environment.development';
 import Swal from 'sweetalert2';
 
 interface Usuario {
-  id: number;
+ id?: number; // El ID ahora es opcional porque json-server lo crea solo al hacer POST
   nombre: string;
   correo: string;
   rol: 'Admin' | 'Usuario';
@@ -20,36 +22,44 @@ interface Usuario {
   templateUrl: './usuarios.html',
   styleUrl: './usuarios.scss',
 })
-export class Usuarios {
+export class Usuarios implements OnInit {
 
   searchTerm: string = '';
-  
-  // --- VARIABLES DE PAGINACIÓN ---
   currentPage: number = 1;
   itemsPerPage: number = 10;
 
-  // Base de datos simulada (Agregué más para que veas la paginación funcionar)
-  usuarios: Usuario[] = [
-    { id: 1, nombre: 'Cesar Mundo', correo: 'cesar@atmora.com', rol: 'Admin', estado: 'Activo', fechaRegistro: '2025-08-10', avatar: 'https://ui-avatars.com/api/?name=Cesar+Mundo&background=0f3460&color=fff' },
-    { id: 2, nombre: 'Alex Tadeo', correo: 'alex@atmora.com', rol: 'Usuario', estado: 'Activo', fechaRegistro: '2025-09-15', avatar: 'https://ui-avatars.com/api/?name=Alex+Tadeo&background=f77f00&color=fff' },
-    { id: 3, nombre: 'Ana López', correo: 'ana@atmora.com', rol: 'Usuario', estado: 'Activo', fechaRegistro: '2026-02-01', avatar: 'https://ui-avatars.com/api/?name=Ana+Lopez&background=random&color=fff' },
-    { id: 4, nombre: 'Carlos Ruiz', correo: 'carlos@atmora.com', rol: 'Usuario', estado: 'Inactivo', fechaRegistro: '2026-02-05', avatar: 'https://ui-avatars.com/api/?name=Carlos+Ruiz&background=random&color=fff' },
-    { id: 5, nombre: 'María Gil', correo: 'maria@atmora.com', rol: 'Usuario', estado: 'Activo', fechaRegistro: '2026-02-10', avatar: 'https://ui-avatars.com/api/?name=Maria+Gil&background=random&color=fff' },
-    { id: 6, nombre: 'Jorge Sosa', correo: 'jorge@atmora.com', rol: 'Usuario', estado: 'Activo', fechaRegistro: '2026-02-12', avatar: 'https://ui-avatars.com/api/?name=Jorge+Sosa&background=random&color=fff' },
-    { id: 7, nombre: 'Luis Vega', correo: 'luis@atmora.com', rol: 'Usuario', estado: 'Activo', fechaRegistro: '2026-02-15', avatar: 'https://ui-avatars.com/api/?name=Luis+Vega&background=random&color=fff' },
-    { id: 8, nombre: 'Diana Paz', correo: 'diana@atmora.com', rol: 'Usuario', estado: 'Activo', fechaRegistro: '2026-02-18', avatar: 'https://ui-avatars.com/api/?name=Diana+Paz&background=random&color=fff' },
-    { id: 9, nombre: 'Pedro Diaz', correo: 'pedro@atmora.com', rol: 'Admin', estado: 'Activo', fechaRegistro: '2026-02-20', avatar: 'https://ui-avatars.com/api/?name=Pedro+Diaz&background=random&color=fff' },
-    { id: 10, nombre: 'Sofía Lara', correo: 'sofia@atmora.com', rol: 'Usuario', estado: 'Activo', fechaRegistro: '2026-02-25', avatar: 'https://ui-avatars.com/api/?name=Sofia+Lara&background=random&color=fff' },
-    { id: 11, nombre: 'Hugo Alba', correo: 'hugo@atmora.com', rol: 'Usuario', estado: 'Inactivo', fechaRegistro: '2026-03-01', avatar: 'https://ui-avatars.com/api/?name=Hugo+Alba&background=random&color=fff' }
-  ];
+  // Empezamos con un arreglo vacío, lo llenaremos desde la base de datos
+  usuarios: Usuario[] = [];
 
   isDrawerOpen = false;
   isEditing = false;
   currentUser: any = { nombre: '', correo: '', rol: 'Usuario', estado: 'Activo' };
 
-  // --- LÓGICA DE FILTRADO Y PAGINACIÓN ---
-  
-  // 1. Obtiene los usuarios que coinciden con la búsqueda
+  // Construimos la URL específica para los usuarios (http://localhost:3003/usuarios)
+  private apiUrl = `${environment.apiUrl}/usuarios`;
+
+  // Inyectamos HttpClient para hacer las peticiones
+  constructor(private http: HttpClient) {}
+
+  // Al iniciar el componente, cargamos los datos
+  ngOnInit() {
+    this.cargarUsuarios();
+  }
+
+  // --- 1. GET: LEER DATOS ---
+  cargarUsuarios() {
+    this.http.get<Usuario[]>(this.apiUrl).subscribe({
+      next: (data) => {
+        this.usuarios = data;
+      },
+      error: (err) => {
+        console.error('Error al cargar usuarios', err);
+        Swal.fire('Error', 'No se pudo conectar a la base de datos.', 'error');
+      }
+    });
+  }
+
+  // --- LÓGICA DE FILTRADO Y PAGINACIÓN (Se mantiene igual) ---
   get usuariosFiltrados() {
     if (!this.searchTerm) return this.usuarios;
     const term = this.searchTerm.toLowerCase();
@@ -60,27 +70,19 @@ export class Usuarios {
     );
   }
 
-  // 2. Calcula el total de páginas
   get totalPages() {
     return Math.ceil(this.usuariosFiltrados.length / this.itemsPerPage) || 1;
   }
 
-  // 3. Corta el arreglo para mostrar solo los 10 de la página actual
   get usuariosPaginados() {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    return this.usuariosFiltrados.slice(startIndex, endIndex);
+    return this.usuariosFiltrados.slice(startIndex, startIndex + this.itemsPerPage);
   }
 
-  // Resetear la página al buscar
-  onSearch() {
-    this.currentPage = 1;
-  }
-
+  onSearch() { this.currentPage = 1; }
+  
   cambiarPagina(page: number) {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-    }
+    if (page >= 1 && page <= this.totalPages) this.currentPage = page;
   }
 
   // --- MÉTODOS DEL DRAWER ---
@@ -99,6 +101,7 @@ export class Usuarios {
     this.isDrawerOpen = false;
   }
 
+  // --- 2. POST / PUT: GUARDAR O ACTUALIZAR DATOS ---
   saveUser() {
     if (!this.currentUser.nombre || !this.currentUser.correo) {
       Swal.fire('¡Ups!', 'Rellena todos los campos.', 'error');
@@ -106,40 +109,47 @@ export class Usuarios {
     }
 
     const today = new Date().toISOString().split('T')[0];
+    this.currentUser.avatar = `https://ui-avatars.com/api/?name=${this.currentUser.nombre.replace(' ', '+')}&background=random&color=fff`;
 
     if (this.isEditing) {
-      const index = this.usuarios.findIndex(u => u.id === this.currentUser.id);
-      if (index !== -1) {
-        this.currentUser.avatar = `https://ui-avatars.com/api/?name=${this.currentUser.nombre}&background=random`;
-        this.usuarios[index] = this.currentUser;
-        Swal.fire({ icon: 'success', title: 'Actualizado', text: 'Modificado correctamente.', timer: 2000, showConfirmButton: false });
-      }
+      // PUT: Actualizar un registro existente
+      this.http.put(`${this.apiUrl}/${this.currentUser.id}`, this.currentUser).subscribe({
+        next: () => {
+          this.cargarUsuarios(); // Recargamos la tabla
+          Swal.fire({ icon: 'success', title: 'Actualizado', timer: 1500, showConfirmButton: false });
+          this.closeDrawer();
+        }
+      });
     } else {
-      const newId = this.usuarios.length ? Math.max(...this.usuarios.map(u => u.id)) + 1 : 1;
-      const newUser: Usuario = {
-        ...this.currentUser, id: newId, fechaRegistro: today,
-        avatar: `https://ui-avatars.com/api/?name=${this.currentUser.nombre}&background=random`
-      };
-      this.usuarios.push(newUser);
-      Swal.fire({ icon: 'success', title: 'Creado', text: 'Usuario registrado.', timer: 2000, showConfirmButton: false });
+      // POST: Crear un nuevo registro
+      const newUser: Usuario = { ...this.currentUser, fechaRegistro: today };
+      
+      this.http.post(this.apiUrl, newUser).subscribe({
+        next: () => {
+          this.cargarUsuarios(); // Recargamos la tabla
+          Swal.fire({ icon: 'success', title: 'Creado', timer: 1500, showConfirmButton: false });
+          this.closeDrawer();
+        }
+      });
     }
-    this.closeDrawer();
   }
 
+  // --- 3. DELETE: BORRAR DATOS ---
   deleteUser(user: Usuario) {
     Swal.fire({
       title: '¿Estás seguro?', text: `Vas a eliminar a ${user.nombre}.`, icon: 'warning',
-      showCancelButton: true, confirmButtonColor: '#e74c3c', confirmButtonText: 'Eliminar'
+      showCancelButton: true, confirmButtonColor: '#e74c3c', confirmButtonText: 'Sí, eliminar'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.usuarios = this.usuarios.filter(u => u.id !== user.id);
         
-        // Si borramos el último usuario de una página, regresamos a la anterior
-        if (this.currentPage > this.totalPages) {
-          this.currentPage = this.totalPages;
-        }
+        this.http.delete(`${this.apiUrl}/${user.id}`).subscribe({
+          next: () => {
+            this.cargarUsuarios(); // Recargamos la tabla
+            if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
+            Swal.fire('¡Eliminado!', 'El usuario ha sido borrado.', 'success');
+          }
+        });
 
-        Swal.fire('¡Eliminado!', 'El usuario ha sido borrado.', 'success');
       }
     });
   }

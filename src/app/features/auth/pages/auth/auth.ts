@@ -4,6 +4,8 @@ import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule, AbstractControl, ValidationErrors } from '@angular/forms'; 
 import { ChangeDetectorRef } from '@angular/core'; 
 import { AuthService } from '../../../../core/services/auth';
+import { environment } from '../../../../../environments/environment';
+import { HttpClient } from '@angular/common/http';
 
 export function sqlInjectionValidator(control: AbstractControl): ValidationErrors | null {
   const value = control.value;
@@ -37,6 +39,9 @@ export class Auth implements OnInit {
   userMfaInput = '';
   mfaError = false;
   pendingRedirectUrl = '';
+  
+  // NUEVO: Aquí guardaremos temporalmente al usuario que logre pasar el login antes del MFA
+  userFromDb: any = null;
 
   // Variables Fuerza Bruta
   failedAttempts = 0;
@@ -59,7 +64,8 @@ export class Auth implements OnInit {
     private router: Router,
     private fb: FormBuilder,
     private cdr: ChangeDetectorRef,
-    private authService: AuthService
+    private authService: AuthService,
+    private http: HttpClient // Inyectamos el cliente HTTP para la BD
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email, sqlInjectionValidator, xssValidator]], 
@@ -86,6 +92,7 @@ export class Auth implements OnInit {
     this.checkLockoutStatus();
   }
 
+  // --- LÓGICA DE BLOQUEO (Se mantiene igual) ---
   checkLockoutStatus() {
     const lockoutEnd = localStorage.getItem('lockoutEndTime');
     if (lockoutEnd) {
@@ -109,6 +116,7 @@ export class Auth implements OnInit {
     this.hideRegisterPassword = true;
   }
 
+  // --- SEGURIDAD DE CONTRASEÑA (Se mantiene igual) ---
   calculateStrength(password: string | null) {
       if (!password) { this.resetStrength(); return; }
       const ctrl = { value: password } as AbstractControl;
@@ -131,38 +139,72 @@ export class Auth implements OnInit {
   setStrength(percent: number, label: string, color: string) { this.passwordStrengthPercent = percent; this.passwordStrengthLabel = label; this.passwordStrengthColor = color; }
   setSecurityError(label: string, color: string) { this.passwordStrengthLabel = label; this.passwordStrengthColor = color; this.passwordStrengthPercent = 100; }
 
+
+  // ==========================================
+  // LOGIN MIXTO (Quemado + Base de Datos)
+  // ==========================================
   onLogin() {
     if (this.isLockedOut) return;
 
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
       
-      let isValidUser = false;
-      let targetUrl = '/';
-
+      // 1. Verificamos primero la "puerta trasera" del Admin quemado en código
       if (email === 'admin@atmora.com' && password === 'admin123') {
-        isValidUser = true;
-        targetUrl = '/admin';
-      } else if (email === 'usuario@atmora.com' && password === 'user123') {
-        isValidUser = true;
-        targetUrl = '/';
+        // Simulamos un usuario traído de BD para que el MFA lo pueda usar
+        this.userFromDb = {
+          id: 999,
+          nombre: 'Admin Supremo',
+          correo: 'admin@atmora.com',
+          rol: 'Admin',
+          avatar: 'https://ui-avatars.com/api/?name=Admin+Supremo&background=f77f00&color=fff'
+        };
+        this.triggerMfaFlow('/admin', email);
+        return; // Detenemos la función aquí, no buscamos en JSON
       }
 
-      if (isValidUser) {
-        this.failedAttempts = 0;
-        localStorage.removeItem('lockoutEndTime');
-        this.loginErrorMsg = '';
-        this.pendingRedirectUrl = targetUrl;
-        this.generateAndSendCode(email);
-        this.showMfaModal = true;
-      } else {
-        this.handleLoginFailure();
-      }
+      // 2. Si no es el admin quemado, buscamos en la base de datos (json-server)
+      this.http.get<any[]>(`${environment.apiUrl}/usuarios?correo=${email}&password=${password}`).subscribe({
+        next: (users) => {
+          if (users.length > 0) {
+            // Usuario real encontrado en db.json
+            this.userFromDb = users[0]; 
+            // Si su rol es Admin, va a /admin, si no, al inicio /
+            const target = this.userFromDb.rol === 'Admin' ? '/admin' : '/';
+            this.triggerMfaFlow(target, email);
+          } else {
+            // Credenciales incorrectas o no existe
+            this.handleLoginFailure();
+          }
+        },
+        error: () => {
+          alert('Error al conectar con la base de datos local (Asegúrate de tener encendido npm run backend).');
+        }
+      });
     } else {
       this.loginForm.markAllAsTouched();
     }
   }
 
+  // Función de ayuda para no repetir código al pasar al MFA
+// Función de ayuda para no repetir código al pasar al MFA
+  triggerMfaFlow(targetUrl: string, email: string) {
+    this.failedAttempts = 0;
+    localStorage.removeItem('lockoutEndTime');
+    this.loginErrorMsg = '';
+    this.pendingRedirectUrl = targetUrl;
+    
+    // Genera el código y lanza el alert
+    this.generateAndSendCode(email);
+    
+    // Cambia la variable para mostrar el modal
+    this.showMfaModal = true;
+
+    // Obligamos a Angular a mostrar el modal INMEDIATAMENTE después del alert
+    this.cdr.detectChanges(); 
+  }
+
+  // --- BLOQUEO POR INTENTOS ---
   handleLoginFailure() {
     this.failedAttempts++;
     const intentosRestantes = 3 - this.failedAttempts;
@@ -194,31 +236,25 @@ export class Auth implements OnInit {
     }, 1000);
   }
 
+  // --- MFA Y CONEXIÓN CON EL NAVBAR ---
   generateAndSendCode(email: string) {
     this.generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
-    alert(`[SIMULACIÓN DE EMAIL] \n\nHola usuario de Atmora,\nTu código de verificación es: ${this.generatedCode}`);
-    console.log('Código MFA:', this.generatedCode);
+    alert(`[SIMULACIÓN DE EMAIL] \n\nHola,\nTu código de verificación es: ${this.generatedCode}`);
   }
 
   verifyMfaCode() {
     if (this.userMfaInput === this.generatedCode) {
       this.showMfaModal = false;
 
-      // ==========================================
-      // CONEXIÓN CON EL SERVICIO DE AUTENTICACIÓN
-      // ==========================================
-      const emailForm = this.loginForm.get('email')?.value;
-      
-      // Llamamos al cerebro de la app para que Navbar y Layout detecten el login
-      this.authService.login(emailForm, 'password_ya_validada');
-
-      // Mantenemos tu lógica de roles original
-      localStorage.removeItem('userRole');
-      if (this.pendingRedirectUrl === '/admin') {
-        localStorage.setItem('userRole', 'admin'); 
-      } else {
-        localStorage.setItem('userRole', 'user');
-      }
+      // Inyectamos los datos reales (o el mock del admin) en el Cerebro (AuthService)
+      // Esto hace que el Navbar reaccione instantáneamente
+      this.authService.updateProfile({
+        id: this.userFromDb.id,
+        nombre: this.userFromDb.nombre,
+        correo: this.userFromDb.correo,
+        avatar: this.userFromDb.avatar,
+        rol: this.userFromDb.rol
+      });
 
       this.router.navigate([this.pendingRedirectUrl]);
     } else {
@@ -227,9 +263,32 @@ export class Auth implements OnInit {
     }
   }
 
+  // ==========================================
+  // REGISTRO REAL (Guarda en json-server)
+  // ==========================================
   onRegister() {
     if (this.registerForm.valid) {
-      this.showSuccessModal = true;
+      const formValues = this.registerForm.value;
+      
+      const newUser = {
+        nombre: formValues.name,
+        correo: formValues.email,
+        password: formValues.password, 
+        rol: 'Usuario', // Todo el que se registra en la web es usuario normal por defecto
+        estado: 'Activo',
+        fechaRegistro: new Date().toISOString().split('T')[0],
+        avatar: `https://ui-avatars.com/api/?name=${formValues.name.replace(' ', '+')}&background=0f3460&color=fff`
+      };
+
+      this.http.post(`${environment.apiUrl}/usuarios`, newUser).subscribe({
+        next: () => {
+          this.showSuccessModal = true;
+        },
+        error: (err) => {
+          console.error('Error al registrar', err);
+          alert('Hubo un error al guardar en la base de datos.');
+        }
+      });
     } else {
       this.registerForm.markAllAsTouched();
     }
