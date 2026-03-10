@@ -8,6 +8,7 @@ import { Monitor } from './features/admin/pages/monitor/monitor';
 import { Usuarios } from './features/admin/pages/usuarios/usuarios';
 import { RosaVientos } from './features/admin/pages/rosa-vientos/rosa-vientos';
 import { Perfil } from './features/admin/pages/perfil/perfil';
+import { Bienvenida } from './features/auth/pages/bienvenida/bienvenida';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -27,7 +28,8 @@ export const routes: Routes = [
   },
 
   // Perfil
-  { path: 'perfil', component: Perfil }, 
+  { path: 'perfil', component: Perfil },
+  { path: 'bienvenida', component: Bienvenida },
 
   { path: '**', redirectTo: '' }
 ];

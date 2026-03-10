@@ -1,0 +1,26 @@
+<div class="welcome-wrapper">
+  <div class="welcome-card" *ngIf="user">
+    
+    <div class="confetti-icon">🎉</div>
+    
+    <h1>¡Hola, {{ user.nombre.split(' ')[0] }}!</h1>
+    <h2>Bienvenido a Atmora</h2>
+    
+    <p>Tu cuenta ha sido creada y verificada con éxito. Estamos muy felices de tenerte a bordo en nuestra plataforma.</p>
+    
+    <div class="features-list">
+      <div class="feature">
+        <i class='bx bx-check-shield'></i>
+        <span>Navegación segura</span>
+      </div>
+      <div class="feature">
+        <i class='bx bx-customize'></i>
+        <span>Gestión de tu perfil personal</span>
+      </div>
+    </div>
+
+    <button class="btn-start" (click)="comenzar()">
+      Comenzar a explorar <i class='bx bx-right-arrow-alt'></i>
+    </button>
+  </div>
+</div>

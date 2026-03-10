@@ -55,6 +55,28 @@
       "fechaRegistro": "2026-03-10",
       "avatar": "https://ui-avatars.com/api/?name=Juan+Gonzalez&background=0f3460&color=fff",
       "id": 6
+    },
+    {
+      "nombre": "Oscar Mundo",
+      "correo": "jorka21@gmail.com",
+      "password": "CEsiru917",
+      "rol": "Usuario",
+      "estado": "Activo",
+      "primerIngreso": false,
+      "fechaRegistro": "2026-03-10",
+      "avatar": "https://ui-avatars.com/api/?name=Oscar+Mundo&background=0f3460&color=fff",
+      "id": 7
+    },
+    {
+      "nombre": "Oscar Mundo",
+      "correo": "jorka21@gmail.com",
+      "password": "CEsiru917",
+      "rol": "Usuario",
+      "estado": "Activo",
+      "primerIngreso": true,
+      "fechaRegistro": "2026-03-10",
+      "avatar": "https://ui-avatars.com/api/?name=Oscar+Mundo&background=0f3460&color=fff",
+      "id": 8
     }
   ]
 }
