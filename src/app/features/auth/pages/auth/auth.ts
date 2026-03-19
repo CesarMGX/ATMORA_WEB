@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import {
@@ -10,11 +10,14 @@ import {
   AbstractControl,
   ValidationErrors,
 } from '@angular/forms';
-import { ChangeDetectorRef } from '@angular/core';
-import { AuthService } from '../../../../core/services/auth';
-import { environment } from '../../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../../environments/environment';
+import { AuthService } from '../../../../core/services/auth';
+import emailjs from '@emailjs/browser';
 
+declare var google: any;
+
+// --- VALIDACIONES DE SEGURIDAD ---
 export function sqlInjectionValidator(control: AbstractControl): ValidationErrors | null {
   const value = control.value;
   if (!value) return null;
@@ -32,26 +35,28 @@ export function xssValidator(control: AbstractControl): ValidationErrors | null 
 
 @Component({
   selector: 'app-auth',
-  standalone: true,
   imports: [RouterLink, CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './auth.html',
   styleUrl: './auth.scss',
 })
-export class Auth implements OnInit {
+export class Auth implements OnInit, AfterViewInit {
   isSignUpMode = false;
+  
+  // Variables Modales
   showSuccessModal = false;
+  showEmailSentModal = false;
+  showMfaModal = false;
 
   // Variables MFA
-  showMfaModal = false;
   generatedCode = '';
   userMfaInput = '';
   mfaError = false;
   pendingRedirectUrl = '';
 
-  // NUEVO: Aquí guardaremos temporalmente al usuario que logre pasar el login antes del MFA
+  // Datos del usuario autenticado temporalmente
   userFromDb: any = null;
 
-  // Variables Fuerza Bruta
+  // Variables de Seguridad y Bloqueo
   failedAttempts = 0;
   isLockedOut = false;
   lockoutTimer = 0;
@@ -73,7 +78,7 @@ export class Auth implements OnInit {
     private fb: FormBuilder,
     private cdr: ChangeDetectorRef,
     private authService: AuthService,
-    private http: HttpClient, // Inyectamos el cliente HTTP para la BD
+    private http: HttpClient
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email, sqlInjectionValidator, xssValidator]],
@@ -81,20 +86,9 @@ export class Auth implements OnInit {
     });
 
     this.registerForm = this.fb.group({
-      name: [
-        '',
-        [
-          Validators.required,
-          Validators.pattern('^[a-zA-ZÀ-ÿ ]*$'),
-          sqlInjectionValidator,
-          xssValidator,
-        ],
-      ],
+      name: ['', [Validators.required, Validators.pattern('^[a-zA-ZÀ-ÿ ]*$'), sqlInjectionValidator, xssValidator]],
       email: ['', [Validators.required, Validators.email, sqlInjectionValidator, xssValidator]],
-      password: [
-        '',
-        [Validators.required, Validators.minLength(8), sqlInjectionValidator, xssValidator],
-      ],
+      password: ['', [Validators.required, Validators.minLength(8), sqlInjectionValidator, xssValidator]],
     });
 
     this.registerForm.get('password')?.valueChanges.subscribe((val) => {
@@ -111,7 +105,80 @@ export class Auth implements OnInit {
     this.checkLockoutStatus();
   }
 
-  // --- LÓGICA DE BLOQUEO (Se mantiene igual) ---
+  ngAfterViewInit() {
+    if (typeof google !== 'undefined') {
+      google.accounts.id.initialize({
+        client_id: environment.googleClientId,
+        callback: (response: any) => this.handleGoogleResponse(response)
+      });
+
+      google.accounts.id.renderButton(
+        document.getElementById('google-btn-signin'),
+        { theme: 'outline', size: 'large', text: 'signin_with' }
+      );
+
+      google.accounts.id.renderButton(
+        document.getElementById('google-btn-signup'),
+        { theme: 'outline', size: 'large', text: 'signup_with' }
+      );
+    }
+  }
+
+  // ==========================================
+  // LÓGICA DE GOOGLE AUTH
+  // ==========================================
+  handleGoogleResponse(response: any) {
+    if (response.credential) {
+      const payload = decodeURIComponent(atob(response.credential.split('.')[1]).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      
+      const userData = JSON.parse(payload);
+      const email = userData.email;
+      const name = userData.name;
+      const picture = userData.picture;
+
+      this.http.get<any[]>(`${environment.apiUrl}/usuarios?correo=${email}`).subscribe({
+        next: (users) => {
+          if (users.length > 0) {
+            this.userFromDb = users[0];
+            let target = (this.userFromDb.rol === 'Admin') ? '/admin' : '/';
+            if (this.userFromDb.primerIngreso && this.userFromDb.rol !== 'Admin') {
+              target = '/bienvenida';
+            }
+            this.triggerMfaFlow(target, email);
+          } else {
+            this.registrarUsuarioGoogle(name, email, picture);
+          }
+        },
+        error: () => console.error('Error al conectar con la base de datos.')
+      });
+    }
+  }
+
+  registrarUsuarioGoogle(name: string, email: string, picture: string) {
+    const newUser = {
+      nombre: name,
+      correo: email,
+      password: 'GOOGLE_AUTH_USER', 
+      rol: 'Usuario',
+      estado: 'Activo',
+      primerIngreso: true,
+      fechaRegistro: new Date().toISOString().split('T')[0],
+      avatar: picture
+    };
+
+    this.http.post(`${environment.apiUrl}/usuarios`, newUser).subscribe({
+      next: () => {
+        this.showSuccessModal = true;
+        this.isSignUpMode = false;
+        this.cdr.detectChanges();
+      },
+      error: () => console.error('Hubo un error al registrar la cuenta con Google.')
+    });
+  }
+
+  // --- PERSISTENCIA DEL BLOQUEO ---
   checkLockoutStatus() {
     const lockoutEnd = localStorage.getItem('lockoutEndTime');
     if (lockoutEnd) {
@@ -125,81 +192,27 @@ export class Auth implements OnInit {
         localStorage.removeItem('lockoutEndTime');
         this.isLockedOut = false;
         this.failedAttempts = 0;
+        this.loginErrorMsg = '';
       }
     }
+    this.cdr.detectChanges();
   }
 
   toggleMode() {
     this.isSignUpMode = !this.isSignUpMode;
     this.hideLoginPassword = true;
     this.hideRegisterPassword = true;
+    this.loginErrorMsg = '';
   }
 
-  // --- SEGURIDAD DE CONTRASEÑA (Se mantiene igual) ---
-  calculateStrength(password: string | null) {
-    if (!password) {
-      this.resetStrength();
-      return;
-    }
-    const ctrl = { value: password } as AbstractControl;
-    if (sqlInjectionValidator(ctrl)) {
-      this.setSecurityError('Carácter SQL prohibido', 'red');
-      return;
-    }
-    if (xssValidator(ctrl)) {
-      this.setSecurityError('Script malicioso detectado', 'red');
-      return;
-    }
-
-    let score = 0;
-    if (password.length >= 8) score += 1;
-    if (password.match(/[0-9]/)) score += 1;
-    if (password.match(/[a-z]/) && password.match(/[A-Z]/)) score += 1;
-    if (password.match(/[^a-zA-Z0-9]/)) score += 1;
-    switch (score) {
-      case 0:
-      case 1:
-        this.setStrength(25, 'Débil', '#e74c3c');
-        break;
-      case 2:
-        this.setStrength(50, 'Regular', '#f1c40f');
-        break;
-      case 3:
-        this.setStrength(75, 'Buena', '#2ecc71');
-        break;
-      case 4:
-        this.setStrength(100, 'Excelente', '#27ae60');
-        break;
-    }
-  }
-  resetStrength() {
-    this.passwordStrengthPercent = 0;
-    this.passwordStrengthLabel = 'Ingresa una contraseña';
-    this.passwordStrengthColor = '#e0e0e0';
-  }
-  setStrength(percent: number, label: string, color: string) {
-    this.passwordStrengthPercent = percent;
-    this.passwordStrengthLabel = label;
-    this.passwordStrengthColor = color;
-  }
-  setSecurityError(label: string, color: string) {
-    this.passwordStrengthLabel = label;
-    this.passwordStrengthColor = color;
-    this.passwordStrengthPercent = 100;
-  }
-
-  // ==========================================
-  // LOGIN MIXTO (Quemado + Base de Datos)
-  // ==========================================
+  // --- LÓGICA DE LOGIN MANUAL ---
   onLogin() {
     if (this.isLockedOut) return;
 
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
 
-      // 1. Verificamos primero la "puerta trasera" del Admin quemado en código
       if (email === 'admin@atmora.com' && password === 'admin123') {
-        // Simulamos un usuario traído de BD para que el MFA lo pueda usar
         this.userFromDb = {
           id: 999,
           nombre: 'Admin Supremo',
@@ -208,56 +221,30 @@ export class Auth implements OnInit {
           avatar: 'https://ui-avatars.com/api/?name=Admin+Supremo&background=f77f00&color=fff',
         };
         this.triggerMfaFlow('/admin', email);
-        return; // Detenemos la función aquí, no buscamos en JSON
+        return;
       }
 
-      // 2. Si no es el admin quemado, buscamos en la base de datos (json-server)
-      this.http
-        .get<any[]>(`${environment.apiUrl}/usuarios?correo=${email}&password=${password}`)
-        .subscribe({
-          next: (users) => {
-            if (users.length > 0) {
-              this.userFromDb = users[0];
-
-              // --- NUEVA LÓGICA DE REDIRECCIÓN ---
-              let target = '/';
-              if (this.userFromDb.rol === 'Admin') {
-                target = '/admin';
-              } else if (this.userFromDb.primerIngreso) {
-                target = '/bienvenida'; // Si es su primera vez, lo mandamos aquí
-              }
-
-              this.triggerMfaFlow(target, email);
+      this.http.get<any[]>(`${environment.apiUrl}/usuarios?correo=${email}&password=${password}`).subscribe({
+        next: (users) => {
+          if (users.length > 0) {
+            this.userFromDb = users[0];
+            let target = (this.userFromDb.rol === 'Admin') ? '/admin' : '/';
+            if (this.userFromDb.primerIngreso && this.userFromDb.rol !== 'Admin') {
+              target = '/bienvenida';
             }
-          },
-          error: () => {
-            alert('Error al conectar con la base de datos local.');
-          },
-        });
+            this.triggerMfaFlow(target, email);
+          } else {
+            this.handleLoginFailure();
+          }
+        },
+        error: () => console.error('Error al conectar con la base de datos local.')
+      });
     } else {
       this.loginForm.markAllAsTouched();
     }
   }
 
-  // Función de ayuda para no repetir código al pasar al MFA
-  // Función de ayuda para no repetir código al pasar al MFA
-  triggerMfaFlow(targetUrl: string, email: string) {
-    this.failedAttempts = 0;
-    localStorage.removeItem('lockoutEndTime');
-    this.loginErrorMsg = '';
-    this.pendingRedirectUrl = targetUrl;
-
-    // Genera el código y lanza el alert
-    this.generateAndSendCode(email);
-
-    // Cambia la variable para mostrar el modal
-    this.showMfaModal = true;
-
-    // Obligamos a Angular a mostrar el modal INMEDIATAMENTE después del alert
-    this.cdr.detectChanges();
-  }
-
-  // --- BLOQUEO POR INTENTOS ---
+  // --- MANEJO DE FALLOS Y BLOQUEO ---
   handleLoginFailure() {
     this.failedAttempts++;
     const intentosRestantes = 3 - this.failedAttempts;
@@ -272,12 +259,14 @@ export class Auth implements OnInit {
     } else {
       this.loginErrorMsg = `Credenciales incorrectas. Te quedan ${intentosRestantes} intentos.`;
     }
+    this.cdr.detectChanges();
   }
 
   startLockoutTimer() {
     const interval = setInterval(() => {
       this.lockoutTimer--;
       this.cdr.detectChanges();
+
       if (this.lockoutTimer <= 0) {
         clearInterval(interval);
         this.isLockedOut = false;
@@ -289,18 +278,57 @@ export class Auth implements OnInit {
     }, 1000);
   }
 
-  // --- MFA Y CONEXIÓN CON EL NAVBAR ---
-  generateAndSendCode(email: string) {
+  // --- MFA Y EMAILJS FLOW ---
+  async triggerMfaFlow(targetUrl: string, email: string) {
+    this.failedAttempts = 0;
+    localStorage.removeItem('lockoutEndTime');
+    this.loginErrorMsg = '';
+    this.pendingRedirectUrl = targetUrl;
+
+    await this.generateAndSendCode(email);
+  }
+
+  async generateAndSendCode(email: string) {
+    // --- EXCEPCIÓN PARA EL ADMIN DE PRUEBA ---
+    if (email === 'admin@atmora.com') {
+      this.generatedCode = '123456'; // Código maestro fijo
+      alert('[MODO ADMINISTRADOR]\nEl código de acceso para el Admin es: 123456');
+      this.continueToMfa(); // Nos saltamos el modal del sobrecito y vamos directo al input
+      return; // Detenemos la función para que no envíe el correo
+    }
+
     this.generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
-    alert(`[SIMULACIÓN DE EMAIL] \n\nHola,\nTu código de verificación es: ${this.generatedCode}`);
+    
+    const templateParams = {
+      user_email: email,
+      mfa_code: this.generatedCode
+    };
+
+    try {
+      await emailjs.send(
+        environment.emailjs.serviceId,
+        environment.emailjs.templateId,
+        templateParams,
+        environment.emailjs.publicKey
+      );
+      
+      this.showEmailSentModal = true;
+      this.cdr.detectChanges();
+      
+    } catch (error) {
+      console.error('Error al enviar el correo:', error);
+    }
+  }
+
+  continueToMfa() {
+    this.showEmailSentModal = false;
+    this.showMfaModal = true;
+    this.cdr.detectChanges();
   }
 
   verifyMfaCode() {
     if (this.userMfaInput === this.generatedCode) {
       this.showMfaModal = false;
-
-      // Inyectamos los datos reales (o el mock del admin) en el Cerebro (AuthService)
-      // Esto hace que el Navbar reaccione instantáneamente
       this.authService.updateProfile({
         id: this.userFromDb.id,
         nombre: this.userFromDb.nombre,
@@ -308,26 +336,25 @@ export class Auth implements OnInit {
         avatar: this.userFromDb.avatar,
         rol: this.userFromDb.rol,
       });
-
       this.router.navigate([this.pendingRedirectUrl]);
     } else {
       this.mfaError = true;
-      setTimeout(() => (this.mfaError = false), 1000);
+      setTimeout(() => {
+        this.mfaError = false;
+        this.cdr.detectChanges();
+      }, 1000);
     }
   }
 
-  // ==========================================
-  // REGISTRO REAL (Guarda en json-server)
-  // ==========================================
+  // --- REGISTRO MANUAL ---
   onRegister() {
     if (this.registerForm.valid) {
       const formValues = this.registerForm.value;
-
       const newUser = {
         nombre: formValues.name,
         correo: formValues.email,
         password: formValues.password,
-        rol: 'Usuario', // Todo el que se registra en la web es usuario normal por defecto
+        rol: 'Usuario',
         estado: 'Activo',
         primerIngreso: true,
         fechaRegistro: new Date().toISOString().split('T')[0],
@@ -337,21 +364,44 @@ export class Auth implements OnInit {
       this.http.post(`${environment.apiUrl}/usuarios`, newUser).subscribe({
         next: () => {
           this.showSuccessModal = true;
+          this.cdr.detectChanges();
         },
-        error: (err) => {
-          console.error('Error al registrar', err);
-          alert('Hubo un error al guardar en la base de datos.');
-        },
+        error: (err) => console.error('Hubo un error al guardar en la base de datos.'),
       });
     } else {
       this.registerForm.markAllAsTouched();
     }
   }
 
+  calculateStrength(password: string | null) {
+    if (!password) { this.resetStrength(); return; }
+    const ctrl = { value: password } as AbstractControl;
+    if (sqlInjectionValidator(ctrl)) { this.setSecurityError('Carácter SQL prohibido', 'red'); return; }
+    if (xssValidator(ctrl)) { this.setSecurityError('Script malicioso detectado', 'red'); return; }
+
+    let score = 0;
+    if (password.length >= 8) score += 1;
+    if (password.match(/[0-9]/)) score += 1;
+    if (password.match(/[a-z]/) && password.match(/[A-Z]/)) score += 1;
+    if (password.match(/[^a-zA-Z0-9]/)) score += 1;
+
+    switch (score) {
+      case 0: case 1: this.setStrength(25, 'Débil', '#e74c3c'); break;
+      case 2: this.setStrength(50, 'Regular', '#f1c40f'); break;
+      case 3: this.setStrength(75, 'Buena', '#2ecc71'); break;
+      case 4: this.setStrength(100, 'Excelente', '#27ae60'); break;
+    }
+  }
+
+  resetStrength() { this.passwordStrengthPercent = 0; this.passwordStrengthLabel = 'Ingresa una contraseña'; this.passwordStrengthColor = '#e0e0e0'; }
+  setStrength(percent: number, label: string, color: string) { this.passwordStrengthPercent = percent; this.passwordStrengthLabel = label; this.passwordStrengthColor = color; }
+  setSecurityError(label: string, color: string) { this.passwordStrengthLabel = label; this.passwordStrengthColor = color; this.passwordStrengthPercent = 100; }
+
   closeModalAndLogin() {
     this.showSuccessModal = false;
     this.isSignUpMode = false;
     this.registerForm.reset();
     this.resetStrength();
+    this.cdr.detectChanges();
   }
 }

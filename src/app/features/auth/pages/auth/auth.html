@@ -1,115 +1,251 @@
 <div class="container" [class.sign-up-mode]="isSignUpMode">
-  
-  <a routerLink="/" class="back-home">
-    <i class='bx bx-arrow-back'></i> Volver al inicio
-  </a>
+  <a routerLink="/" class="back-home"> <i class="bx bx-arrow-back"></i> Volver al inicio </a>
 
   <div class="forms-container">
     <div class="signin-signup">
-      
-<form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="sign-in-form">
+      <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="sign-in-form">
         <h2 class="title">Iniciar Sesión</h2>
-        
-        <div class="input-field" [class.invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
-          <i class='bx bxs-user'></i>
+
+        <div
+          class="input-field"
+          [class.invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+        >
+          <i class="bx bxs-user"></i>
           <input type="email" placeholder="Correo Electrónico" formControlName="email" />
         </div>
-        <span class="error-text" *ngIf="loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched">El correo es obligatorio</span>
-        <span class="error-text" *ngIf="loginForm.get('email')?.hasError('email') && loginForm.get('email')?.touched">Formato de correo inválido</span>
-        <span class="error-text" *ngIf="loginForm.get('email')?.hasError('sqlInjection') && loginForm.get('email')?.touched">⚠️ Carácter peligroso detectado (', ;)</span>
-        <span class="error-text" *ngIf="loginForm.get('email')?.hasError('xssDetected') && loginForm.get('email')?.touched">⛔ Código Script detectado (XSS)</span>
+        <span
+          class="error-text"
+          *ngIf="loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched"
+          >El correo es obligatorio</span
+        >
+        <span
+          class="error-text"
+          *ngIf="loginForm.get('email')?.hasError('email') && loginForm.get('email')?.touched"
+          >Formato de correo inválido</span
+        >
+        <span
+          class="error-text"
+          *ngIf="
+            loginForm.get('email')?.hasError('sqlInjection') && loginForm.get('email')?.touched
+          "
+          >⚠️ Carácter peligroso detectado (', ;)</span
+        >
+        <span
+          class="error-text"
+          *ngIf="loginForm.get('email')?.hasError('xssDetected') && loginForm.get('email')?.touched"
+          >⛔ Código Script detectado (XSS)</span
+        >
 
-        <div class="input-field password-field" [class.invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
-          <i class='bx bxs-lock-alt'></i>
-          <input [type]="hideLoginPassword ? 'password' : 'text'" placeholder="Contraseña" formControlName="password" />
-          <i class='bx' [class.bx-hide]="hideLoginPassword" [class.bx-show]="!hideLoginPassword" (click)="hideLoginPassword = !hideLoginPassword" style="cursor: pointer;"></i>
+        <div
+          class="input-field password-field"
+          [class.invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+        >
+          <i class="bx bxs-lock-alt"></i>
+          <input
+            [type]="hideLoginPassword ? 'password' : 'text'"
+            placeholder="Contraseña"
+            formControlName="password"
+          />
+          <i
+            class="bx"
+            [class.bx-hide]="hideLoginPassword"
+            [class.bx-show]="!hideLoginPassword"
+            (click)="hideLoginPassword = !hideLoginPassword"
+            style="cursor: pointer"
+          ></i>
         </div>
-        <span class="error-text" *ngIf="loginForm.get('password')?.invalid && !loginForm.get('password')?.hasError('sqlInjection') && !loginForm.get('password')?.hasError('xssDetected') && loginForm.get('password')?.touched">La contraseña es obligatoria</span>
-        <span class="error-text" *ngIf="loginForm.get('password')?.hasError('sqlInjection') && loginForm.get('password')?.touched">⚠️ Entrada sanitizada: No uses comillas o punto y coma</span>
-        <span class="error-text" *ngIf="loginForm.get('password')?.hasError('xssDetected') && loginForm.get('password')?.touched">⛔ Amenaza XSS bloqueada</span>
-        
+        <span
+          class="error-text"
+          *ngIf="
+            loginForm.get('password')?.invalid &&
+            !loginForm.get('password')?.hasError('sqlInjection') &&
+            !loginForm.get('password')?.hasError('xssDetected') &&
+            loginForm.get('password')?.touched
+          "
+          >La contraseña es obligatoria</span
+        >
+        <span
+          class="error-text"
+          *ngIf="
+            loginForm.get('password')?.hasError('sqlInjection') &&
+            loginForm.get('password')?.touched
+          "
+          >⚠️ Entrada sanitizada: No uses comillas o punto y coma</span
+        >
+        <span
+          class="error-text"
+          *ngIf="
+            loginForm.get('password')?.hasError('xssDetected') && loginForm.get('password')?.touched
+          "
+          >⛔ Amenaza XSS bloqueada</span
+        >
+
         <div class="login-feedback" *ngIf="loginErrorMsg">
           <p [class.locked-text]="isLockedOut">{{ loginErrorMsg }}</p>
           <span *ngIf="isLockedOut" class="timer-count">Reintentar en {{ lockoutTimer }}s</span>
         </div>
-        
-        <button type="submit" class="btn solid" [disabled]="isLockedOut" [class.btn-locked]="isLockedOut">
+
+        <button
+          type="submit"
+          class="btn solid"
+          [disabled]="isLockedOut"
+          [class.btn-locked]="isLockedOut"
+        >
           {{ isLockedOut ? 'Bloqueado' : 'Ingresar' }}
         </button>
 
+        <div class="social-text">O inicia sesión con</div>
+        <div
+          id="google-btn-signin"
+          style="display: flex; justify-content: center; margin-top: 10px"
+        ></div>
       </form>
-
 
       <form [formGroup]="registerForm" (ngSubmit)="onRegister()" class="sign-up-form">
         <h2 class="title">¡Regístrate!</h2>
-        
-        <div class="input-field" [class.invalid]="registerForm.get('name')?.invalid && registerForm.get('name')?.touched">
-          <i class='bx bxs-user'></i>
+
+        <div
+          class="input-field"
+          [class.invalid]="registerForm.get('name')?.invalid && registerForm.get('name')?.touched"
+        >
+          <i class="bx bxs-user"></i>
           <input type="text" placeholder="Nombre Completo" formControlName="name" />
         </div>
-        <span class="error-text" *ngIf="registerForm.get('name')?.hasError('required') && registerForm.get('name')?.touched">
-          El nombre es obligatorio
-        </span>
-        <span class="error-text" *ngIf="registerForm.get('name')?.hasError('pattern') && registerForm.get('name')?.touched">
-          Solo letras y espacios
-        </span>
-        <span class="error-text" *ngIf="registerForm.get('name')?.hasError('sqlInjection') && registerForm.get('name')?.touched">
-          ⚠️ Intento de inyección SQL
-        </span>
-        <span class="error-text" *ngIf="registerForm.get('name')?.hasError('xssDetected') && registerForm.get('name')?.touched">
-          ⛔ Intento de script detectado
-        </span>
+        <span
+          class="error-text"
+          *ngIf="
+            registerForm.get('name')?.hasError('required') && registerForm.get('name')?.touched
+          "
+          >El nombre es obligatorio</span
+        >
+        <span
+          class="error-text"
+          *ngIf="registerForm.get('name')?.hasError('pattern') && registerForm.get('name')?.touched"
+          >Solo letras y espacios</span
+        >
+        <span
+          class="error-text"
+          *ngIf="
+            registerForm.get('name')?.hasError('sqlInjection') && registerForm.get('name')?.touched
+          "
+          >⚠️ Intento de inyección SQL</span
+        >
+        <span
+          class="error-text"
+          *ngIf="
+            registerForm.get('name')?.hasError('xssDetected') && registerForm.get('name')?.touched
+          "
+          >⛔ Intento de script detectado</span
+        >
 
-        <div class="input-field" [class.invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
-          <i class='bx bxs-envelope'></i>
+        <div
+          class="input-field"
+          [class.invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+        >
+          <i class="bx bxs-envelope"></i>
           <input type="email" placeholder="Correo Electrónico" formControlName="email" />
         </div>
-        <span class="error-text" *ngIf="registerForm.get('email')?.invalid && !registerForm.get('email')?.hasError('sqlInjection') && !registerForm.get('email')?.hasError('xssDetected') && registerForm.get('email')?.touched">
-          Ingresa un correo válido
-        </span>
-        <span class="error-text" *ngIf="registerForm.get('email')?.hasError('sqlInjection') && registerForm.get('email')?.touched">
-          ⚠️ Carácter peligroso detectado
-        </span>
-        <span class="error-text" *ngIf="registerForm.get('email')?.hasError('xssDetected') && registerForm.get('email')?.touched">
-          ⛔ Bloqueado por seguridad
-        </span>
+        <span
+          class="error-text"
+          *ngIf="
+            registerForm.get('email')?.invalid &&
+            !registerForm.get('email')?.hasError('sqlInjection') &&
+            !registerForm.get('email')?.hasError('xssDetected') &&
+            registerForm.get('email')?.touched
+          "
+          >Ingresa un correo válido</span
+        >
+        <span
+          class="error-text"
+          *ngIf="
+            registerForm.get('email')?.hasError('sqlInjection') &&
+            registerForm.get('email')?.touched
+          "
+          >⚠️ Carácter peligroso detectado</span
+        >
+        <span
+          class="error-text"
+          *ngIf="
+            registerForm.get('email')?.hasError('xssDetected') && registerForm.get('email')?.touched
+          "
+          >⛔ Bloqueado por seguridad</span
+        >
 
-        <div class="input-field password-field" [class.invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
-          <i class='bx bxs-lock-alt'></i>
-          <input [type]="hideRegisterPassword ? 'password' : 'text'" placeholder="Contraseña" formControlName="password" />
-          <i class='bx' 
-             [class.bx-hide]="hideRegisterPassword" 
-             [class.bx-show]="!hideRegisterPassword"
-             (click)="hideRegisterPassword = !hideRegisterPassword"
-             style="cursor: pointer;"></i>
+        <div
+          class="input-field password-field"
+          [class.invalid]="
+            registerForm.get('password')?.invalid && registerForm.get('password')?.touched
+          "
+        >
+          <i class="bx bxs-lock-alt"></i>
+          <input
+            [type]="hideRegisterPassword ? 'password' : 'text'"
+            placeholder="Contraseña"
+            formControlName="password"
+          />
+          <i
+            class="bx"
+            [class.bx-hide]="hideRegisterPassword"
+            [class.bx-show]="!hideRegisterPassword"
+            (click)="hideRegisterPassword = !hideRegisterPassword"
+            style="cursor: pointer"
+          ></i>
         </div>
-        
+
         <div class="strength-meter" *ngIf="registerForm.get('password')?.value">
           <div class="strength-bar">
-            <div class="strength-fill" 
-                 [style.width.%]="passwordStrengthPercent"
-                 [style.background-color]="passwordStrengthColor">
-            </div>
+            <div
+              class="strength-fill"
+              [style.width.%]="passwordStrengthPercent"
+              [style.background-color]="passwordStrengthColor"
+            ></div>
           </div>
-          <span class="strength-label" [style.color]="passwordStrengthColor">{{ passwordStrengthLabel }}</span>
+          <span class="strength-label" [style.color]="passwordStrengthColor">{{
+            passwordStrengthLabel
+          }}</span>
         </div>
 
-        <span class="error-text" *ngIf="registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched">
-          Mínimo 8 caracteres
-        </span>
-        <span class="error-text" *ngIf="registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched">
-          La contraseña es obligatoria
-        </span>
-        <span class="error-text" *ngIf="registerForm.get('password')?.hasError('sqlInjection') && registerForm.get('password')?.touched">
-          ⚠️ Caracteres prohibidos (', ;)
-        </span>
-        <span class="error-text" *ngIf="registerForm.get('password')?.hasError('xssDetected') && registerForm.get('password')?.touched">
-          ⛔ Script malicioso detectado
-        </span>
+        <span
+          class="error-text"
+          *ngIf="
+            registerForm.get('password')?.hasError('minlength') &&
+            registerForm.get('password')?.touched
+          "
+          >Mínimo 8 caracteres</span
+        >
+        <span
+          class="error-text"
+          *ngIf="
+            registerForm.get('password')?.hasError('required') &&
+            registerForm.get('password')?.touched
+          "
+          >La contraseña es obligatoria</span
+        >
+        <span
+          class="error-text"
+          *ngIf="
+            registerForm.get('password')?.hasError('sqlInjection') &&
+            registerForm.get('password')?.touched
+          "
+          >⚠️ Caracteres prohibidos (', ;)</span
+        >
+        <span
+          class="error-text"
+          *ngIf="
+            registerForm.get('password')?.hasError('xssDetected') &&
+            registerForm.get('password')?.touched
+          "
+          >⛔ Script malicioso detectado</span
+        >
 
         <button type="submit" class="btn solid">Enviar</button>
-      </form>
 
+        <div class="social-text">O regístrate con</div>
+        <div
+          id="google-btn-signup"
+          style="display: flex; justify-content: center; margin-top: 10px"
+        ></div>
+      </form>
     </div>
   </div>
 
@@ -130,30 +266,51 @@
 
   <div class="modal-overlay" *ngIf="showSuccessModal">
     <div class="modal-content">
-      <div class="icon-success"><i class='bx bx-check-circle'></i></div>
+      <div class="icon-success"><i class="bx bx-check-circle"></i></div>
       <h2>¡Registro Exitoso!</h2>
       <p>Tu cuenta ha sido creada correctamente.</p>
       <button class="btn solid" (click)="closeModalAndLogin()">Ir a Iniciar Sesión</button>
     </div>
   </div>
 
-  <div class="modal-overlay mfa-overlay" *ngIf="showMfaModal">
-    <div class="modal-content mfa-content">
-      <div class="icon-security">
-        <i class='bx bx-shield-quarter'></i>
+  <div class="modal-overlay" *ngIf="showEmailSentModal">
+    <div class="modal-content">
+      <div class="icon-success" style="color: #f77f00">
+        <i class="bx bx-envelope"></i>
       </div>
-      <h2>Verificación de Seguridad</h2>
-      <p>Hemos enviado un código de 6 dígitos a tu correo. Ingrésalo para continuar.</p>
-      
-      <div class="mfa-input-wrapper">
-        <input type="text" maxlength="6" [(ngModel)]="userMfaInput" placeholder="000000" class="mfa-input" [class.error]="mfaError" (keyup.enter)="verifyMfaCode()">
-      </div>
-      
-      <p class="error-msg" *ngIf="mfaError">Código incorrecto, inténtalo de nuevo.</p>
-
-      <button class="btn solid" (click)="verifyMfaCode()">Verificar</button>
-      <button class="btn-text" (click)="showMfaModal = false" style="background:none; border:none; margin-top:10px; cursor:pointer; text-decoration: underline;">Cancelar</button>
+      <h2>¡Código Enviado!</h2>
+      <p>
+        Hemos enviado un código de seguridad de 6 dígitos a tu correo. Por favor revisa tu bandeja
+        de entrada.
+      </p>
+      <button class="btn solid" (click)="continueToMfa()">Ingresar Código</button>
     </div>
   </div>
 
+  <div class="modal-overlay mfa-overlay" *ngIf="showMfaModal">
+    <div class="modal-content mfa-content">
+      <div class="icon-security">
+        <i class="bx bx-shield-quarter"></i>
+      </div>
+      <h2>Verificación de Seguridad</h2>
+      <p>Ingresa el código de 6 dígitos para continuar.</p>
+
+      <div class="mfa-input-wrapper">
+        <input
+          type="text"
+          maxlength="6"
+          [(ngModel)]="userMfaInput"
+          placeholder="000000"
+          class="mfa-input"
+          [class.error]="mfaError"
+          (keyup.enter)="verifyMfaCode()"
+        />
+      </div>
+
+      <p class="error-msg" *ngIf="mfaError">Código incorrecto, inténtalo de nuevo.</p>
+
+      <button class="btn solid" (click)="verifyMfaCode()">Verificar</button>
+      <button class="btn-cancel" (click)="showMfaModal = false">Cancelar</button>
+    </div>
+  </div>
 </div>

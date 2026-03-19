@@ -13,10 +13,10 @@
       "id": 2,
       "nombre": "Alex Tadeo",
       "correo": "alex@atmora.com",
-      "rol": "Usuario",
+      "rol": "Admin",
       "estado": "Activo",
       "fechaRegistro": "2025-09-15",
-      "avatar": "https://ui-avatars.com/api/?name=Alex+Tadeo&background=f77f00&color=fff"
+      "avatar": "https://ui-avatars.com/api/?name=Alex+Tadeo&background=random&color=fff"
     },
     {
       "nombre": "Kevin Jimenez",
@@ -62,21 +62,76 @@
       "password": "CEsiru917",
       "rol": "Usuario",
       "estado": "Activo",
-      "primerIngreso": false,
-      "fechaRegistro": "2026-03-10",
-      "avatar": "https://ui-avatars.com/api/?name=Oscar+Mundo&background=0f3460&color=fff",
-      "id": 7
-    },
-    {
-      "nombre": "Oscar Mundo",
-      "correo": "jorka21@gmail.com",
-      "password": "CEsiru917",
-      "rol": "Usuario",
-      "estado": "Activo",
       "primerIngreso": true,
       "fechaRegistro": "2026-03-10",
       "avatar": "https://ui-avatars.com/api/?name=Oscar+Mundo&background=0f3460&color=fff",
       "id": 8
+    },
+    {
+      "nombre": "Juan hernandez",
+      "correo": "juan21@gmail.com",
+      "password": "MUndo353",
+      "rol": "Usuario",
+      "estado": "Activo",
+      "primerIngreso": false,
+      "fechaRegistro": "2026-03-11",
+      "avatar": "https://ui-avatars.com/api/?name=Juan+hernandez&background=0f3460&color=fff",
+      "id": 9
+    },
+    {
+      "nombre": "Juan hernandez",
+      "correo": "juan21@gmail.com",
+      "password": "MUndo353",
+      "rol": "Usuario",
+      "estado": "Activo",
+      "primerIngreso": true,
+      "fechaRegistro": "2026-03-11",
+      "avatar": "https://ui-avatars.com/api/?name=Juan+hernandez&background=0f3460&color=fff",
+      "id": 10
+    },
+    {
+      "nombre": "Zahid Monraga Contreras",
+      "correo": "zahid11@gmail.com",
+      "password": "rewqasdf12",
+      "rol": "Usuario",
+      "estado": "Activo",
+      "primerIngreso": false,
+      "fechaRegistro": "2026-03-12",
+      "avatar": "https://ui-avatars.com/api/?name=Zahid+Monraga Contreras&background=0f3460&color=fff",
+      "id": 11
+    },
+    {
+      "nombre": "Zahid Monraga Contreras",
+      "correo": "zahid11@gmail.com",
+      "password": "rewqasdf12",
+      "rol": "Usuario",
+      "estado": "Activo",
+      "primerIngreso": true,
+      "fechaRegistro": "2026-03-12",
+      "avatar": "https://ui-avatars.com/api/?name=Zahid+Monraga Contreras&background=0f3460&color=fff",
+      "id": 12
+    },
+    {
+      "nombre": "Cesar Mundo Gonzalez",
+      "correo": "mundogonzalezcesar10@gmail.com",
+      "password": "GOOGLE_AUTH_USER",
+      "rol": "Usuario",
+      "estado": "Activo",
+      "primerIngreso": false,
+      "fechaRegistro": "2026-03-19",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocI9E32ZUkdJ_KgvaC4RYwlVcX2jZEOnVQ67VLt0LCK2rg7OiD1a=s96-c",
+      "id": 13
+    },
+    {
+      "nombre": "Cesar Rodríguez",
+      "correo": "crazycesar312@gmail.com",
+      "password": "GOOGLE_AUTH_USER",
+      "rol": "Usuario",
+      "estado": "Activo",
+      "primerIngreso": false,
+      "fechaRegistro": "2026-03-19",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocJlG-NTlHAUpIVAmzdYvG82UaMegoiBHjQuBCKIIkzK28Mh6w=s96-c",
+      "id": 14
     }
   ]
 }

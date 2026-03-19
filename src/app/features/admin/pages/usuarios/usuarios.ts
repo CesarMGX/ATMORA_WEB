@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -17,7 +17,6 @@ interface Usuario {
 
 @Component({
   selector: 'app-usuarios',
-  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './usuarios.html',
   styleUrl: './usuarios.scss',
@@ -38,8 +37,8 @@ export class Usuarios implements OnInit {
   // Construimos la URL específica para los usuarios (http://localhost:3003/usuarios)
   private apiUrl = `${environment.apiUrl}/usuarios`;
 
-  // Inyectamos HttpClient para hacer las peticiones
-  constructor(private http: HttpClient) {}
+  // Inyectamos HttpClient y el ChangeDetectorRef para darle el "codazo" a Angular
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
   // Al iniciar el componente, cargamos los datos
   ngOnInit() {
@@ -51,6 +50,7 @@ export class Usuarios implements OnInit {
     this.http.get<Usuario[]>(this.apiUrl).subscribe({
       next: (data) => {
         this.usuarios = data;
+        this.cdr.detectChanges(); // ¡Codazo! Pinta la tabla al instante
       },
       error: (err) => {
         console.error('Error al cargar usuarios', err);
@@ -59,7 +59,7 @@ export class Usuarios implements OnInit {
     });
   }
 
-  // --- LÓGICA DE FILTRADO Y PAGINACIÓN (Se mantiene igual) ---
+  // --- LÓGICA DE FILTRADO Y PAGINACIÓN ---
   get usuariosFiltrados() {
     if (!this.searchTerm) return this.usuarios;
     const term = this.searchTerm.toLowerCase();
@@ -82,7 +82,10 @@ export class Usuarios implements OnInit {
   onSearch() { this.currentPage = 1; }
   
   cambiarPagina(page: number) {
-    if (page >= 1 && page <= this.totalPages) this.currentPage = page;
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.cdr.detectChanges();
+    }
   }
 
   // --- MÉTODOS DEL DRAWER ---
@@ -95,10 +98,12 @@ export class Usuarios implements OnInit {
       this.isEditing = false;
       this.currentUser = { nombre: '', correo: '', rol: 'Usuario', estado: 'Activo' };
     }
+    this.cdr.detectChanges(); // ¡Codazo! Abre el menú rápido
   }
 
   closeDrawer() {
     this.isDrawerOpen = false;
+    this.cdr.detectChanges(); // ¡Codazo! Cierra el menú rápido
   }
 
   // --- 2. POST / PUT: GUARDAR O ACTUALIZAR DATOS ---
@@ -115,7 +120,7 @@ export class Usuarios implements OnInit {
       // PUT: Actualizar un registro existente
       this.http.put(`${this.apiUrl}/${this.currentUser.id}`, this.currentUser).subscribe({
         next: () => {
-          this.cargarUsuarios(); // Recargamos la tabla
+          this.cargarUsuarios(); 
           Swal.fire({ icon: 'success', title: 'Actualizado', timer: 1500, showConfirmButton: false });
           this.closeDrawer();
         }
@@ -126,7 +131,7 @@ export class Usuarios implements OnInit {
       
       this.http.post(this.apiUrl, newUser).subscribe({
         next: () => {
-          this.cargarUsuarios(); // Recargamos la tabla
+          this.cargarUsuarios(); 
           Swal.fire({ icon: 'success', title: 'Creado', timer: 1500, showConfirmButton: false });
           this.closeDrawer();
         }
@@ -144,7 +149,7 @@ export class Usuarios implements OnInit {
         
         this.http.delete(`${this.apiUrl}/${user.id}`).subscribe({
           next: () => {
-            this.cargarUsuarios(); // Recargamos la tabla
+            this.cargarUsuarios(); 
             if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
             Swal.fire('¡Eliminado!', 'El usuario ha sido borrado.', 'success');
           }
