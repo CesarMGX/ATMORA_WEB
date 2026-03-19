@@ -306,11 +306,92 @@
           (keyup.enter)="verifyMfaCode()"
         />
       </div>
-
       <p class="error-msg" *ngIf="mfaError">Código incorrecto, inténtalo de nuevo.</p>
 
-      <button class="btn solid" (click)="verifyMfaCode()">Verificar</button>
-      <button class="btn-cancel" (click)="showMfaModal = false">Cancelar</button>
+      <div class="modal-actions">
+        <button class="btn solid" (click)="verifyMfaCode()">Verificar</button>
+        <button class="btn-cancel" (click)="showMfaModal = false">Cancelar</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" *ngIf="showCompleteProfileModal">
+    <div class="modal-content" style="max-width: 450px">
+      <div class="icon-security" style="color: #4285f4; font-size: 4rem; margin-bottom: 10px">
+        <i class="bx bxl-google"></i>
+      </div>
+      <h2>Completa tu Perfil</h2>
+      <p style="margin-bottom: 20px">
+        Casi terminamos!!. Crea una contraseña para tu cuenta vinculada a Google.
+      </p>
+
+      <form
+        [formGroup]="completeProfileForm"
+        (ngSubmit)="onCompleteProfile()"
+        style="padding: 0; width: 100%; overflow: visible"
+      >
+        <div
+          class="input-field"
+          style="max-width: 100%; margin: 10px 0"
+          [class.invalid]="
+            completeProfileForm.get('name')?.invalid && completeProfileForm.get('name')?.touched
+          "
+        >
+          <i class="bx bxs-user"></i>
+          <input type="text" placeholder="Nombre Completo" formControlName="name" />
+        </div>
+
+        <div class="input-field" style="max-width: 100%; margin: 10px 0; background-color: #e2e8f0">
+          <i class="bx bxs-envelope"></i>
+          <input type="email" formControlName="email" />
+        </div>
+
+        <div
+          class="input-field password-field"
+          style="max-width: 100%; margin: 10px 0"
+          [class.invalid]="
+            completeProfileForm.get('password')?.invalid &&
+            completeProfileForm.get('password')?.touched
+          "
+        >
+          <i class="bx bxs-lock-alt"></i>
+          <input
+            [type]="hideRegisterPassword ? 'password' : 'text'"
+            placeholder="Crea una Contraseña"
+            formControlName="password"
+          />
+          <i
+            class="bx"
+            [class.bx-hide]="hideRegisterPassword"
+            [class.bx-show]="!hideRegisterPassword"
+            (click)="hideRegisterPassword = !hideRegisterPassword"
+            style="cursor: pointer"
+          ></i>
+        </div>
+
+        <div
+          class="strength-meter"
+          style="max-width: 100%; padding: 0"
+          *ngIf="completeProfileForm.get('password')?.value"
+        >
+          <div class="strength-bar">
+            <div
+              class="strength-fill"
+              [style.width.%]="passwordStrengthPercent"
+              [style.background-color]="passwordStrengthColor"
+            ></div>
+          </div>
+          <span class="strength-label" [style.color]="passwordStrengthColor">{{
+            passwordStrengthLabel
+          }}</span>
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn solid">Envíar</button>
+          <button type="button" class="btn-cancel" (click)="showCompleteProfileModal = false">
+            Cancelar
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

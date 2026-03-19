@@ -41,7 +41,7 @@ export function xssValidator(control: AbstractControl): ValidationErrors | null 
 })
 export class Auth implements OnInit, AfterViewInit {
   isSignUpMode = false;
-  
+
   // Variables Modales
   showSuccessModal = false;
   showEmailSentModal = false;
@@ -71,6 +71,9 @@ export class Auth implements OnInit, AfterViewInit {
 
   loginForm: FormGroup;
   registerForm: FormGroup;
+  // Nueva variable para el modal
+  showCompleteProfileModal = false;
+  completeProfileForm: FormGroup;
 
   constructor(
     private route: ActivatedRoute,
@@ -78,7 +81,7 @@ export class Auth implements OnInit, AfterViewInit {
     private fb: FormBuilder,
     private cdr: ChangeDetectorRef,
     private authService: AuthService,
-    private http: HttpClient
+    private http: HttpClient,
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email, sqlInjectionValidator, xssValidator]],
@@ -86,9 +89,42 @@ export class Auth implements OnInit, AfterViewInit {
     });
 
     this.registerForm = this.fb.group({
-      name: ['', [Validators.required, Validators.pattern('^[a-zA-ZÀ-ÿ ]*$'), sqlInjectionValidator, xssValidator]],
+      name: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern('^[a-zA-ZÀ-ÿ ]*$'),
+          sqlInjectionValidator,
+          xssValidator,
+        ],
+      ],
       email: ['', [Validators.required, Validators.email, sqlInjectionValidator, xssValidator]],
-      password: ['', [Validators.required, Validators.minLength(8), sqlInjectionValidator, xssValidator]],
+      password: [
+        '',
+        [Validators.required, Validators.minLength(8), sqlInjectionValidator, xssValidator],
+      ],
+    });
+
+    this.completeProfileForm = this.fb.group({
+      name: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern('^[a-zA-ZÀ-ÿ ]*$'),
+          sqlInjectionValidator,
+          xssValidator,
+        ],
+      ],
+      email: [{ value: '', disabled: true }, [Validators.required]], // Deshabilitado porque viene de Google
+      password: [
+        '',
+        [Validators.required, Validators.minLength(8), sqlInjectionValidator, xssValidator],
+      ],
+    });
+
+    // Para que la barra de fuerza también funcione con esta nueva contraseña
+    this.completeProfileForm.get('password')?.valueChanges.subscribe((val) => {
+      this.calculateStrength(val);
     });
 
     this.registerForm.get('password')?.valueChanges.subscribe((val) => {
@@ -109,18 +145,20 @@ export class Auth implements OnInit, AfterViewInit {
     if (typeof google !== 'undefined') {
       google.accounts.id.initialize({
         client_id: environment.googleClientId,
-        callback: (response: any) => this.handleGoogleResponse(response)
+        callback: (response: any) => this.handleGoogleResponse(response),
       });
 
-      google.accounts.id.renderButton(
-        document.getElementById('google-btn-signin'),
-        { theme: 'outline', size: 'large', text: 'signin_with' }
-      );
+      google.accounts.id.renderButton(document.getElementById('google-btn-signin'), {
+        theme: 'outline',
+        size: 'large',
+        text: 'signin_with',
+      });
 
-      google.accounts.id.renderButton(
-        document.getElementById('google-btn-signup'),
-        { theme: 'outline', size: 'large', text: 'signup_with' }
-      );
+      google.accounts.id.renderButton(document.getElementById('google-btn-signup'), {
+        theme: 'outline',
+        size: 'large',
+        text: 'signup_with',
+      });
     }
   }
 
@@ -129,10 +167,15 @@ export class Auth implements OnInit, AfterViewInit {
   // ==========================================
   handleGoogleResponse(response: any) {
     if (response.credential) {
-      const payload = decodeURIComponent(atob(response.credential.split('.')[1]).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
-      
+      const payload = decodeURIComponent(
+        atob(response.credential.split('.')[1])
+          .split('')
+          .map(function (c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+          })
+          .join(''),
+      );
+
       const userData = JSON.parse(payload);
       const email = userData.email;
       const name = userData.name;
@@ -142,40 +185,28 @@ export class Auth implements OnInit, AfterViewInit {
         next: (users) => {
           if (users.length > 0) {
             this.userFromDb = users[0];
-            let target = (this.userFromDb.rol === 'Admin') ? '/admin' : '/';
+            let target = this.userFromDb.rol === 'Admin' ? '/admin' : '/';
             if (this.userFromDb.primerIngreso && this.userFromDb.rol !== 'Admin') {
               target = '/bienvenida';
             }
             this.triggerMfaFlow(target, email);
           } else {
-            this.registrarUsuarioGoogle(name, email, picture);
+            // Llenamos el formulario con los datos de Google
+            this.completeProfileForm.patchValue({
+              name: name,
+              email: email,
+            });
+            // Guardamos la foto temporalmente
+            this.userFromDb = { avatar: picture };
+
+            // Mostramos el nuevo modal
+            this.showCompleteProfileModal = true;
+            this.cdr.detectChanges();
           }
         },
-        error: () => console.error('Error al conectar con la base de datos.')
+        error: () => console.error('Error al conectar con la base de datos.'),
       });
     }
-  }
-
-  registrarUsuarioGoogle(name: string, email: string, picture: string) {
-    const newUser = {
-      nombre: name,
-      correo: email,
-      password: 'GOOGLE_AUTH_USER', 
-      rol: 'Usuario',
-      estado: 'Activo',
-      primerIngreso: true,
-      fechaRegistro: new Date().toISOString().split('T')[0],
-      avatar: picture
-    };
-
-    this.http.post(`${environment.apiUrl}/usuarios`, newUser).subscribe({
-      next: () => {
-        this.showSuccessModal = true;
-        this.isSignUpMode = false;
-        this.cdr.detectChanges();
-      },
-      error: () => console.error('Hubo un error al registrar la cuenta con Google.')
-    });
   }
 
   // --- PERSISTENCIA DEL BLOQUEO ---
@@ -224,21 +255,23 @@ export class Auth implements OnInit, AfterViewInit {
         return;
       }
 
-      this.http.get<any[]>(`${environment.apiUrl}/usuarios?correo=${email}&password=${password}`).subscribe({
-        next: (users) => {
-          if (users.length > 0) {
-            this.userFromDb = users[0];
-            let target = (this.userFromDb.rol === 'Admin') ? '/admin' : '/';
-            if (this.userFromDb.primerIngreso && this.userFromDb.rol !== 'Admin') {
-              target = '/bienvenida';
+      this.http
+        .get<any[]>(`${environment.apiUrl}/usuarios?correo=${email}&password=${password}`)
+        .subscribe({
+          next: (users) => {
+            if (users.length > 0) {
+              this.userFromDb = users[0];
+              let target = this.userFromDb.rol === 'Admin' ? '/admin' : '/';
+              if (this.userFromDb.primerIngreso && this.userFromDb.rol !== 'Admin') {
+                target = '/bienvenida';
+              }
+              this.triggerMfaFlow(target, email);
+            } else {
+              this.handleLoginFailure();
             }
-            this.triggerMfaFlow(target, email);
-          } else {
-            this.handleLoginFailure();
-          }
-        },
-        error: () => console.error('Error al conectar con la base de datos local.')
-      });
+          },
+          error: () => console.error('Error al conectar con la base de datos local.'),
+        });
     } else {
       this.loginForm.markAllAsTouched();
     }
@@ -298,10 +331,10 @@ export class Auth implements OnInit, AfterViewInit {
     }
 
     this.generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
-    
+
     const templateParams = {
       user_email: email,
-      mfa_code: this.generatedCode
+      mfa_code: this.generatedCode,
     };
 
     try {
@@ -309,12 +342,11 @@ export class Auth implements OnInit, AfterViewInit {
         environment.emailjs.serviceId,
         environment.emailjs.templateId,
         templateParams,
-        environment.emailjs.publicKey
+        environment.emailjs.publicKey,
       );
-      
+
       this.showEmailSentModal = true;
       this.cdr.detectChanges();
-      
     } catch (error) {
       console.error('Error al enviar el correo:', error);
     }
@@ -374,10 +406,19 @@ export class Auth implements OnInit, AfterViewInit {
   }
 
   calculateStrength(password: string | null) {
-    if (!password) { this.resetStrength(); return; }
+    if (!password) {
+      this.resetStrength();
+      return;
+    }
     const ctrl = { value: password } as AbstractControl;
-    if (sqlInjectionValidator(ctrl)) { this.setSecurityError('Carácter SQL prohibido', 'red'); return; }
-    if (xssValidator(ctrl)) { this.setSecurityError('Script malicioso detectado', 'red'); return; }
+    if (sqlInjectionValidator(ctrl)) {
+      this.setSecurityError('Carácter SQL prohibido', 'red');
+      return;
+    }
+    if (xssValidator(ctrl)) {
+      this.setSecurityError('Script malicioso detectado', 'red');
+      return;
+    }
 
     let score = 0;
     if (password.length >= 8) score += 1;
@@ -386,16 +427,37 @@ export class Auth implements OnInit, AfterViewInit {
     if (password.match(/[^a-zA-Z0-9]/)) score += 1;
 
     switch (score) {
-      case 0: case 1: this.setStrength(25, 'Débil', '#e74c3c'); break;
-      case 2: this.setStrength(50, 'Regular', '#f1c40f'); break;
-      case 3: this.setStrength(75, 'Buena', '#2ecc71'); break;
-      case 4: this.setStrength(100, 'Excelente', '#27ae60'); break;
+      case 0:
+      case 1:
+        this.setStrength(25, 'Débil', '#e74c3c');
+        break;
+      case 2:
+        this.setStrength(50, 'Regular', '#f1c40f');
+        break;
+      case 3:
+        this.setStrength(75, 'Buena', '#2ecc71');
+        break;
+      case 4:
+        this.setStrength(100, 'Excelente', '#27ae60');
+        break;
     }
   }
 
-  resetStrength() { this.passwordStrengthPercent = 0; this.passwordStrengthLabel = 'Ingresa una contraseña'; this.passwordStrengthColor = '#e0e0e0'; }
-  setStrength(percent: number, label: string, color: string) { this.passwordStrengthPercent = percent; this.passwordStrengthLabel = label; this.passwordStrengthColor = color; }
-  setSecurityError(label: string, color: string) { this.passwordStrengthLabel = label; this.passwordStrengthColor = color; this.passwordStrengthPercent = 100; }
+  resetStrength() {
+    this.passwordStrengthPercent = 0;
+    this.passwordStrengthLabel = 'Ingresa una contraseña';
+    this.passwordStrengthColor = '#e0e0e0';
+  }
+  setStrength(percent: number, label: string, color: string) {
+    this.passwordStrengthPercent = percent;
+    this.passwordStrengthLabel = label;
+    this.passwordStrengthColor = color;
+  }
+  setSecurityError(label: string, color: string) {
+    this.passwordStrengthLabel = label;
+    this.passwordStrengthColor = color;
+    this.passwordStrengthPercent = 100;
+  }
 
   closeModalAndLogin() {
     this.showSuccessModal = false;
@@ -403,5 +465,38 @@ export class Auth implements OnInit, AfterViewInit {
     this.registerForm.reset();
     this.resetStrength();
     this.cdr.detectChanges();
+  }
+
+  onCompleteProfile() {
+    if (this.completeProfileForm.valid) {
+      // getRawValue() nos permite leer el correo aunque el input esté deshabilitado
+      const formValues = this.completeProfileForm.getRawValue();
+
+      const newUser = {
+        nombre: formValues.name,
+        correo: formValues.email,
+        password: formValues.password, // ¡La contraseña real!
+        rol: 'Usuario',
+        estado: 'Activo',
+        primerIngreso: true,
+        fechaRegistro: new Date().toISOString().split('T')[0],
+        avatar:
+          this.userFromDb?.avatar ||
+          `https://ui-avatars.com/api/?name=${formValues.name.replace(' ', '+')}&background=0f3460&color=fff`,
+      };
+
+      this.http.post(`${environment.apiUrl}/usuarios`, newUser).subscribe({
+        next: () => {
+          this.showCompleteProfileModal = false; // Cerramos este modal
+          this.showSuccessModal = true; // Mostramos la palomita verde
+          this.isSignUpMode = false; // Lo mandamos al lado de Iniciar Sesión
+          this.completeProfileForm.reset();
+          this.cdr.detectChanges();
+        },
+        error: () => alert('Hubo un error al guardar en la base de datos.'),
+      });
+    } else {
+      this.completeProfileForm.markAllAsTouched();
+    }
   }
 }

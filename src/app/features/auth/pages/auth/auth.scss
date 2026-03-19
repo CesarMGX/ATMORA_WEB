@@ -615,3 +615,19 @@ form {
     color: #e74c3c; /* Texto rojo Atmora */
   }
 }
+
+/* --- CONTENEDOR DE BOTONES PARA MODALES --- */
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px; /* Espacio entre los dos botones */
+  width: 100%;
+  margin-top: 25px;
+
+  /* Forzamos a que ambos botones ocupen el mismo ancho y quiten sus márgenes extra */
+  .btn.solid, .btn-cancel {
+    margin: 0;
+    width: 50%; 
+  }
+}
