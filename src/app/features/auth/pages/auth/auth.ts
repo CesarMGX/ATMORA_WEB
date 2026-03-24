@@ -53,6 +53,12 @@ export class Auth implements OnInit, AfterViewInit {
   mfaError = false;
   pendingRedirectUrl = '';
 
+  // Variables MFA Bloqueo
+  mfaFailedAttempts = 0;
+  isMfaLockedOut = false;
+  mfaLockoutTimer = 0;
+  mfaLockoutMsg = '';
+
   // Datos del usuario autenticado temporalmente
   userFromDb: any = null;
 
@@ -139,6 +145,7 @@ export class Auth implements OnInit, AfterViewInit {
       }
     });
     this.checkLockoutStatus();
+    this.checkMfaLockoutStatus();
   }
 
   ngAfterViewInit() {
@@ -318,6 +325,12 @@ export class Auth implements OnInit, AfterViewInit {
     this.loginErrorMsg = '';
     this.pendingRedirectUrl = targetUrl;
 
+    if (this.isMfaLockedOut) {
+      this.showMfaModal = true; // Le abrimos el modal
+      return; // Detenemos la función aquí. NO se envía ningún correo.
+    }
+
+    // Si no está bloqueado, procedemos a generar y enviar el código normal
     await this.generateAndSendCode(email);
   }
 
@@ -359,7 +372,13 @@ export class Auth implements OnInit, AfterViewInit {
   }
 
   verifyMfaCode() {
+    if (this.isMfaLockedOut) return;
+
     if (this.userMfaInput === this.generatedCode) {
+      // Limpiamos errores y entramos
+      this.mfaFailedAttempts = 0;
+      this.isMfaLockedOut = false;
+      this.mfaLockoutMsg = '';
       this.showMfaModal = false;
       this.authService.updateProfile({
         id: this.userFromDb.id,
@@ -370,12 +389,67 @@ export class Auth implements OnInit, AfterViewInit {
       });
       this.router.navigate([this.pendingRedirectUrl]);
     } else {
-      this.mfaError = true;
-      setTimeout(() => {
-        this.mfaError = false;
-        this.cdr.detectChanges();
-      }, 1000);
+      this.mfaFailedAttempts++;
+      const intentosRestantes = 5 - this.mfaFailedAttempts;
+
+      if (this.mfaFailedAttempts >= 5) {
+        // Bloquear por 5 minutos
+        this.isMfaLockedOut = true;
+        this.mfaLockoutTimer = 300;
+        const endTime = Date.now() + 300 * 1000;
+        localStorage.setItem('mfaLockoutEndTime', endTime.toString());
+        this.startMfaLockoutTimer();
+      } else {
+        // Solo mostrar error y cuántos intentos le quedan
+        this.mfaError = true;
+        this.mfaLockoutMsg = `Código incorrecto. Te quedan ${intentosRestantes} intentos.`;
+        setTimeout(() => {
+          this.mfaError = false;
+          this.cdr.detectChanges();
+        }, 1500);
+      }
     }
+  }
+
+  // --- LÓGICA DEL TEMPORIZADOR MFA ---
+  checkMfaLockoutStatus() {
+    const lockoutEnd = localStorage.getItem('mfaLockoutEndTime');
+    if (lockoutEnd) {
+      const timeLeft = parseInt(lockoutEnd) - Date.now();
+      if (timeLeft > 0) {
+        this.isMfaLockedOut = true;
+        this.mfaLockoutTimer = Math.ceil(timeLeft / 1000);
+        this.startMfaLockoutTimer();
+      } else {
+        localStorage.removeItem('mfaLockoutEndTime');
+        this.isMfaLockedOut = false;
+        this.mfaFailedAttempts = 0;
+        this.mfaLockoutMsg = '';
+      }
+    }
+  }
+
+  startMfaLockoutTimer() {
+    const interval = setInterval(() => {
+      this.mfaLockoutTimer--;
+
+      // Convertir segundos a formato MM:SS
+      const minutos = Math.floor(this.mfaLockoutTimer / 60);
+      const segundos = this.mfaLockoutTimer % 60;
+      const tiempoFormat = `${minutos}:${segundos < 10 ? '0' : ''}${segundos}`;
+
+      this.mfaLockoutMsg = `Bloqueado. Intenta de nuevo en ${tiempoFormat}`;
+      this.cdr.detectChanges();
+
+      if (this.mfaLockoutTimer <= 0) {
+        clearInterval(interval);
+        this.isMfaLockedOut = false;
+        this.mfaFailedAttempts = 0;
+        this.mfaLockoutMsg = '';
+        localStorage.removeItem('mfaLockoutEndTime');
+        this.cdr.detectChanges();
+      }
+    }, 1000);
   }
 
   // --- REGISTRO MANUAL ---

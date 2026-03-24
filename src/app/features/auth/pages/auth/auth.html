@@ -303,13 +303,29 @@
           placeholder="000000"
           class="mfa-input"
           [class.error]="mfaError"
+          [disabled]="isMfaLockedOut"
           (keyup.enter)="verifyMfaCode()"
         />
       </div>
-      <p class="error-msg" *ngIf="mfaError">Código incorrecto, inténtalo de nuevo.</p>
+
+      <p
+        class="error-msg"
+        *ngIf="mfaLockoutMsg"
+        [style.color]="isMfaLockedOut ? '#e74c3c' : '#f77f00'"
+        style="font-weight: 500; margin-top: 5px"
+      >
+        {{ mfaLockoutMsg }}
+      </p>
 
       <div class="modal-actions">
-        <button class="btn solid" (click)="verifyMfaCode()">Verificar</button>
+        <button
+          class="btn solid"
+          (click)="verifyMfaCode()"
+          [disabled]="isMfaLockedOut"
+          [class.btn-locked]="isMfaLockedOut"
+        >
+          {{ isMfaLockedOut ? 'Bloqueado' : 'Verificar' }}
+        </button>
         <button class="btn-cancel" (click)="showMfaModal = false">Cancelar</button>
       </div>
     </div>
