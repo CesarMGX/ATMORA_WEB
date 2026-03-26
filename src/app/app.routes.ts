@@ -20,7 +20,8 @@ export const routes: Routes = [
     component: Layout,
     canActivate: [adminGuard], 
     children: [
-      { path: '', redirectTo: 'monitor', pathMatch: 'full' },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', component: Dashboard },
       { path: 'monitor', component: Monitor },
       { path: 'usuarios', component: Usuarios },
       { path: 'rosa-vientos', component: RosaVientos },

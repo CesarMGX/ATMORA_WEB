@@ -103,6 +103,30 @@
       margin-bottom: 20px;
       label { display: block; margin-bottom: 8px; color: #475569; font-weight: 500; font-size: 0.95rem; }
       input, select { width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; transition: 0.3s; box-sizing: border-box; &:focus { border-color: #0f3460; box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.1); } }
+      .password-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        input {
+          padding-right: 45px;
+        }
+        .btn-toggle-password {
+          position: absolute;
+          right: 5px;
+          background: none;
+          border: none;
+          color: #64748b;
+          font-size: 1.2rem;
+          cursor: pointer;
+          padding: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: color 0.2s;
+          outline: none;
+          &:hover { color: #0f3460; }
+        }
+      }
     }
     .form-row { display: flex; gap: 15px; .half { flex: 1; } }
   }

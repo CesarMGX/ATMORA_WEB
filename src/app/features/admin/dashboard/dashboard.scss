@@ -1,0 +1,126 @@
+.dashboard-container {
+  padding: 20px 30px;
+  background-color: #f8fafc;
+  min-height: 100vh;
+}
+
+.dashboard-header {
+  margin-bottom: 30px;
+  h1 { color: #0f3460; margin-bottom: 5px; }
+  p { color: #64748b; margin: 0; }
+}
+
+/* --- TARJETAS (KPIs) --- */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.kpi-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+  &:hover { transform: translateY(-5px); }
+
+  .kpi-icon {
+    width: 60px; height: 60px; border-radius: 50%;
+    display: flex; justify-content: center; align-items: center; font-size: 28px;
+  }
+  .kpi-info {
+    h3 { font-size: 0.9rem; color: #64748b; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+    .kpi-number { font-size: 1.8rem; font-weight: bold; color: #0f3460; margin: 0; }
+  }
+}
+
+/* --- GRÁFICAS --- */
+.charts-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* La barra ocupa el doble que la dona */
+  gap: 20px;
+  margin-bottom: 30px;
+
+  /* Si la pantalla es chica, se ponen en una sola columna */
+  @media (max-width: 992px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-section {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+
+  .chart-header {
+    margin-bottom: 20px;
+    h2 { color: #0f3460; font-size: 1.2rem; margin: 0; }
+  }
+
+  .chart-container {
+    position: relative;
+    height: 350px;
+    width: 100%;
+  }
+
+  .doughnut-container {
+    height: 300px;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+/* TABLA ACTIVIDAD RECIENTE */
+.recent-activity-section {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+
+  .section-header {
+    margin-bottom: 20px;
+    h2 { color: #0f3460; font-size: 1.2rem; margin: 0; }
+  }
+
+  .table-responsive { overflow-x: auto; }
+
+  .recent-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+
+    th, td {
+      padding: 15px;
+      border-bottom: 1px solid #e2e8f0;
+      color: #334155;
+    }
+    th { color: #64748b; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; }
+
+    /* Estilos del usuario y avatar */
+    .user-info {
+      display: flex; align-items: center; gap: 12px;
+      .avatar-img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+      span { font-weight: 500; color: #0f3460; }
+    }
+
+    /* Etiquetas de Rol */
+    .badge {
+      padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;
+      background-color: #e0e7ff; color: #4338ca; /* Azul para usuario normal */
+      &.badge-admin { background-color: rgba(247, 127, 0, 0.1); color: #f77f00; } /* Naranja para admin */
+    }
+
+    /* Punto verde/gris de estado */
+    .status-dot {
+      display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+      background-color: #cbd5e1; margin-right: 6px;
+      &.active { background-color: #22c55e; } /* Verde activo */
+    }
+  }
+}

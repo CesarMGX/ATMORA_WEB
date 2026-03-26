@@ -17,6 +17,7 @@ export class Layout {
   
   // Menú de navegación
   menuItems = [
+    { label: 'Dashboard', icon: 'bx bx-home-alt', route: '/admin/dashboard' },
     { label: 'Monitor Ambiental', icon: 'bx bx-bar-chart-alt-2', route: '/admin/monitor' },
     { label: 'Gestión de Usuarios', icon: 'bx bx-user-pin', route: '/admin/usuarios' },
     { label: 'Rosa de los Vientos', icon: 'bx bx-compass', route: '/admin/rosa-vientos' },

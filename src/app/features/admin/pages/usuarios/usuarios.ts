@@ -9,6 +9,7 @@ interface Usuario {
  id?: number; // El ID ahora es opcional porque json-server lo crea solo al hacer POST
   nombre: string;
   correo: string;
+  password?: string;
   rol: 'Admin' | 'Usuario';
   estado: 'Activo' | 'Inactivo';
   avatar: string;
@@ -33,6 +34,11 @@ export class Usuarios implements OnInit {
   isDrawerOpen = false;
   isEditing = false;
   currentUser: any = { nombre: '', correo: '', rol: 'Usuario', estado: 'Activo' };
+  showPassword = false;
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+  }
 
   // Construimos la URL específica para los usuarios (http://localhost:3003/usuarios)
   private apiUrl = `${environment.apiUrl}/usuarios`;
@@ -91,14 +97,17 @@ export class Usuarios implements OnInit {
   // --- MÉTODOS DEL DRAWER ---
   openDrawer(user: Usuario | null = null) {
     this.isDrawerOpen = true;
+    this.showPassword = false;
     if (user) {
       this.isEditing = true;
-      this.currentUser = { ...user };
+      // Al editar, no cargamos la contraseña por seguridad, a menos que la quieran sobrescribir
+      this.currentUser = { ...user, password: '' }; 
     } else {
       this.isEditing = false;
-      this.currentUser = { nombre: '', correo: '', rol: 'Usuario', estado: 'Activo' };
+      // Reseteamos incluyendo la contraseña vacía
+      this.currentUser = { nombre: '', correo: '', password: '', rol: 'Usuario', estado: 'Activo' };
     }
-    this.cdr.detectChanges(); // ¡Codazo! Abre el menú rápido
+    this.cdr.detectChanges(); 
   }
 
   closeDrawer() {
@@ -108,17 +117,24 @@ export class Usuarios implements OnInit {
 
   // --- 2. POST / PUT: GUARDAR O ACTUALIZAR DATOS ---
   saveUser() {
-    if (!this.currentUser.nombre || !this.currentUser.correo) {
-      Swal.fire('¡Ups!', 'Rellena todos los campos.', 'error');
+    // Validamos que tenga nombre, correo, y si es NUEVO, que a fuerzas tenga contraseña
+    if (!this.currentUser.nombre || !this.currentUser.correo || (!this.isEditing && !this.currentUser.password)) {
+      Swal.fire('¡Ups!', 'Rellena todos los campos obligatorios.', 'error');
       return;
     }
 
     const today = new Date().toISOString().split('T')[0];
     this.currentUser.avatar = `https://ui-avatars.com/api/?name=${this.currentUser.nombre.replace(' ', '+')}&background=random&color=fff`;
 
+    // Si estamos editando y dejaron la contraseña en blanco, la eliminamos del objeto para no borrar la que ya tenían en db.json
+    if (this.isEditing && !this.currentUser.password) {
+      delete this.currentUser.password;
+    }
+
     if (this.isEditing) {
       // PUT: Actualizar un registro existente
       this.http.put(`${this.apiUrl}/${this.currentUser.id}`, this.currentUser).subscribe({
+        // ... (deja tu código de next() igual)
         next: () => {
           this.cargarUsuarios(); 
           Swal.fire({ icon: 'success', title: 'Actualizado', timer: 1500, showConfirmButton: false });
@@ -127,9 +143,11 @@ export class Usuarios implements OnInit {
       });
     } else {
       // POST: Crear un nuevo registro
-      const newUser: Usuario = { ...this.currentUser, fechaRegistro: today };
+      // Le agregamos un primerIngreso: true para que se comporte como un usuario nuevo
+      const newUser = { ...this.currentUser, fechaRegistro: today, primerIngreso: true };
       
       this.http.post(this.apiUrl, newUser).subscribe({
+        // ... (deja tu código de next() igual)
         next: () => {
           this.cargarUsuarios(); 
           Swal.fire({ icon: 'success', title: 'Creado', timer: 1500, showConfirmButton: false });

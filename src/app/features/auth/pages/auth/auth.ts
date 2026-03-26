@@ -250,18 +250,6 @@ export class Auth implements OnInit, AfterViewInit {
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
 
-      if (email === 'admin@atmora.com' && password === 'admin123') {
-        this.userFromDb = {
-          id: 999,
-          nombre: 'Admin Supremo',
-          correo: 'admin@atmora.com',
-          rol: 'Admin',
-          avatar: 'https://ui-avatars.com/api/?name=Admin+Supremo&background=f77f00&color=fff',
-        };
-        this.triggerMfaFlow('/admin', email);
-        return;
-      }
-
       this.http
         .get<any[]>(`${environment.apiUrl}/usuarios?correo=${email}&password=${password}`)
         .subscribe({
@@ -335,14 +323,6 @@ export class Auth implements OnInit, AfterViewInit {
   }
 
   async generateAndSendCode(email: string) {
-    // --- EXCEPCIÓN PARA EL ADMIN DE PRUEBA ---
-    if (email === 'admin@atmora.com') {
-      this.generatedCode = '123456'; // Código maestro fijo
-      alert('[MODO ADMINISTRADOR]\nEl código de acceso para el Admin es: 123456');
-      this.continueToMfa(); // Nos saltamos el modal del sobrecito y vamos directo al input
-      return; // Detenemos la función para que no envíe el correo
-    }
-
     this.generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
 
     const templateParams = {

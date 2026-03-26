@@ -101,15 +101,27 @@
       <button class="close-btn" (click)="closeDrawer()"><i class='bx bx-x'></i></button>
     </div>
     <form (ngSubmit)="saveUser()" class="drawer-form-container">
-      <div class="drawer-body">
+<div class="drawer-body">
         <div class="form-group">
           <label>Nombre Completo</label>
           <input type="text" [(ngModel)]="currentUser.nombre" name="nombre" placeholder="Ej. Juan Pérez" required>
         </div>
+        
         <div class="form-group">
           <label>Correo Electrónico</label>
           <input type="email" [(ngModel)]="currentUser.correo" name="correo" placeholder="correo@atmora.com" required>
         </div>
+
+        <div class="form-group">
+          <label>Contraseña <span *ngIf="isEditing" style="font-size: 0.8em; color: #64748b;">(Dejar en blanco para no cambiar)</span></label>
+          <div class="password-input-wrapper">
+            <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="currentUser.password" name="password" placeholder="Asigna una contraseña segura" [required]="!isEditing">
+            <button type="button" class="btn-toggle-password" (click)="togglePasswordVisibility()">
+              <i class='bx' [ngClass]="showPassword ? 'bx-hide' : 'bx-show'"></i>
+            </button>
+          </div>
+        </div>
+
         <div class="form-row">
           <div class="form-group half">
             <label>Rol</label>

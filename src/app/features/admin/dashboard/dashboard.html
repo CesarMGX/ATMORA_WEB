@@ -1,1 +1,107 @@
-<p>dashboard works!</p>
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h1>Visión General</h1>
+    <p>Estadísticas en tiempo real de la plataforma Atmora.</p>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background-color: rgba(15, 52, 96, 0.1); color: #0f3460;">
+        <i class="bx bxs-group"></i>
+      </div>
+      <div class="kpi-info">
+        <h3>Total Usuarios</h3>
+        <p class="kpi-number">{{ totalUsuarios }}</p>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background-color: rgba(39, 174, 96, 0.1); color: #27ae60;">
+        <i class="bx bx-check-shield"></i>
+      </div>
+      <div class="kpi-info">
+        <h3>Activos</h3>
+        <p class="kpi-number">{{ usuariosActivos }}</p>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background-color: rgba(247, 127, 0, 0.1); color: #f77f00;">
+        <i class="bx bx-user-plus"></i>
+      </div>
+      <div class="kpi-info">
+        <h3>Nuevos este mes</h3>
+        <p class="kpi-number">{{ nuevosEsteMes }}</p>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background-color: rgba(100, 116, 139, 0.1); color: #64748b;">
+        <i class="bx bxs-crown"></i>
+      </div>
+      <div class="kpi-info">
+        <h3>Administradores</h3>
+        <p class="kpi-number">{{ totalAdmins }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="charts-row">
+    <div class="chart-section bar-chart">
+      <div class="chart-header">
+        <h2>Registro Mensual</h2>
+      </div>
+      <div class="chart-container">
+        <canvas #registrosChart></canvas>
+      </div>
+    </div>
+
+    <div class="chart-section doughnut-chart">
+      <div class="chart-header">
+        <h2>Distribución de Roles</h2>
+      </div>
+      <div class="chart-container doughnut-container">
+        <canvas #rolesChart></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="recent-activity-section">
+    <div class="section-header">
+      <h2>Últimos Usuarios Registrados</h2>
+    </div>
+    <div class="table-responsive">
+      <table class="recent-table">
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Correo</th>
+            <th>Rol</th>
+            <th>Fecha de Registro</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of usuariosRecientes">
+            <td>
+              <div class="user-info">
+                <img [src]="user.avatar" alt="Avatar" class="avatar-img" onerror="this.src='https://ui-avatars.com/api/?name=User&background=cbd5e1&color=fff'">
+                <span>{{ user.nombre }}</span>
+              </div>
+            </td>
+            <td>{{ user.correo }}</td>
+            <td>
+              <span class="badge" [class.badge-admin]="user.rol === 'Admin'">{{ user.rol }}</span>
+            </td>
+            <td>{{ user.fechaRegistro | date:'mediumDate' }}</td>
+            <td>
+              <span class="status-dot" [class.active]="user.estado === 'Activo'"></span>
+              {{ user.estado }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

@@ -143,6 +143,26 @@
       "fechaRegistro": "2026-03-19",
       "avatar": "https://ui-avatars.com/api/?name=Cesar+Mundo&background=0f3460&color=fff",
       "id": 15
+    },
+    {
+      "nombre": "Alex Tadeo Perez",
+      "correo": "alex@atmora.com",
+      "rol": "Usuario",
+      "estado": "Activo",
+      "avatar": "https://ui-avatars.com/api/?name=Alex+Tadeo Perez&background=random&color=fff",
+      "fechaRegistro": "2026-03-26",
+      "id": 16
+    },
+    {
+      "nombre": "Cesar Gonzalez",
+      "correo": "mundogonzalezcesar@gmail.com",
+      "password": "#CEsiru917",
+      "rol": "Admin",
+      "estado": "Activo",
+      "avatar": "https://ui-avatars.com/api/?name=Cesar+Gonzalez&background=random&color=fff",
+      "fechaRegistro": "2026-03-26",
+      "primerIngreso": true,
+      "id": 17
     }
   ]
 }
