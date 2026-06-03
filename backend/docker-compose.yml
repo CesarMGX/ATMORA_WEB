@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # Servicio de la aplicación Node.js (backend)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: atmora-backend-app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DB_HOST=db                     # Apunta al nombre del servicio base de datos
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-atmora}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+    depends_on:
+      db:
+        condition: service_healthy    # Espera a que la base de datos esté lista
+    env_file:
+      - .env
+
+  # Servicio de la base de datos PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: atmora-backend-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-atmora}
+    ports:
+      - "5432:5432"                   # Expuesto para permitir conexiones locales fuera de docker si es necesario
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-atmora}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+    driver: local
