@@ -1,27 +1,20 @@
-# ==============================================================================
-# ATMORA BACKEND - DOCKERFILE OPTIMIZADO
-# ==============================================================================
-
-# Usar una imagen base ligera de Node.js
+# Usar una imagen ligera de Node.js
 FROM node:20-alpine
 
-# Instalar pnpm globalmente
-RUN npm install -g pnpm
+# Crear el directorio de trabajo
+WORKDIR /app
 
-# Definir el directorio de trabajo en el contenedor
-WORKDIR /usr/src/app
-
-# Copiar archivos de dependencias
+# Copiar solo los archivos de configuración de dependencias primero
 COPY package.json pnpm-lock.yaml ./
 
-# Instalar dependencias del proyecto (incluyendo devDependencies para compilar/desarrollo)
-RUN pnpm install --frozen-lockfile
+# Instalar pnpm globalmente y luego instalar las dependencias del proyecto
+RUN npm install -g pnpm && pnpm install
 
-# Copiar el resto del código de la aplicación
+# Copiar el resto de los archivos de la carpeta backend
 COPY . .
 
-# Exponer el puerto en el que corre Express (3000 por defecto)
+# Exponer el puerto que usará tu API (asegúrate de que en tu server.js uses process.env.PORT || 3000)
 EXPOSE 3000
 
-# Comando para iniciar la aplicación
+# Comando para iniciar la API
 CMD ["node", "server.js"]
