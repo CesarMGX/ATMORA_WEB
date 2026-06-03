@@ -28,7 +28,12 @@ Gestiona dispositivos IoT, sensores ambientales, alertas y usuarios del sistema.
     },
     servers: [
       {
+        url: process.env.API_URL || 'https://atmoraweb-production.up.railway.app',
+        description: 'Servidor de Producción (Railway)',
+      },
+      {
         url: `http://localhost:${process.env.PORT || 3000}`,
+        description: 'Servidor de Desarrollo Local',
       },
     ],
     tags: [
