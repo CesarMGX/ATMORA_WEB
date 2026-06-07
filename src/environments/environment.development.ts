@@ -1,7 +1,7 @@
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:3000/api',
-  googleClientId: '260943439033-s02n43med5qq3mkdb8bdje110q39kt97.apps.googleusercontent.com',
+  googleClientId: '600517017148-puns2dshbru6sg1iegf90a2eqvg49isa.apps.googleusercontent.com',
 
     // Configuración de EmailJS para envíos de correos electrónicos
   emailjs: {
