@@ -61,13 +61,29 @@ const { Usuario } = require('../models');
  */
 const obtenerTodos = async (req, res) => {
   try {
-    const usuarios = await Usuario.findAll({
-      attributes: { exclude: ['contrasena'] }
+    const { correo, password } = req.query;
+    const where = {};
+    if (correo) where.correo = correo;
+    if (password) where.contrasena = password;
+
+    const usuarios = await Usuario.findAll({ where });
+
+    const mapped = usuarios.map(u => {
+      const json = u.toJSON();
+      return {
+        id: json.id_usuario,
+        nombre: json.nombre + (json.ap_paterno ? ' ' + json.ap_paterno : ''),
+        correo: json.correo,
+        password: json.contrasena,
+        rol: json.rol === 'admin' ? 'Admin' : 'Usuario',
+        estado: 'Activo',
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(json.nombre)}&background=0f3460&color=fff`,
+        fechaRegistro: '2026-03-26', // Fecha base
+        primerIngreso: false
+      };
     });
-    return res.status(200).json({
-      status: 'success',
-      data: usuarios
-    });
+
+    return res.status(200).json(mapped);
   } catch (error) {
     return res.status(500).json({
       status: 'error',
@@ -154,9 +170,7 @@ const obtenerTodos = async (req, res) => {
 const obtenerPorId = async (req, res) => {
   try {
     const { id } = req.params;
-    const usuario = await Usuario.findByPk(id, {
-      attributes: { exclude: ['contrasena'] }
-    });
+    const usuario = await Usuario.findByPk(id);
 
     if (!usuario) {
       return res.status(404).json({
@@ -165,10 +179,20 @@ const obtenerPorId = async (req, res) => {
       });
     }
 
-    return res.status(200).json({
-      status: 'success',
-      data: usuario
-    });
+    const json = usuario.toJSON();
+    const mappedResponse = {
+      id: json.id_usuario,
+      nombre: json.nombre + (json.ap_paterno ? ' ' + json.ap_paterno : ''),
+      correo: json.correo,
+      password: json.contrasena,
+      rol: json.rol === 'admin' ? 'Admin' : 'Usuario',
+      estado: 'Activo',
+      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(json.nombre)}&background=0f3460&color=fff`,
+      fechaRegistro: '2026-03-26',
+      primerIngreso: false
+    };
+
+    return res.status(200).json(mappedResponse);
   } catch (error) {
     return res.status(500).json({
       status: 'error',
@@ -283,7 +307,20 @@ const obtenerPorId = async (req, res) => {
  */
 const crear = async (req, res) => {
   try {
-    const { nombre, ap_paterno, ap_materno, correo, contrasena, rol } = req.body;
+    const { nombre: fullName, correo, password, rol } = req.body;
+
+    // Dividir nombre completo en nombre y ap_paterno
+    let nameParts = (fullName || req.body.nombre || '').trim().split(/\s+/);
+    let firstName = nameParts[0] || '';
+    let lastName = nameParts.slice(1).join(' ') || 'Paterno';
+
+    // Mapear el rol a los enums del backend
+    let mappedRol = 'visualizador';
+    if (rol === 'Admin' || rol === 'admin') {
+      mappedRol = 'admin';
+    }
+
+    const contrasena = password || req.body.contrasena || '';
 
     // Validación preventiva de duplicado de correo electrónico
     const usuarioExistente = await Usuario.findOne({ where: { correo } });
@@ -295,23 +332,27 @@ const crear = async (req, res) => {
     }
 
     const nuevoUsuario = await Usuario.create({
-      nombre,
-      ap_paterno,
-      ap_materno,
+      nombre: firstName,
+      ap_paterno: lastName,
       correo,
-      contrasena, // Se almacena tal como se recibe (asumiendo que viene cifrado o hooks del modelo se encargan de ello)
-      rol
+      contrasena,
+      rol: mappedRol
     });
 
-    // Excluir la contraseña al retornar los datos creados
-    const respuestaData = nuevoUsuario.toJSON();
-    delete respuestaData.contrasena;
+    const json = nuevoUsuario.toJSON();
+    const mappedResponse = {
+      id: json.id_usuario,
+      nombre: json.nombre + (json.ap_paterno ? ' ' + json.ap_paterno : ''),
+      correo: json.correo,
+      password: json.contrasena,
+      rol: json.rol === 'admin' ? 'Admin' : 'Usuario',
+      estado: 'Activo',
+      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(json.nombre)}&background=0f3460&color=fff`,
+      fechaRegistro: new Date().toISOString().split('T')[0],
+      primerIngreso: true
+    };
 
-    return res.status(201).json({
-      status: 'success',
-      message: 'Usuario registrado correctamente',
-      data: respuestaData
-    });
+    return res.status(201).json(mappedResponse);
   } catch (error) {
     return res.status(500).json({
       status: 'error',
@@ -441,7 +482,7 @@ const crear = async (req, res) => {
 const actualizar = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, ap_paterno, ap_materno, correo, contrasena, rol } = req.body;
+    const { nombre: fullName, correo, password, contrasena, rol, primerIngreso } = req.body;
 
     const usuario = await Usuario.findByPk(id);
     if (!usuario) {
@@ -463,23 +504,40 @@ const actualizar = async (req, res) => {
     }
 
     // Actualización de campos
-    await usuario.update({
-      nombre: nombre !== undefined ? nombre : usuario.nombre,
-      ap_paterno: ap_paterno !== undefined ? ap_paterno : usuario.ap_paterno,
-      ap_materno: ap_materno !== undefined ? ap_materno : usuario.ap_materno,
-      correo: correo !== undefined ? correo : usuario.correo,
-      contrasena: contrasena !== undefined ? contrasena : usuario.contrasena,
-      rol: rol !== undefined ? rol : usuario.rol
-    });
+    const updateData = {};
+    if (fullName !== undefined || req.body.nombre !== undefined) {
+      const nameToSplit = fullName || req.body.nombre || '';
+      let nameParts = nameToSplit.trim().split(/\s+/);
+      updateData.nombre = nameParts[0] || '';
+      updateData.ap_paterno = nameParts.slice(1).join(' ') || 'Paterno';
+    }
+    if (correo !== undefined) updateData.correo = correo;
+    
+    const plainPassword = password || contrasena;
+    if (plainPassword !== undefined) updateData.contrasena = plainPassword;
 
-    const respuestaData = usuario.toJSON();
-    delete respuestaData.contrasena;
+    if (rol !== undefined) {
+      updateData.rol = (rol === 'Admin' || rol === 'admin') ? 'admin' : 'visualizador';
+    }
 
-    return res.status(200).json({
-      status: 'success',
-      message: 'Usuario actualizado correctamente',
-      data: respuestaData
-    });
+    // Nota: primerIngreso es una variable temporal del frontend que no se guarda en el modelo, pero se puede omitir o manejar si se añade a la BD. En este caso el modelo de la DB no lo tiene, así que no lo actualizamos.
+
+    await usuario.update(updateData);
+
+    const json = usuario.toJSON();
+    const mappedResponse = {
+      id: json.id_usuario,
+      nombre: json.nombre + (json.ap_paterno ? ' ' + json.ap_paterno : ''),
+      correo: json.correo,
+      password: json.contrasena,
+      rol: json.rol === 'admin' ? 'Admin' : 'Usuario',
+      estado: 'Activo',
+      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(json.nombre)}&background=0f3460&color=fff`,
+      fechaRegistro: new Date().toISOString().split('T')[0],
+      primerIngreso: primerIngreso !== undefined ? primerIngreso : false
+    };
+
+    return res.status(200).json(mappedResponse);
   } catch (error) {
     return res.status(500).json({
       status: 'error',
@@ -559,7 +617,7 @@ const eliminar = async (req, res) => {
     await usuario.destroy();
 
     return res.status(200).json({
-      status: 'success',
+      id: Number(id),
       message: `Usuario con ID ${id} eliminado correctamente`
     });
   } catch (error) {

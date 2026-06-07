@@ -100,6 +100,30 @@ const startServer = async () => {
     await sequelize.sync({ alter: false });
     console.log('Modelos sincronizados con la base de datos');
 
+    // 2b. Crear usuario administrador inicial
+    const seedInitialAdmin = async () => {
+      try {
+        const { Usuario } = require('./models');
+        const email = 'mundogonzalezcesar@gmail.com';
+        const adminExists = await Usuario.findOne({ where: { correo: email } });
+        if (!adminExists) {
+          await Usuario.create({
+            nombre: 'Cesar',
+            ap_paterno: 'Gonzalez',
+            correo: email,
+            contrasena: '#CEsiru917',
+            rol: 'admin'
+          });
+          console.log('✅ Usuario administrador inicial creado: mundogonzalezcesar@gmail.com');
+        } else {
+          console.log('ℹ️ Usuario administrador inicial ya existe.');
+        }
+      } catch (error) {
+        console.error('❌ Error al crear administrador inicial:', error.message);
+      }
+    };
+    await seedInitialAdmin();
+
     // 3. Iniciar el servidor HTTP
     app.listen(PORT, () => {
       console.log(`API corriendo en http://localhost:${PORT}`);
