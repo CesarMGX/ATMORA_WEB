@@ -13,7 +13,13 @@ const allowedOrigins = [
 const corsOptions = {
   origin: (origin, callback) => {
     // Permite requests sin origin (Postman, curl, server-to-server)
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (
+      !origin || 
+      allowedOrigins.includes(origin) || 
+      allowedOrigins.includes('*') ||
+      origin.endsWith('.vercel.app') || 
+      origin.includes('vercel.app')
+    ) {
       callback(null, true);
     } else {
       callback(new Error(`CORS: El origen "${origin}" no está permitido.`));
