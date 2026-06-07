@@ -1,6 +1,6 @@
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:3003',
+  production: true,
+  apiUrl: 'https://atmoraweb-production.up.railway.app/api',
   googleClientId: '260943439033-s02n43med5qq3mkdb8bdje110q39kt97.apps.googleusercontent.com',
 
   // Configuración de EmailJS para envíos de correos electrónicos
