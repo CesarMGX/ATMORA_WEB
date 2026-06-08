@@ -417,65 +417,151 @@ form {
 /* RESPONSIVE */
 @media (max-width: 870px) {
   .container {
-    min-height: 800px;
-    height: 100vh;
-  }
-  .signin-signup {
-    width: 100%;
-    top: 95%;
-    left: 50%;
-    transform: translate(-50%, -100%);
-    transition: 1s 0.8s ease-in-out;
-  }
-  .panels-container {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr 2fr 1fr;
-  }
-  .panel {
-    flex-direction: row;
-    justify-content: space-around;
+    display: flex;
     align-items: center;
-    padding: 2.5rem 8%;
-    grid-column: 1 / 2;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f3460 0%, #162447 100%);
+    padding: 60px 20px 20px 20px; /* Margen superior para evitar solapamiento con el botón volver */
+    overflow-y: auto;
   }
-  .right-panel {
-    grid-row: 3 / 4;
-    .content {
-      transform: translateY(300px);
-    }
+
+  .back-home {
+    color: #fff !important;
+    top: 15px;
+    left: 15px;
   }
-  .left-panel {
-    grid-row: 1 / 2;
-    .content {
-      transform: translateY(0%);
-    }
-  }
+
   .container:before {
-    width: 1500px;
-    height: 1500px;
-    transform: translateX(-50%);
-    left: 30%;
-    bottom: 68%;
-    right: initial;
-    top: initial;
-    transition: 2s ease-in-out;
+    display: none;
   }
-  .container.sign-up-mode:before {
-    transform: translate(-50%, 100%);
-    bottom: 32%;
-    right: initial;
+
+  .forms-container {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    padding: 30px 20px;
+    z-index: 10;
+    height: auto;
   }
-  .container.sign-up-mode .left-panel .content {
-    transform: translateY(-300px);
+
+  .signin-signup {
+    position: relative;
+    width: 100%;
+    top: 0;
+    left: 0;
+    transform: none;
+    transition: none;
+    display: block;
   }
-  .container.sign-up-mode .right-panel .content {
-    transform: translateY(0%);
+
+  form {
+    padding: 0;
+    width: 100%;
+    transition: none;
+    
+    &.sign-in-form {
+      display: flex;
+      opacity: 1;
+      z-index: 2;
+      pointer-events: all;
+    }
+    
+    &.sign-up-form {
+      display: none;
+      opacity: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
   }
-  .container.sign-up-mode .signin-signup {
-    top: 5%;
-    transform: translate(-50%, 0);
+
+  .container.sign-up-mode {
+    .signin-signup {
+      left: 0;
+    }
+    form.sign-in-form {
+      display: none;
+      opacity: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+    form.sign-up-form {
+      display: flex;
+      opacity: 1;
+      z-index: 2;
+      pointer-events: all;
+    }
+  }
+
+  .panels-container {
+    position: relative;
+    width: 100%;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    margin-top: 25px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 20px;
+    pointer-events: all;
+    z-index: 15;
+    display: block;
+  }
+
+  .panel {
+    display: none;
+    flex-direction: column;
+    padding: 0;
+    grid-row: auto;
+    grid-column: auto;
+    justify-content: center;
+    align-items: center;
+
+    .content {
+      transform: none !important;
+      max-width: 100%;
+      color: #334155;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0;
+      color: #475569;
+    }
+
+    p {
+      display: none; /* Ocultar párrafos descriptivos en celular para ganar espacio vertical */
+    }
+
+    .btn.transparent {
+      margin: 5px 0 0 0;
+      background-color: transparent;
+      border: 2px solid $primary-color;
+      color: $primary-color;
+      width: 160px;
+      height: 40px;
+      font-size: 0.85rem;
+      
+      &:hover {
+        background-color: rgba(15, 52, 96, 0.05);
+      }
+    }
+  }
+
+  .container:not(.sign-up-mode) .left-panel {
+    display: flex;
+  }
+
+  .container.sign-up-mode .right-panel {
+    display: flex;
   }
 }
+
 
 /* ESTILOS PARA MFA */
 .mfa-overlay {
