@@ -9,6 +9,8 @@ import { Usuarios } from './features/admin/pages/usuarios/usuarios';
 import { RosaVientos } from './features/admin/pages/rosa-vientos/rosa-vientos';
 import { Perfil } from './features/admin/pages/perfil/perfil';
 import { Bienvenida } from './features/auth/pages/bienvenida/bienvenida';
+import { RegistrosComponent } from './features/admin/pages/registros/registros.component';
+import { MonitoreoComponent } from './features/admin/pages/monitoreo/monitoreo.component';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -25,6 +27,8 @@ export const routes: Routes = [
       { path: 'monitor', component: Monitor },
       { path: 'usuarios', component: Usuarios },
       { path: 'rosa-vientos', component: RosaVientos },
+      { path: 'registros', component: RegistrosComponent },
+      { path: 'monitoreo', component: MonitoreoComponent },
     ]
   },
 

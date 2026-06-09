@@ -1,0 +1,202 @@
+<div class="min-h-screen bg-slate-50 p-6 md:p-10">
+  <!-- Cabecera -->
+  <div class="mb-10 text-center md:text-left">
+    <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">Registro de Infraestructura IoT</h1>
+    <p class="mt-2 text-slate-600">Da de alta zonas físicas y vincula prototipos de sensores ambientales en la plataforma Atmora.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+    <!-- PANEL DE UBICACIÓN -->
+    <div class="bg-white rounded-2xl shadow-xl shadow-slate-100 border border-slate-100 p-8 flex flex-col justify-between">
+      <div>
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
+            <i class="bx bx-map-pin text-xl"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-slate-800">1. Registrar Nueva Ubicación</h2>
+            <p class="text-xs text-slate-500">Agrega zonas de monitoreo físico o geográfico</p>
+          </div>
+        </div>
+
+        <form [formGroup]="ubicacionForm" (ngSubmit)="onRegistrarUbicacion()" class="space-y-5">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Nombre de la Ubicación</label>
+            <input 
+              type="text" 
+              formControlName="nombre_ubicacion"
+              placeholder="Ej. Bosque Los Colomos - Zona Norte"
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+              [class.border-red-500]="ubicacionForm.get('nombre_ubicacion')?.invalid && ubicacionForm.get('nombre_ubicacion')?.touched"
+            />
+            <span *ngIf="ubicacionForm.get('nombre_ubicacion')?.invalid && ubicacionForm.get('nombre_ubicacion')?.touched" class="text-xs text-red-500 mt-1 block">
+              El nombre es obligatorio y requiere al menos 3 caracteres.
+            </span>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Descripción del Sitio</label>
+            <textarea 
+              formControlName="descripcion"
+              rows="3"
+              placeholder="Detalles sobre vegetación, altitud o puntos de referencia..."
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+              [class.border-red-500]="ubicacionForm.get('descripcion')?.invalid && ubicacionForm.get('descripcion')?.touched"
+            ></textarea>
+            <span *ngIf="ubicacionForm.get('descripcion')?.invalid && ubicacionForm.get('descripcion')?.touched" class="text-xs text-red-500 mt-1 block">
+              La descripción es obligatoria para documentar el sitio de monitoreo.
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">Latitud</label>
+              <input 
+                type="number" 
+                step="0.000001"
+                formControlName="latitud"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">Longitud</label>
+              <input 
+                type="number" 
+                step="0.000001"
+                formControlName="longitud"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+              />
+            </div>
+          </div>
+
+          <div class="pt-4">
+            <button 
+              type="submit" 
+              class="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-xl shadow-lg shadow-orange-100 hover:opacity-90 active:scale-[0.98] transition-all"
+            >
+              Guardar Ubicación
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Listado rápido de zonas registradas -->
+      <div class="mt-8 pt-6 border-t border-slate-100">
+        <h4 class="text-sm font-bold text-slate-700 mb-3">Zonas Registradas ({{ ubicaciones.length }})</h4>
+        <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto pr-1">
+          <span 
+            *ngFor="let u of ubicaciones" 
+            class="px-3 py-1.5 bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200"
+          >
+            {{ u.nombre_ubicacion }}
+          </span>
+          <p *ngIf="ubicaciones.length === 0" class="text-xs text-slate-400 italic">No hay ubicaciones creadas aún.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL DE DISPOSITIVO -->
+    <div class="bg-white rounded-2xl shadow-xl shadow-slate-100 border border-slate-100 p-8 flex flex-col justify-between">
+      <div>
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+            <i class="bx bx-chip text-xl"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-slate-800">2. Vincular Dispositivo IoT</h2>
+            <p class="text-xs text-slate-500">Registra prototipos de sensores vinculados a una zona</p>
+          </div>
+        </div>
+
+        <form [formGroup]="dispositivoForm" (ngSubmit)="onRegistrarDispositivo()" class="space-y-5">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Nombre del Dispositivo</label>
+            <input 
+              type="text" 
+              formControlName="nombre_dispositivo"
+              placeholder="Ej. ARDUINO-MONITOR-01"
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              [class.border-red-500]="dispositivoForm.get('nombre_dispositivo')?.invalid && dispositivoForm.get('nombre_dispositivo')?.touched"
+            />
+            <span *ngIf="dispositivoForm.get('nombre_dispositivo')?.invalid && dispositivoForm.get('nombre_dispositivo')?.touched" class="text-xs text-red-500 mt-1 block">
+              El nombre del dispositivo es obligatorio (mínimo 3 caracteres).
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">Estado Inicial</label>
+              <select 
+                formControlName="estado"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              >
+                <option value="activo">Activo (Operacional)</option>
+                <option value="inactivo">Inactivo (Apagado)</option>
+                <option value="mantenimiento">Mantenimiento</option>
+                <option value="falla">Falla Técnica</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">Ubicación Asignada</label>
+              <select 
+                formControlName="id_ubicacion"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                [class.border-red-500]="dispositivoForm.get('id_ubicacion')?.invalid && dispositivoForm.get('id_ubicacion')?.touched"
+              >
+                <option value="" disabled selected>Selecciona una ubicación...</option>
+                <option *ngFor="let u of ubicaciones" [value]="u.id_ubicacion">
+                  {{ u.nombre_ubicacion }}
+                </option>
+              </select>
+              <span *ngIf="dispositivoForm.get('id_ubicacion')?.invalid && dispositivoForm.get('id_ubicacion')?.touched" class="text-xs text-red-500 mt-1 block">
+                Debes asignar el dispositivo a una zona física.
+              </span>
+            </div>
+          </div>
+
+          <div class="pt-4">
+            <button 
+              type="submit" 
+              class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-blue-100 hover:opacity-90 active:scale-[0.98] transition-all"
+            >
+              Registrar Dispositivo
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Listado rápido de dispositivos asignados -->
+      <div class="mt-8 pt-6 border-t border-slate-100">
+        <h4 class="text-sm font-bold text-slate-700 mb-3">Dispositivos Vinculados ({{ dispositivos.length }})</h4>
+        <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto pr-1">
+          <span 
+            *ngFor="let d of dispositivos" 
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg border flex items-center gap-1.5"
+            [class.bg-emerald-50]="d.estado === 'activo'"
+            [class.text-emerald-700]="d.estado === 'activo'"
+            [class.border-emerald-200]="d.estado === 'activo'"
+            [class.bg-slate-50]="d.estado === 'inactivo'"
+            [class.text-slate-700]="d.estado === 'inactivo'"
+            [class.border-slate-200]="d.estado === 'inactivo'"
+            [class.bg-amber-50]="d.estado === 'mantenimiento'"
+            [class.text-amber-700]="d.estado === 'mantenimiento'"
+            [class.border-amber-200]="d.estado === 'mantenimiento'"
+            [class.bg-red-50]="d.estado === 'falla'"
+            [class.text-red-700]="d.estado === 'falla'"
+            [class.border-red-200]="d.estado === 'falla'"
+          >
+            <span class="w-1.5 h-1.5 rounded-full" 
+              [class.bg-emerald-500]="d.estado === 'activo'"
+              [class.bg-slate-500]="d.estado === 'inactivo'"
+              [class.bg-amber-500]="d.estado === 'mantenimiento'"
+              [class.bg-red-500]="d.estado === 'falla'"
+            ></span>
+            {{ d.nombre_dispositivo }}
+          </span>
+          <p *ngIf="dispositivos.length === 0" class="text-xs text-slate-400 italic">No hay dispositivos registrados aún.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

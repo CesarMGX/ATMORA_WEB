@@ -1,0 +1,128 @@
+<div class="min-h-screen bg-slate-50 p-6 md:p-10">
+  <!-- Cabecera -->
+  <div class="mb-10 text-center md:text-left">
+    <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center justify-center md:justify-start gap-2">
+      <span>Monitoreo Inteligente con IA</span>
+      <span class="text-xs bg-orange-100 text-orange-600 font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Predictivo</span>
+    </h1>
+    <p class="mt-2 text-slate-600">Selecciona un dispositivo para obtener lecturas en tiempo real y estimar la temperatura con Machine Learning.</p>
+  </div>
+
+  <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl shadow-slate-100 border border-slate-100 p-8 md:p-10">
+    <!-- SELECCIÓN DE DISPOSITIVO -->
+    <div class="mb-8">
+      <label class="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-1.5">
+        <i class="bx bx-chip text-lg text-blue-500"></i>
+        Seleccionar Prototipo de Monitoreo Activo
+      </label>
+      <select 
+        [(ngModel)]="selectedDispositivoId" 
+        (change)="onDispositivoChange()"
+        class="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all font-semibold shadow-sm"
+      >
+        <option [ngValue]="null" disabled selected>Elige un dispositivo Arduino...</option>
+        <option *ngFor="let d of dispositivos" [ngValue]="d.id_dispositivo">
+          {{ d.nombre_dispositivo }} — (En {{ d.ubicacion?.nombre_ubicacion || 'Zona General' }})
+        </option>
+      </select>
+    </div>
+
+    <!-- CARGANDO LECTURAS -->
+    <div *ngIf="cargandoLectura" class="flex flex-col items-center justify-center py-12 gap-3">
+      <div class="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-slate-500 font-semibold text-sm">Consultando última lectura del sensor...</p>
+    </div>
+
+    <!-- MENSAJE POR DEFECTO -->
+    <div *ngIf="!selectedDispositivoId && !cargandoLectura" class="text-center py-16 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+      <i class="bx bx-broadcast text-5xl text-slate-300 mb-3 animate-pulse"></i>
+      <h3 class="text-slate-700 font-bold text-lg">Esperando Conexión</h3>
+      <p class="text-slate-400 text-sm mt-1 max-w-sm mx-auto">Selecciona un dispositivo del menú superior para sincronizar las lecturas ambientales.</p>
+    </div>
+
+    <!-- DETALLES DE LA ÚLTIMA LECTURA -->
+    <div *ngIf="ultimaLectura && !cargandoLectura" class="space-y-10">
+      <!-- Tarjetas de Variables de Entrada -->
+      <div>
+        <h3 class="text-sm font-bold text-slate-700 mb-4 tracking-wider uppercase flex items-center gap-1">
+          <span>Variables de Entrada</span>
+          <span class="text-xs text-slate-400 font-normal">(Último registro: {{ (ultimaLectura.fecha_registro || ultimaLectura.fecha_hora) | date:'medium' }})</span>
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Humedad -->
+          <div class="bg-gradient-to-br from-blue-50/50 to-blue-50/10 border border-blue-100 rounded-2xl p-6 flex items-center justify-between shadow-sm">
+            <div>
+              <p class="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">Humedad</p>
+              <h4 class="text-2xl font-black text-slate-800">{{ ultimaLectura.humedad }} %</h4>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shadow-inner">
+              <i class="bx bx-water text-2xl"></i>
+            </div>
+          </div>
+
+          <!-- Presión -->
+          <div class="bg-gradient-to-br from-emerald-50/50 to-emerald-50/10 border border-emerald-100 rounded-2xl p-6 flex items-center justify-between shadow-sm">
+            <div>
+              <p class="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">Presión</p>
+              <h4 class="text-2xl font-black text-slate-800">{{ ultimaLectura.presion || 1013.25 }} hPa</h4>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-inner">
+              <i class="bx bx-tachometer text-2xl"></i>
+            </div>
+          </div>
+
+          <!-- Radiación -->
+          <div class="bg-gradient-to-br from-amber-50/50 to-amber-50/10 border border-amber-100 rounded-2xl p-6 flex items-center justify-between shadow-sm">
+            <div>
+              <p class="text-xs font-bold text-amber-600 uppercase tracking-wider mb-1">Radiación Solar</p>
+              <h4 class="text-2xl font-black text-slate-800">{{ ultimaLectura.radiacion || ultimaLectura.radiacion_solar || 0 }} W/m²</h4>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shadow-inner">
+              <i class="bx bx-sun text-2xl"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTÓN DE C.T.A. -->
+      <div class="text-center pt-2">
+        <button 
+          (click)="generarPrediccion()"
+          [disabled]="prediccionCargando"
+          class="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:opacity-95 text-white font-extrabold text-lg rounded-2xl shadow-xl shadow-orange-100 hover:shadow-orange-200 active:scale-[0.98] transition-all disabled:opacity-50"
+        >
+          <span *ngIf="prediccionCargando" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+          <i *ngIf="!prediccionCargando" class="bx bx-brain text-2xl"></i>
+          {{ prediccionCargando ? 'Analizando con IA...' : 'Generar Predicción Climática' }}
+        </button>
+      </div>
+
+      <!-- RESULTADO DE LA PREDICCIÓN -->
+      <div 
+        *ngIf="temperaturaPredicha !== null" 
+        class="bg-gradient-to-br from-slate-900 to-slate-850 rounded-3xl p-8 text-white relative overflow-hidden shadow-2xl border border-slate-800"
+      >
+        <!-- Decoraciones decorativas de fondo -->
+        <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-orange-500/10 rounded-full blur-2xl"></div>
+        <div class="absolute -left-10 -top-10 w-40 h-40 bg-blue-500/10 rounded-full blur-2xl"></div>
+
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+          <div class="flex items-center gap-5 text-center md:text-left flex-col md:flex-row">
+            <div class="w-16 h-16 rounded-2xl bg-orange-500 text-white flex items-center justify-center shadow-lg shadow-orange-500/30 text-3xl">
+              <i class="bx bx-thermometer"></i>
+            </div>
+            <div>
+              <span class="text-xs bg-orange-500/20 text-orange-400 font-bold px-3 py-1 rounded-full uppercase tracking-wider">Predicción de Temperatura</span>
+              <h3 class="text-2xl font-bold mt-2">Estimación de Clima Inteligente</h3>
+              <p class="text-slate-400 text-sm mt-1">Regresión Lineal Múltiple basada en Humedad, Presión y Radiación Solar.</p>
+            </div>
+          </div>
+          <div class="text-center md:text-right bg-white/5 border border-white/10 px-8 py-5 rounded-2xl min-w-[200px]">
+            <span class="text-xs text-slate-400 uppercase tracking-widest block mb-1">Temperatura</span>
+            <h2 class="text-4xl md:text-5xl font-black text-orange-400 tracking-tight">{{ temperaturaPredicha | number:'1.2-2' }} °C</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
