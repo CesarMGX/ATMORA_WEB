@@ -20,6 +20,7 @@ const dispositivoRoutes = require('./routes/dispositivo.routes');
 const ubicacionRoutes   = require('./routes/ubicacion.routes');
 const alertaRoutes      = require('./routes/alerta.routes');
 const usuarioRoutes     = require('./routes/usuario.routes');
+const prediccionRoutes  = require('./routes/prediccion.routes');
 
 // ─── Modelos (necesario para sincronizar relaciones) ──────────────────────────
 require('./models');
@@ -66,6 +67,7 @@ app.use('/api/dispositivos', dispositivoRoutes);
 app.use('/api/ubicaciones',  ubicacionRoutes);
 app.use('/api/alertas',      alertaRoutes);
 app.use('/api/usuarios',     usuarioRoutes);
+app.use('/api/predecir',     prediccionRoutes);
 
 // ─── Ruta de salud del servidor ───────────────────────────────────────────────
 app.get('/health', (req, res) => {

@@ -9,6 +9,7 @@ const Ubicacion     = require('./Ubicacion')(sequelize, DataTypes);
 const Dispositivo   = require('./Dispositivo')(sequelize, DataTypes);
 const HistorialSensor = require('./HistorialSensor')(sequelize, DataTypes);
 const Alerta        = require('./Alerta')(sequelize, DataTypes);
+const Prediccion     = require('./Prediccion')(sequelize, DataTypes);
 
 // ─── Definir Relaciones ───────────────────────────────────────────────────────
 
@@ -56,4 +57,5 @@ module.exports = {
   Dispositivo,
   HistorialSensor,
   Alerta,
+  Prediccion,
 };

@@ -1,6 +1,15 @@
 # Usar una imagen ligera de Node.js
 FROM node:20-alpine
 
+# Instalar Python 3, pip y librerías científicas optimizadas y precompiladas para Alpine
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    py3-numpy \
+    py3-pandas \
+    py3-scikit-learn \
+    py3-joblib
+
 # Crear el directorio de trabajo
 WORKDIR /app
 
