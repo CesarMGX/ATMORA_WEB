@@ -311,9 +311,26 @@ const crear = async (req, res) => {
       id_ubicacion
     });
 
+    // Crear un registro inicial de historial de sensor para que el dispositivo tenga lecturas inmediatas
+    await HistorialSensor.create({
+      id_dispositivo: nuevoDispositivo.id_dispositivo,
+      fecha_hora: new Date(),
+      temperatura: 22.5,
+      humedad: 60.0,
+      presion: 1013.25,
+      velocidad_viento: 12.0,
+      direccion_viento: 180.0,
+      precipitacion: 0.0,
+      radiacion_solar: 350.0,
+      co2: 400.0,
+      co: 0.1,
+      pm_25: 10.0,
+      pm_10: 20.0
+    });
+
     return res.status(201).json({
       status: 'success',
-      message: 'Dispositivo registrado correctamente',
+      message: 'Dispositivo registrado correctamente con lectura inicial asociada',
       data: nuevoDispositivo
     });
   } catch (error) {

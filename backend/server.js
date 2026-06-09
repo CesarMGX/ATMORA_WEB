@@ -98,8 +98,8 @@ const startServer = async () => {
     // 1. Verificar conexión a la base de datos
     await connectDB();
 
-    // 2. Sincronizar modelos con la DB (no fuerza recreación de tablas)
-    await sequelize.sync({ alter: false });
+    // 2. Sincronizar modelos con la DB (actualiza la estructura si hay columnas faltantes)
+    await sequelize.sync({ alter: true });
     console.log('Modelos sincronizados con la base de datos');
 
     // 2b. Crear usuario administrador inicial
