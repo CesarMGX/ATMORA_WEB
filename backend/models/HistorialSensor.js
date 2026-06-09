@@ -42,6 +42,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         comment: 'Humedad relativa en porcentaje (%)',
       },
+      presion: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+        comment: 'Presión atmosférica en hectopascales (hPa)',
+      },
       velocidad_viento: {
         type: DataTypes.FLOAT,
         allowNull: true,
@@ -61,6 +66,41 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.FLOAT,
         allowNull: true,
         comment: 'Radiación solar en Watts por metro cuadrado (W/m²)',
+      },
+
+      // ── Campos Virtuales para compatibilidad externa ──
+      id: {
+        type: DataTypes.VIRTUAL,
+        get() {
+          return this.getDataValue('id_historial');
+        }
+      },
+      dispositivo_id: {
+        type: DataTypes.VIRTUAL,
+        get() {
+          return this.getDataValue('id_dispositivo');
+        },
+        set(value) {
+          this.setDataValue('id_dispositivo', value);
+        }
+      },
+      radiacion: {
+        type: DataTypes.VIRTUAL,
+        get() {
+          return this.getDataValue('radiacion_solar');
+        },
+        set(value) {
+          this.setDataValue('radiacion_solar', value);
+        }
+      },
+      fecha_registro: {
+        type: DataTypes.VIRTUAL,
+        get() {
+          return this.getDataValue('fecha_hora');
+        },
+        set(value) {
+          this.setDataValue('fecha_hora', value);
+        }
       },
 
       // ── Calidad del Aire ──────────────────────────────────────────────────

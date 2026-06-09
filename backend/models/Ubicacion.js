@@ -30,6 +30,22 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         comment: 'Descripción detallada del sitio de monitoreo',
       },
+      // ── Campos Virtuales para compatibilidad externa ──
+      id: {
+        type: DataTypes.VIRTUAL,
+        get() {
+          return this.getDataValue('id_ubicacion');
+        }
+      },
+      nombre: {
+        type: DataTypes.VIRTUAL,
+        get() {
+          return this.getDataValue('nombre_ubicacion');
+        },
+        set(value) {
+          this.setDataValue('nombre_ubicacion', value);
+        }
+      },
       latitud: {
         type: DataTypes.DECIMAL(10, 7),
         allowNull: false,

@@ -1,6 +1,6 @@
 'use strict';
 
-const { Dispositivo, Ubicacion } = require('../models');
+const { Dispositivo, Ubicacion, HistorialSensor } = require('../models');
 
 /**
  * @swagger
@@ -545,10 +545,113 @@ const eliminar = async (req, res) => {
   }
 };
 
+/**
+ * @swagger
+ * /api/dispositivos/{id}/ultima-lectura:
+ *   get:
+ *     summary: Obtener la última lectura de un dispositivo
+ *     description: Recupera la lectura más reciente de temperatura, humedad, presión y radiación de la tabla de históricos asociada a un ID de dispositivo.
+ *     tags:
+ *       - Dispositivos
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID único del dispositivo
+ *     responses:
+ *       200:
+ *         description: Última lectura obtenida con éxito.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     humedad:
+ *                       type: number
+ *                       format: float
+ *                       example: 65.2
+ *                     presion:
+ *                       type: number
+ *                       format: float
+ *                       example: 1013.25
+ *                     radiacion:
+ *                       type: number
+ *                       format: float
+ *                       example: 850.5
+ *                     temperatura:
+ *                       type: number
+ *                       format: float
+ *                       example: 24.5
+ *                     fecha_registro:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2026-06-09T18:26:24Z"
+ *       404:
+ *         description: Dispositivo o lecturas no encontrados.
+ *       500:
+ *         description: Error interno del servidor.
+ */
+const obtenerUltimaLectura = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Verificar si el dispositivo existe
+    const dispositivo = await Dispositivo.findByPk(id);
+    if (!dispositivo) {
+      return res.status(404).json({
+        status: 'error',
+        message: `No se encontró el dispositivo con ID ${id}`
+      });
+    }
+
+    // Buscar el registro más reciente en HistorialSensor
+    const ultimaLectura = await HistorialSensor.findOne({
+      where: { id_dispositivo: id },
+      order: [['fecha_hora', 'DESC']]
+    });
+
+    if (!ultimaLectura) {
+      return res.status(404).json({
+        status: 'error',
+        message: `No se encontraron registros históricos para el dispositivo con ID ${id}`
+      });
+    }
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        id: ultimaLectura.id_historial,
+        dispositivo_id: ultimaLectura.id_dispositivo,
+        humedad: ultimaLectura.humedad,
+        presion: ultimaLectura.presion,
+        radiacion: ultimaLectura.radiacion_solar, // Aliasing para compatibilidad con ML
+        radiacion_solar: ultimaLectura.radiacion_solar,
+        temperatura: ultimaLectura.temperatura,
+        fecha_registro: ultimaLectura.fecha_hora, // Aliasing para compatibilidad con ML
+        fecha_hora: ultimaLectura.fecha_hora
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: 'error',
+      message: error.message
+    });
+  }
+};
+
 module.exports = {
   obtenerTodos,
   obtenerPorId,
   crear,
   actualizar,
-  eliminar
+  eliminar,
+  obtenerUltimaLectura
 };
