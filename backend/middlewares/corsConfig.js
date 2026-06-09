@@ -18,7 +18,9 @@ const corsOptions = {
       allowedOrigins.includes(origin) || 
       allowedOrigins.includes('*') ||
       origin.endsWith('.vercel.app') || 
-      origin.includes('vercel.app')
+      origin.includes('vercel.app') ||
+      origin.endsWith('.railway.app') || 
+      origin.includes('railway.app')
     ) {
       callback(null, true);
     } else {
