@@ -98,8 +98,15 @@ const startServer = async () => {
     // 1. Verificar conexión a la base de datos
     await connectDB();
 
-    // 2. Sincronizar modelos con la DB (actualiza la estructura si hay columnas faltantes)
-    await sequelize.sync({ alter: true });
+    // 2. Sincronizar modelos con la DB (no fuerza recreación de tablas)
+    try {
+      await sequelize.query('ALTER TABLE historial_sensores ADD COLUMN IF NOT EXISTS presion DOUBLE PRECISION;');
+      console.log('✅ Columna "presion" verificada/creada en historial_sensores.');
+    } catch (sqlError) {
+      console.error('⚠️ No se pudo verificar la columna "presion" automáticamente:', sqlError.message);
+    }
+
+    await sequelize.sync({ alter: false });
     console.log('Modelos sincronizados con la base de datos');
 
     // 2b. Crear usuario administrador inicial
