@@ -21,6 +21,8 @@ export class Layout {
     { label: 'Monitor Ambiental', icon: 'bx bx-bar-chart-alt-2', route: '/admin/monitor' },
     { label: 'Gestión de Usuarios', icon: 'bx bx-user-pin', route: '/admin/usuarios' },
     { label: 'Rosa de los Vientos', icon: 'bx bx-compass', route: '/admin/rosa-vientos' },
+    { label: 'Registro de Equipos', icon: 'bx bx-cabinet', route: '/admin/registros' },
+    { label: 'Monitoreo con IA', icon: 'bx bx-brain', route: '/admin/monitoreo' },
   ];
 
   constructor(private authService: AuthService, private router: Router) {
