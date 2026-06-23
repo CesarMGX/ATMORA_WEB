@@ -30,17 +30,54 @@ $cta-orange: #f77f00;
   width: 300px;
 }
 
-/* LOGO */
+/* LOGO & LOADER */
 .logo-wrapper {
   margin-bottom: 20px;
   animation: float 3s ease-in-out infinite; /* Flota suavemente */
 
-  .logo-img {
-    width: 120px;
-    height: auto;
-    /* Efecto de "Materialización" al inicio */
-    animation: revealLogo 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+  .loader {
+    --cloud-color: #4cc9f0; /* Color cyan del logo de Atmora */
+    --arrows-color: #f77f00; /* Color naranja de Atmora */
+    --time-animation: 1.5s;
+    transform: scale(1.2);
+    display: inline-block;
     filter: drop-shadow(0 0 15px rgba(76, 201, 240, 0.3));
+    animation: revealLogo 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+
+    #cloud {
+      width: 100px;
+      height: 100px;
+      
+      rect {
+        fill: var(--cloud-color);
+      }
+
+      g:nth-child(3) {
+        transform-origin: 50% 72.8938%;
+        fill: var(--arrows-color);
+        filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.5));
+        animation: rotation var(--time-animation) linear infinite;
+      }
+    }
+  }
+
+  #shapes g g circle {
+    animation: cloud calc(var(--time-animation) * 2) linear infinite;
+
+    &:nth-child(2) {
+      animation-delay: calc((var(--time-animation) * 2) / -3);
+    }
+
+    &:nth-child(3) {
+      animation-delay: calc((var(--time-animation) * 2) / -1.5);
+    }
+  }
+
+  svg #lines g line {
+    stroke-width: 5;
+    transform-origin: 50% 50%;
+    rotate: -65deg;
+    animation: lines calc(var(--time-animation) / 1.33) linear infinite;
   }
 }
 
@@ -123,4 +160,43 @@ $cta-orange: #f77f00;
 
 @keyframes fadeIn {
   to { opacity: 1; }
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes lines {
+  0% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(8px);
+  }
+}
+
+@keyframes cloud {
+  0% {
+    cx: 20;
+    cy: 60;
+    r: 15;
+  }
+  50% {
+    cx: 50;
+    cy: 45;
+    r: 20;
+  }
+  100% {
+    cx: 80;
+    cy: 60;
+    r: 15;
+  }
 }
