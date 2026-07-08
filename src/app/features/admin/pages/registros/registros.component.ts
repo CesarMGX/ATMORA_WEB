@@ -109,7 +109,7 @@ export class RegistrosComponent implements OnInit {
   }
 
   private obtenerDireccion(lat: number, lng: number): void {
-    if (typeof google === 'undefined') return;
+    if (typeof google === 'undefined' || typeof google.maps === 'undefined') return;
     const geocoder = new google.maps.Geocoder();
     geocoder.geocode({ location: { lat, lng } }, (results: any, status: any) => {
       if (status === 'OK' && results && results[0]) {
@@ -127,8 +127,8 @@ export class RegistrosComponent implements OnInit {
   }
 
   private cargarGoogleMapsScript(): void {
-    // Si la librería 'google' ya existe globalmente, marcamos como cargado inmediatamente
-    if (typeof google !== 'undefined') {
+    // Si la librería 'google.maps' ya existe globalmente, marcamos como cargado inmediatamente
+    if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
       this.apiLoaded = true;
       return;
     }
