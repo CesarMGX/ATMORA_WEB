@@ -52,6 +52,29 @@
             </div>
           </div>
 
+          <!-- Mapa interactivo de Google Maps -->
+          <div class="map-wrapper">
+            <div class="map-container">
+              <google-map 
+                height="280px" 
+                width="100%" 
+                [center]="mapCenter" 
+                [zoom]="mapZoom" 
+                (mapClick)="onMapClick($event)"
+              >
+                <map-marker 
+                  [position]="markerPosition" 
+                  [options]="markerOptions"
+                  (mapDragend)="onMarkerDragend($event)"
+                ></map-marker>
+              </google-map>
+            </div>
+            <p class="map-hint">
+              <i class="bx bx-info-circle"></i>
+              Haz clic en el mapa o arrastra el marcador para ubicar el Arduino y autocompletar las coordenadas.
+            </p>
+          </div>
+
           <button type="submit" class="btn-submit">
             <i class="bx bx-save"></i> Guardar Ubicación
           </button>

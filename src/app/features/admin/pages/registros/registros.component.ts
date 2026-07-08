@@ -1,13 +1,16 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { GoogleMap, MapMarker } from '@angular/google-maps';
 import { AtmoraService, Ubicacion, Dispositivo } from '../../../../core/services/atmora.service';
 import Swal from 'sweetalert2';
+
+declare var google: any;
 
 @Component({
   selector: 'app-registros',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, GoogleMap, MapMarker],
   templateUrl: './registros.component.html',
   styleUrl: './registros.component.scss'
 })
@@ -17,6 +20,12 @@ export class RegistrosComponent implements OnInit {
   
   ubicaciones: any[] = [];
   dispositivos: any[] = [];
+
+  // Configuración de Google Maps (Córdoba, Veracruz por defecto)
+  mapCenter = { lat: 18.8943, lng: -96.9353 };
+  mapZoom = 13;
+  markerPosition = { lat: 18.8943, lng: -96.9353 };
+  markerOptions = { draggable: true };
 
   constructor(
     private fb: FormBuilder,
@@ -29,15 +38,16 @@ export class RegistrosComponent implements OnInit {
   ngOnInit(): void {
     this.cargarUbicaciones();
     this.cargarDispositivos();
+    this.setupCoordinateSync();
   }
 
   private initForms(): void {
-    // Formulario de Ubicación (latitud y longitud son requeridos por la BD en el backend)
+    // Formulario de Ubicación (latitud y longitud en Córdoba, Veracruz por defecto)
     this.ubicacionForm = this.fb.group({
       nombre_ubicacion: ['', [Validators.required, Validators.minLength(3)]],
       descripcion: ['', [Validators.required, Validators.maxLength(500)]],
-      latitud: [20.6736, [Validators.required]], // Guadalajara por defecto
-      longitud: [-103.344, [Validators.required]]
+      latitud: [18.8943, [Validators.required]],
+      longitud: [-96.9353, [Validators.required]]
     });
 
     // Formulario de Dispositivo
@@ -45,6 +55,72 @@ export class RegistrosComponent implements OnInit {
       nombre_dispositivo: ['', [Validators.required, Validators.minLength(3)]],
       estado: ['activo', [Validators.required]],
       id_ubicacion: ['', [Validators.required]]
+    });
+  }
+
+  private setupCoordinateSync(): void {
+    // Escucha cambios manuales en el formulario para mover el marcador en el mapa
+    this.ubicacionForm.valueChanges.subscribe(val => {
+      if (val.latitud && val.longitud) {
+        const lat = parseFloat(val.latitud);
+        const lng = parseFloat(val.longitud);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          if (this.markerPosition.lat !== lat || this.markerPosition.lng !== lng) {
+            this.markerPosition = { lat, lng };
+            this.mapCenter = { lat, lng };
+          }
+        }
+      }
+    });
+  }
+
+  // Manejador de clic en el mapa
+  onMapClick(event: any): void {
+    if (event.latLng) {
+      const lat = event.latLng.lat();
+      const lng = event.latLng.lng();
+      this.actualizarCoordenadas(lat, lng);
+    }
+  }
+
+  // Manejador de arrastre finalizado del marcador
+  onMarkerDragend(event: any): void {
+    if (event.latLng) {
+      const lat = event.latLng.lat();
+      const lng = event.latLng.lng();
+      this.actualizarCoordenadas(lat, lng);
+    }
+  }
+
+  private actualizarCoordenadas(lat: number, lng: number): void {
+    this.markerPosition = { lat, lng };
+    this.mapCenter = { lat, lng };
+    
+    // Actualizamos el formulario con 6 decimales de precisión
+    this.ubicacionForm.patchValue({
+      latitud: parseFloat(lat.toFixed(6)),
+      longitud: parseFloat(lng.toFixed(6))
+    }, { emitEvent: false }); // Evitamos loops infinitos de eventos
+    
+    this.obtenerDireccion(lat, lng);
+    this.cdr.detectChanges();
+  }
+
+  private obtenerDireccion(lat: number, lng: number): void {
+    if (typeof google === 'undefined') return;
+    const geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ location: { lat, lng } }, (results: any, status: any) => {
+      if (status === 'OK' && results && results[0]) {
+        const direccion = results[0].formatted_address;
+        const descripcionControl = this.ubicacionForm.get('descripcion');
+        
+        // Autorellena la descripción solo si está vacía
+        if (descripcionControl && (!descripcionControl.value || descripcionControl.value.trim() === '')) {
+          this.ubicacionForm.patchValue({
+            descripcion: `Ubicación registrada cerca de: ${direccion}`
+          });
+        }
+      }
     });
   }
 
@@ -96,7 +172,10 @@ export class RegistrosComponent implements OnInit {
           text: 'La zona ha sido añadida correctamente.',
           confirmButtonColor: '#f77f00'
         });
-        this.ubicacionForm.reset({ latitud: 20.6736, longitud: -103.344 });
+        // Reseteamos el formulario con las coordenadas por defecto de Córdoba, Veracruz
+        this.ubicacionForm.reset({ latitud: 18.8943, longitud: -96.9353 });
+        this.markerPosition = { lat: 18.8943, lng: -96.9353 };
+        this.mapCenter = { lat: 18.8943, lng: -96.9353 };
         this.cargarUbicaciones();
       },
       error: (err) => {

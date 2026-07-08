@@ -249,3 +249,34 @@
     transform: translateY(0);
   }
 }
+
+.map-wrapper {
+  margin-top: 15px;
+  margin-bottom: 25px;
+  animation: fadeIn 0.5s ease;
+  
+  .map-container {
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #cbd5e1;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    background-color: #f1f5f9;
+  }
+  
+  .map-hint {
+    margin-top: 8px;
+    font-size: 0.82rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.4;
+    
+    i {
+      font-size: 1.05rem;
+      color: #f77f00;
+    }
+  }
+}
+
