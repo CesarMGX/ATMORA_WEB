@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { GoogleMap, MapMarker } from '@angular/google-maps';
 import { AtmoraService, Ubicacion, Dispositivo } from '../../../../core/services/atmora.service';
 import Swal from 'sweetalert2';
@@ -10,7 +11,7 @@ declare var google: any;
 @Component({
   selector: 'app-registros',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, GoogleMap, MapMarker],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, GoogleMap, MapMarker],
   templateUrl: './registros.component.html',
   styleUrl: './registros.component.scss'
 })

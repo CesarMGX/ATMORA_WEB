@@ -158,10 +158,17 @@
         <div class="quick-list">
           <h4>Dispositivos Vinculados ({{ dispositivos.length }})</h4>
           <div class="items-wrapper">
-            <span *ngFor="let d of dispositivos" class="badge-chip">
+            <a 
+              *ngFor="let d of dispositivos" 
+              class="badge-chip clickable"
+              [routerLink]="['/admin/monitor']"
+              [queryParams]="{ id: d.id_dispositivo || d.id }"
+              title="Ver analítica de este Arduino"
+            >
               <span class="status-dot {{ d.estado }}"></span>
-              {{ d.nombre_dispositivo }}
-            </span>
+              {{ d.nombre_dispositivo || d.nombre }}
+              <i class="bx bx-show-alt text-orange ml-1"></i>
+            </a>
             <p *ngIf="dispositivos.length === 0" class="empty-text">No hay dispositivos registrados aún.</p>
           </div>
         </div>

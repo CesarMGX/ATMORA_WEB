@@ -69,6 +69,15 @@ export class AtmoraService {
     return this.http.get<any>(`${this.apiUrl}/dispositivos/${dispositivoId}/ultima-lectura`);
   }
 
+  // ─── Historial de Sensores ──────────────────────────────────────────────────
+  obtenerHistorialPorDispositivo(dispositivoId?: number, page: number = 1, limit: number = 100): Observable<any> {
+    let url = `${this.apiUrl}/historial?page=${page}&limit=${limit}`;
+    if (dispositivoId) {
+      url += `&id_dispositivo=${dispositivoId}`;
+    }
+    return this.http.get<any>(url);
+  }
+
   // ─── Predicción de Inteligencia Artificial ──────────────────────────────────
   predecirTemperatura(datos: { humedad: number; presion: number; radiacion: number }): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/predecir`, datos);

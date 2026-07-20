@@ -1,162 +1,244 @@
 <div class="monitor-container">
   
+  <!-- CABECERA -->
   <div class="page-header">
-    <h1>Monitor Ambiental</h1>
-    <p>Estación Meteorológica (Canal: 3106232)</p>
+    <div class="header-titles">
+      <h1>Monitor de Equipos Arduino</h1>
+      <p>Selecciona un dispositivo para consultar sus metadatos, lecturas recopiladas y analítica climática en tiempo real.</p>
+    </div>
   </div>
 
-  <div class="charts-grid">
-    
-    <div class="chart-card split-layout">
-      <div class="card-header">
-        <i class='bx bx-wind'></i> <h3>Velocidad del Viento</h3>
-      </div>
-      <div class="card-body">
-        <div class="chart-area">
-          <iframe width="100%" height="260" style="border: none;" src="https://thingspeak.com/channels/3106232/charts/1?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=60&type=line&update=15"></iframe>
+  <!-- SECCIÓN 1: SELECCIÓN DE ARDUINOS (RECUADROS 5x5 CM) -->
+  <div class="section-container">
+    <div class="section-header">
+      <i class="bx bx-chip"></i>
+      <h2>1. Seleccionar Equipo Arduino Registrado</h2>
+    </div>
+
+    <!-- CARGANDO DISPOSITIVOS -->
+    <div *ngIf="cargandoDispositivos" class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando lista de prototipos IoT...</p>
+    </div>
+
+    <!-- ESTADO VACÍO -->
+    <div *ngIf="!cargandoDispositivos && dispositivos.length === 0" class="empty-state">
+      <i class="bx bx-error-circle"></i>
+      <h3>No hay Arduinos registrados</h3>
+      <p>Registra un prototipo en la sección de "Registro de Equipos" para habilitar su monitoreo.</p>
+    </div>
+
+    <!-- CUADRÍCULA DE RECUADROS 5X5 CM -->
+    <div *ngIf="!cargandoDispositivos && dispositivos.length > 0" class="devices-grid">
+      <div 
+        *ngFor="let d of dispositivos" 
+        class="device-square-card"
+        [class.selected]="(dispositivoSeleccionado?.id_dispositivo || dispositivoSeleccionado?.id) === (d.id_dispositivo || d.id)"
+        (click)="seleccionarDispositivo(d)"
+      >
+        <div class="card-top">
+          <span class="status-dot {{ d.estado }}"></span>
+          <span class="device-id">ID: #{{ d.id_dispositivo || d.id }}</span>
         </div>
-        <div class="actions-panel">
-          <h4>Acciones</h4>
-          <a href="https://api.thingspeak.com/channels/3106232/fields/1.csv" target="_blank" class="btn-action csv">
-            <i class='bx bxs-spreadsheet'></i> Descargar CSV
-          </a>
-          <a href="https://api.thingspeak.com/channels/3106232/fields/1.json" target="_blank" class="btn-action json">
-            <i class='bx bxs-file-json'></i> Descargar JSON
-          </a>
-  <div class="status-footer">
-     <div class="status-indicator">
-       <span class="dot green"></span> Sensor en línea
-     </div>
-  </div>
+        <div class="card-icon">
+          <i class="bx bx-chip"></i>
+        </div>
+        <div class="card-info">
+          <h4 class="device-name">{{ d.nombre_dispositivo || d.nombre }}</h4>
+          <span class="location-name">
+            <i class="bx bx-map-pin"></i> {{ d.ubicacion?.nombre_ubicacion || d.ubicacion?.nombre || 'Zona General' }}
+          </span>
+        </div>
+        <div class="card-footer-badge">
+          <span class="badge {{ getBadgeEstadoClass(d.estado) }}">{{ d.estado }}</span>
         </div>
       </div>
     </div>
-
-    <div class="chart-card split-layout">
-      <div class="card-header">
-        <i class='bx bx-cloud'></i> <h3>Partículas PM2.5</h3>
-      </div>
-      <div class="card-body">
-        <div class="chart-area">
-          <iframe width="100%" height="260" style="border: none;" src="https://thingspeak.com/channels/3106232/charts/2?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=60&type=line&update=15"></iframe>
-        </div>
-        <div class="actions-panel">
-          <h4>Acciones</h4>
-          <a href="https://api.thingspeak.com/channels/3106232/fields/2.csv" target="_blank" class="btn-action csv">
-            <i class='bx bxs-spreadsheet'></i> Descargar CSV
-          </a>
-          <a href="https://api.thingspeak.com/channels/3106232/fields/2.json" target="_blank" class="btn-action json">
-            <i class='bx bxs-file-json'></i> Descargar JSON
-          </a>
-  <div class="status-footer">
-     <div class="status-indicator">
-       <span class="dot green"></span> Sensor en línea
-     </div>
   </div>
-        </div>
-      </div>
-    </div>
 
-    <div class="chart-card split-layout">
-      <div class="card-header">
-        <i class='bx bx-cloud-rain'></i> <h3>Partículas PM10</h3>
-      </div>
-      <div class="card-body">
-        <div class="chart-area">
-          <iframe width="100%" height="260" style="border: none;" src="https://thingspeak.com/channels/3106232/charts/3?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=60&type=line&update=15"></iframe>
-        </div>
-        <div class="actions-panel">
-          <h4>Acciones</h4>
-          <a href="https://api.thingspeak.com/channels/3106232/fields/3.csv" target="_blank" class="btn-action csv">
-            <i class='bx bxs-spreadsheet'></i> Descargar CSV
-          </a>
-          <a href="https://api.thingspeak.com/channels/3106232/fields/3.json" target="_blank" class="btn-action json">
-            <i class='bx bxs-file-json'></i> Descargar JSON
-          </a>
-  <div class="status-footer">
-     <div class="status-indicator">
-       <span class="dot green"></span> Sensor en línea
-     </div>
-  </div>
-        </div>
-      </div>
-    </div>
+  <!-- DETALLES DEL DISPOSITIVO SELECCIONADO Y ANALÍTICA -->
+  <div *ngIf="dispositivoSeleccionado" class="device-analytics-wrapper">
 
-     <div class="chart-card split-layout">
-      <div class="card-header">
-        <i class='bx bxs-flask'></i> <h3>Dióxido de Nitrógeno (NO2)</h3>
-      </div>
-      <div class="card-body">
-        <div class="chart-area">
-          <iframe width="100%" height="260" style="border: none;" src="https://thingspeak.com/channels/3106232/charts/4?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=60&type=line&update=15"></iframe>
+    <!-- FICHA TÉCNICA DEL EQUIPO -->
+    <div class="metadata-card">
+      <div class="metadata-header">
+        <div class="metadata-title-group">
+          <i class="bx bx-info-square"></i>
+          <div>
+            <h3>Ficha Técnica: {{ dispositivoSeleccionado.nombre_dispositivo || dispositivoSeleccionado.nombre }}</h3>
+            <span class="subtitle">Detalles operativos y de ubicación asignada</span>
+          </div>
         </div>
-        <div class="actions-panel">
-          <h4>Acciones</h4>
-          <a href="https://api.thingspeak.com/channels/3106232/fields/4.csv" target="_blank" class="btn-action csv">
-            <i class='bx bxs-spreadsheet'></i> Descargar CSV
-          </a>
-          <a href="https://api.thingspeak.com/channels/3106232/fields/4.json" target="_blank" class="btn-action json">
-            <i class='bx bxs-file-json'></i> Descargar JSON
-          </a>
-  <div class="status-footer">
-     <div class="status-indicator">
-       <span class="dot green"></span> Sensor en línea
-     </div>
-  </div>
+        <span class="badge {{ getBadgeEstadoClass(dispositivoSeleccionado.estado) }}">
+          Estado: {{ dispositivoSeleccionado.estado | titlecase }}
+        </span>
+      </div>
+
+      <div class="metadata-grid">
+        <div class="meta-item">
+          <span class="meta-label">ID Dispositivo</span>
+          <span class="meta-value">#{{ dispositivoSeleccionado.id_dispositivo || dispositivoSeleccionado.id }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Ubicación Física</span>
+          <span class="meta-value">{{ dispositivoSeleccionado.ubicacion?.nombre_ubicacion || 'Zona General' }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Coordenadas</span>
+          <span class="meta-value">
+            {{ dispositivoSeleccionado.ubicacion?.latitud ?? '18.8943' }}, 
+            {{ dispositivoSeleccionado.ubicacion?.longitud ?? '-96.9353' }}
+          </span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Fecha Instalación</span>
+          <span class="meta-value">{{ dispositivoSeleccionado.fecha_instalacion || 'Reciente' }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Lecturas Registradas</span>
+          <span class="meta-value text-orange">{{ historialLecturas.length }} registros</span>
         </div>
       </div>
     </div>
 
-    <div class="chart-card split-layout full-width">
-      <div class="card-header">
-        <i class='bx bxs-vial'></i> <h3>Dióxido de Azufre (SO2)</h3>
+    <!-- SECCIÓN 2: GRÁFICAS DEL EQUIPO (HIGHCHARTS) -->
+    <div class="section-container mt-4">
+      <div class="section-header">
+        <i class="bx bx-line-chart"></i>
+        <h2>2. Analítica Climática por Equipo ({{ dispositivoSeleccionado.nombre_dispositivo || dispositivoSeleccionado.nombre }})</h2>
       </div>
-      <div class="card-body">
-        <div class="chart-area">
-          <iframe width="100%" height="260" style="border: none;" src="https://thingspeak.com/channels/3106232/charts/5?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=60&type=line&update=15"></iframe>
+
+      <!-- SPINNER DE CARGA HISTORIAL -->
+      <div *ngIf="cargandoHistorial" class="loading-state">
+        <div class="spinner"></div>
+        <p>Procesando métricas climáticas del Arduino...</p>
+      </div>
+
+      <!-- ALERTA SI NO HAY REGISTROS -->
+      <div *ngIf="!cargandoHistorial && historialLecturas.length === 0" class="empty-state">
+        <i class="bx bx-line-chart-down"></i>
+        <h3>Sin datos históricos para este Arduino</h3>
+        <p>Este equipo aún no ha enviado datos de telemetría. La información se desplegará en cuanto emita lecturas.</p>
+      </div>
+
+      <!-- CONTENEDOR DE LAS 3 GRÁFICAS -->
+      <div *ngIf="!cargandoHistorial && historialLecturas.length > 0" class="charts-grid">
+        
+        <!-- GRÁFICA 1: TEMPERATURA Y HUMEDAD -->
+        <div class="chart-card">
+          <div id="chart-temp-hum" class="chart-container"></div>
         </div>
-<div class="actions-panel">
-  <h4>Resumen (24h)</h4>
-  <div class="kpi-grid">
-    <div class="kpi-box">
-      <span class="label">Máximo</span>
-      <span class="value high">12.5</span>
-    </div>
-    <div class="kpi-box">
-      <span class="label">Mínimo</span>
-      <span class="value low">2.1</span>
-    </div>
-    <div class="kpi-box">
-      <span class="label">Promedio</span>
-      <span class="value">8.4</span>
-    </div>
-    <div class="kpi-box">
-      <span class="label">Actual</span>
-      <span class="value">9.2</span>
-    </div>
-  </div>
 
-  <div class="divider"></div>
+        <!-- GRÁFICA 2: LLUVIA Y RADIACIÓN SOLAR -->
+        <div class="chart-card">
+          <div id="chart-rain-rad" class="chart-container"></div>
+        </div>
 
-  <h4>Exportar Datos</h4>
-  <div class="buttons-row">
-    <a href="https://api.thingspeak.com/channels/3106232/fields/5.csv" target="_blank" class="btn-action csv">
-      <i class='bx bxs-file-csv'></i> Excel
-    </a>
-    <a href="https://api.thingspeak.com/channels/3106232/fields/5.json" target="_blank" class="btn-action json">
-      <i class='bx bxs-data'></i> JSON
-    </a>
-  </div>
+        <!-- GRÁFICA 3: PRESIÓN ATMOSFÉRICA -->
+        <div class="chart-card full-width">
+          <div id="chart-pressure" class="chart-container"></div>
+        </div>
 
-  <div class="status-footer">
-     <div class="status-indicator">
-       <span class="dot green"></span> Sensor en línea
-     </div>
-     <small>Actualizado: Hace 15s</small>
-  </div>
-</div>
       </div>
     </div>
 
+    <!-- SECCIÓN 3: TABLA DE DATOS RECOPILADOS -->
+    <div class="section-container mt-4">
+      <div class="section-header space-between">
+        <div class="title-with-icon">
+          <i class="bx bx-table"></i>
+          <h2>3. Histórico de Datos Recopilados por el Arduino</h2>
+        </div>
+        
+        <!-- BUSCADOR -->
+        <div class="search-box">
+          <i class="bx bx-search"></i>
+          <input 
+            type="text" 
+            [(ngModel)]="searchTerm" 
+            (ngModelChange)="actualizarPaginacion()" 
+            placeholder="Buscar por fecha, temp..." 
+          />
+        </div>
+      </div>
+
+      <!-- TABLA DE HISTÓRICO -->
+      <div class="table-card">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>Fecha y Hora</th>
+              <th>Temperatura</th>
+              <th>Humedad</th>
+              <th>Presión</th>
+              <th>Radiación Solar</th>
+              <th>Lluvia</th>
+              <th>Velocidad Viento</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of historialPaginado">
+              <td class="fw-bold">
+                <i class="bx bx-calendar-event text-blue"></i>
+                {{ (item.fecha_hora || item.fecha_registro) | date:'medium' }}
+              </td>
+              <td>
+                <span class="value-chip temp">
+                  {{ item.temperatura ?? '--' }} °C
+                </span>
+              </td>
+              <td>
+                <span class="value-chip hum">
+                  {{ item.humedad ?? '--' }} %
+                </span>
+              </td>
+              <td>
+                <span class="value-chip press">
+                  {{ item.presion ?? 1013.25 }} hPa
+                </span>
+              </td>
+              <td>
+                <span class="value-chip rad">
+                  {{ item.radiacion_solar ?? item.radiacion ?? 0 }} W/m²
+                </span>
+              </td>
+              <td>{{ item.precipitacion ?? item.lluvia ?? 0 }} mm</td>
+              <td>{{ item.velocidad_viento ?? 0 }} km/h</td>
+            </tr>
+
+            <tr *ngIf="historialPaginado.length === 0 && !cargandoHistorial">
+              <td colspan="7" class="empty-table-state">
+                <i class="bx bx-folder-open"></i>
+                <p>No se encontraron registros para la consulta.</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- PAGINACIÓN DE LA TABLA -->
+        <div class="pagination" *ngIf="historialFiltrado.length > 0">
+          <div class="page-info">
+            Mostrando {{ (currentPage - 1) * itemsPerPage + 1 }} a 
+            {{ (currentPage * itemsPerPage) > historialFiltrado.length ? historialFiltrado.length : (currentPage * itemsPerPage) }} 
+            de {{ historialFiltrado.length }} registros
+          </div>
+          
+          <div class="page-buttons">
+            <button (click)="cambiarPagina(currentPage - 1)" [disabled]="currentPage === 1">
+              <i class="bx bx-chevron-left"></i> Anterior
+            </button>
+            <div class="page-numbers">
+              <span class="current-page">Página {{ currentPage }} de {{ totalPages }}</span>
+            </div>
+            <button (click)="cambiarPagina(currentPage + 1)" [disabled]="currentPage === totalPages">
+              Siguiente <i class="bx bx-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
   </div>
+
 </div>
