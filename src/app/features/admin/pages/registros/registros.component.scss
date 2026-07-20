@@ -310,3 +310,22 @@
   }
 }
 
+/* Elimina la capa gris transparente que empaña el mapa */
+::ng-deep .gm-style iframe + div {
+    background-color: transparent !important;
+}
+
+/* Oculta el mensaje flotante de advertencia de desarrollo */
+::ng-deep .gm-err-container {
+    display: none !important;
+}
+
+/* Oculta las etiquetas de texto de advertencia de Google en los bordes */
+::ng-deep .gm-style-cc {
+    display: none !important;
+}
+
+/* Quita el letrero inferior de "For development purposes only" */
+::ng-deep .gmnoprint span {
+    display: none !important;
+}
