@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import Chart from 'chart.js/auto';
+
 @Component({
   selector: 'app-dashboard',
+  standalone: true,
   imports: [CommonModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
-
 export class Dashboard implements OnInit, AfterViewInit {
   @ViewChild('registrosChart') chartCanvas!: ElementRef;
   @ViewChild('rolesChart') rolesChartCanvas!: ElementRef;
@@ -35,12 +36,14 @@ export class Dashboard implements OnInit, AfterViewInit {
   ngAfterViewInit() {}
 
   cargarEstadisticas() {
-    this.http.get<any[]>(`${environment.apiUrl}/usuarios`).subscribe({
-      next: (usuarios) => {
+    this.http.get<any>(`${environment.apiUrl}/usuarios`).subscribe({
+      next: (response) => {
+        // Garantizar que capturamos el arreglo ya sea directo o envuelto en data
+        const usuarios = Array.isArray(response) ? response : (response?.data || []);
         this.calcularMetricas(usuarios);
         this.generarGraficaMeses(usuarios);
-        this.generarGraficaRoles(usuarios); // Llamamos a la nueva gráfica
-        this.obtenerUsuariosRecientes(usuarios); // Llamamos a la tabla
+        this.generarGraficaRoles(usuarios);
+        this.obtenerUsuariosRecientes(usuarios);
         this.cdr.detectChanges();
       },
       error: (err) => console.error('Error al cargar datos del dashboard', err)
@@ -49,15 +52,26 @@ export class Dashboard implements OnInit, AfterViewInit {
 
   calcularMetricas(usuarios: any[]) {
     this.totalUsuarios = usuarios.length;
-    this.usuariosActivos = usuarios.filter(u => u.estado === 'Activo').length;
-    this.totalAdmins = usuarios.filter(u => u.rol === 'Admin').length;
+    
+    // Conteo insensible a mayúsculas/minúsculas para estado activo
+    this.usuariosActivos = usuarios.filter(u => {
+      const estadoStr = (u.estado || '').toString().toLowerCase();
+      return !u.estado || estadoStr === 'activo';
+    }).length;
+
+    // Conteo insensible a mayúsculas/minúsculas para rol Administrador
+    this.totalAdmins = usuarios.filter(u => {
+      const rolStr = (u.rol || '').toString().toLowerCase();
+      return rolStr === 'admin' || rolStr === 'administrador';
+    }).length;
 
     const mesActual = new Date().getMonth();
     const añoActual = new Date().getFullYear();
     
     this.nuevosEsteMes = usuarios.filter(u => {
-      if (!u.fechaRegistro) return false;
-      const fecha = new Date(u.fechaRegistro);
+      const fechaStr = u.fechaRegistro || u.createdAt || u.fecha_registro;
+      if (!fechaStr) return false;
+      const fecha = new Date(fechaStr);
       return fecha.getMonth() === mesActual && fecha.getFullYear() === añoActual;
     }).length;
   }
@@ -71,9 +85,21 @@ export class Dashboard implements OnInit, AfterViewInit {
     const nombresMeses = Object.keys(conteoPorMes);
 
     usuarios.forEach(u => {
-      if (u.fechaRegistro) {
-        const mesString = u.fechaRegistro.split('-')[1]; 
-        const mesIndex = parseInt(mesString, 10) - 1;
+      const fechaStr = u.fechaRegistro || u.createdAt || u.fecha_registro;
+      if (fechaStr) {
+        let mesIndex = -1;
+        if (typeof fechaStr === 'string' && fechaStr.includes('-')) {
+          const partes = fechaStr.split('-');
+          if (partes.length >= 2) {
+            mesIndex = parseInt(partes[1], 10) - 1;
+          }
+        } else {
+          const fecha = new Date(fechaStr);
+          if (!isNaN(fecha.getTime())) {
+            mesIndex = fecha.getMonth();
+          }
+        }
+
         if (mesIndex >= 0 && mesIndex <= 11) {
           conteoPorMes[nombresMeses[mesIndex]]++;
         }
@@ -82,66 +108,72 @@ export class Dashboard implements OnInit, AfterViewInit {
 
     if (this.chart) this.chart.destroy();
 
-    const ctx = this.chartCanvas.nativeElement.getContext('2d');
-    this.chart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: Object.keys(conteoPorMes),
-        datasets: [{
-          label: 'Usuarios Registrados',
-          data: Object.values(conteoPorMes),
-          backgroundColor: '#f77f00',
-          borderRadius: 5,
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-      }
-    });
+    if (this.chartCanvas && this.chartCanvas.nativeElement) {
+      const ctx = this.chartCanvas.nativeElement.getContext('2d');
+      this.chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(conteoPorMes),
+          datasets: [{
+            label: 'Usuarios Registrados',
+            data: Object.values(conteoPorMes),
+            backgroundColor: '#f77f00',
+            borderRadius: 5,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+      });
+    }
   }
 
   // GRÁFICA DE DONA
   generarGraficaRoles(usuarios: any[]) {
-    const admins = usuarios.filter(u => u.rol === 'Admin').length;
-    const normales = usuarios.filter(u => u.rol !== 'Admin').length;
+    const admins = usuarios.filter(u => {
+      const rolStr = (u.rol || '').toString().toLowerCase();
+      return rolStr === 'admin' || rolStr === 'administrador';
+    }).length;
+    
+    const normales = usuarios.length - admins;
 
     if (this.rolesChart) this.rolesChart.destroy();
 
-    const ctx = this.rolesChartCanvas.nativeElement.getContext('2d');
-    this.rolesChart = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: ['Administradores', 'Usuarios'],
-        datasets: [{
-          data: [admins, normales],
-          backgroundColor: ['#0f3460', '#4285F4'], // Azul oscuro (Admin) y Azul claro (User)
-          borderWidth: 0,
-          hoverOffset: 4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'bottom' }
+    if (this.rolesChartCanvas && this.rolesChartCanvas.nativeElement) {
+      const ctx = this.rolesChartCanvas.nativeElement.getContext('2d');
+      this.rolesChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Administradores', 'Usuarios'],
+          datasets: [{
+            data: [admins, normales],
+            backgroundColor: ['#0f3460', '#4285F4'],
+            borderWidth: 0,
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom' }
+          }
         }
-      }
-    });
+      });
+    }
   }
 
   // TABLA RECIENTES
   obtenerUsuariosRecientes(usuarios: any[]) {
-    // Ordenamos todo el arreglo por fecha, del más nuevo al más viejo
     const ordenados = [...usuarios].sort((a, b) => {
-      const fechaA = new Date(a.fechaRegistro || 0).getTime();
-      const fechaB = new Date(b.fechaRegistro || 0).getTime();
-      return fechaB - fechaA; // Mayor a menor
+      const fechaA = new Date(a.fechaRegistro || a.createdAt || a.fecha_registro || 0).getTime();
+      const fechaB = new Date(b.fechaRegistro || b.createdAt || b.fecha_registro || 0).getTime();
+      return fechaB - fechaA;
     });
 
-    // Cortamos solo los primeros 5 para no saturar el dashboard
     this.usuariosRecientes = ordenados.slice(0, 5);
   }
 }
