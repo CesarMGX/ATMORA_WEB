@@ -5,11 +5,11 @@
       <h1>Monitoreo Inteligente con IA</h1>
       <span class="badge-predictive">Predictivo</span>
     </div>
-    <p class="subtitle">Selecciona un dispositivo para obtener lecturas en tiempo real y estimar la temperatura con Machine Learning.</p>
+    <p class="subtitle">Evalúa los modelos de Machine Learning (Random Forest) para pronósticos climáticos por fecha.</p>
   </div>
 
   <div class="monitoring-card">
-    <!-- SELECCIÓN DE DISPOSITIVO -->
+    <!-- 1. SELECCIÓN DE DISPOSITIVO MONITOREO ACTIVO -->
     <div class="select-section">
       <label class="select-label">
         <i class="bx bx-chip"></i>
@@ -17,110 +17,97 @@
       </label>
       <select 
         [(ngModel)]="selectedDispositivoId" 
-        (change)="onDispositivoChange()"
         class="device-select"
       >
-        <option [ngValue]="null" disabled selected>Elige un dispositivo Arduino...</option>
-        <option *ngFor="let d of dispositivos" [ngValue]="d.id_dispositivo">
-          {{ d.nombre_dispositivo }} — (En {{ d.ubicacion?.nombre_ubicacion || 'Zona General' }})
+        <option [ngValue]="null" disabled>Elige un dispositivo Arduino...</option>
+        <option *ngFor="let d of dispositivos" [ngValue]="d.id_dispositivo || d.id">
+          {{ d.nombre_dispositivo || d.nombre }} — (En {{ d.ubicacion?.nombre_ubicacion || d.ubicacion?.nombre || 'Zona General' }})
         </option>
       </select>
     </div>
 
-    <!-- CARGANDO LECTURAS -->
-    <div *ngIf="cargandoLectura" class="loading-state">
-      <div class="spinner"></div>
-      <p>Consultando última lectura del sensor...</p>
+    <!-- 2. SELECCIÓN DE MODELO PREDICTIVO -->
+    <div class="select-section">
+      <label class="select-label">
+        <i class="bx bx-brain"></i>
+        Modelo Predictivo a Evaluar
+      </label>
+      <select 
+        [(ngModel)]="modeloSeleccionado" 
+        (change)="onParametrosChange()"
+        class="device-select"
+      >
+        <option value="humedad">Humedad (%)</option>
+        <option value="radiacion">Radiación Solar (W/m²)</option>
+        <option value="viento">Velocidad del Viento (km/h)</option>
+        <option value="presion">Presión Atmosférica (hPa)</option>
+      </select>
     </div>
 
-    <!-- MENSAJE POR DEFECTO -->
-    <div *ngIf="!selectedDispositivoId && !cargandoLectura" class="empty-state">
-      <i class="bx bx-broadcast animate-pulse"></i>
-      <h3>Esperando Conexión</h3>
-      <p>Selecciona un dispositivo del menú superior para sincronizar las lecturas ambientales.</p>
+    <!-- 3. SELECTOR DE FECHA (FULL WIDTH, 15 DÍAS MÁXIMO) -->
+    <div class="select-section">
+      <label class="select-label">
+        <i class="bx bx-calendar-event"></i>
+        Fecha de Predicción (Máximo 15 días)
+      </label>
+      <input 
+        type="date" 
+        [(ngModel)]="fechaSeleccionada"
+        (change)="onParametrosChange()"
+        [min]="minFecha"
+        [max]="maxFecha"
+        class="device-select full-width-date"
+      />
+      <small class="date-hint">
+        <i class="bx bx-info-circle"></i>
+        Selecciona una fecha comprendida entre hoy ({{ minFecha }}) y los próximos 15 días ({{ maxFecha }}).
+      </small>
     </div>
 
-    <!-- DETALLES DE LA ÚLTIMA LECTURA -->
-    <div *ngIf="ultimaLectura && !cargandoLectura" class="lectura-details">
-      <!-- Tarjetas de Variables de Entrada -->
-      <div class="variables-section">
-        <h3 class="section-title">
-          <span>Variables de Entrada</span>
-          <span class="timestamp">(Último registro: {{ (ultimaLectura.fecha_registro || ultimaLectura.fecha_hora) | date:'medium' }})</span>
-        </h3>
-        
-        <div class="variables-grid">
-          <!-- Humedad -->
-          <div class="variable-card card-humedad">
-            <div class="card-info">
-              <span class="card-label">Humedad</span>
-              <h4 class="card-value">{{ ultimaLectura.humedad }} %</h4>
-            </div>
-            <div class="card-icon icon-blue">
-              <i class="bx bx-water"></i>
-            </div>
-          </div>
+    <!-- 4. BOTÓN ORANGE SÓLIDO -->
+    <div class="prediction-action">
+      <button 
+        (click)="ejecutarPruebaIA()"
+        [disabled]="isLoading || !fechaSeleccionada"
+        class="btn-predict"
+      >
+        <span *ngIf="isLoading" class="spinner-small"></span>
+        <i *ngIf="!isLoading" class="bx bx-play-circle animate-pulse-slow"></i>
+        {{ isLoading ? 'Procesando...' : 'Ejecutar Prueba de IA' }}
+      </button>
+    </div>
 
-          <!-- Presión -->
-          <div class="variable-card card-presion">
-            <div class="card-info">
-              <span class="card-label">Presión</span>
-              <h4 class="card-value">{{ ultimaLectura.presion || 1013.25 }} hPa</h4>
-            </div>
-            <div class="card-icon icon-emerald">
-              <i class="bx bx-tachometer"></i>
-            </div>
-          </div>
+    <!-- 5. BANNER DE ERROR EN CASO DE FALLO DE CONEXIÓN -->
+    <div *ngIf="errorMsg" class="error-banner">
+      <i class="bx bx-error-circle"></i>
+      <div class="error-text">
+        <h4>Error de Conexión o Evaluación</h4>
+        <p>{{ errorMsg }}</p>
+      </div>
+    </div>
 
-          <!-- Radiación -->
-          <div class="variable-card card-radiacion">
-            <div class="card-info">
-              <span class="card-label">Radiación Solar</span>
-              <h4 class="card-value">{{ ultimaLectura.radiacion || ultimaLectura.radiacion_solar || 0 }} W/m²</h4>
-            </div>
-            <div class="card-icon icon-amber">
-              <i class="bx bx-sun"></i>
-            </div>
+    <!-- 6. TARJETA ATRACTIVA CON EL RESULTADO DE LA PREDICCIÓN DE IA -->
+    <div *ngIf="resultadoIA !== null && !isLoading" class="result-card">
+      <div class="bg-blur-1"></div>
+      <div class="bg-blur-2"></div>
+
+      <div class="result-content">
+        <div class="result-header">
+          <div class="result-icon">
+            <i class="bx {{ modeloActualInfo.icono }} animate-pulse-slow"></i>
+          </div>
+          <div class="result-texts">
+            <span class="result-badge">Modelo: {{ modeloActualInfo.nombre }}</span>
+            <h3>Resultado de la Inteligencia Artificial</h3>
+            <p>{{ modeloActualInfo.descripcion }} calculada para la fecha <strong>{{ fechaSeleccionada | date:'fullDate' }}</strong>.</p>
           </div>
         </div>
-      </div>
 
-      <!-- BOTÓN DE ESTIMACIÓN -->
-      <div class="prediction-action">
-        <button 
-          (click)="generarPrediccion()"
-          [disabled]="prediccionCargando"
-          class="btn-predict"
-        >
-          <span *ngIf="prediccionCargando" class="spinner-small"></span>
-          <i *ngIf="!prediccionCargando" class="bx bx-brain animate-pulse-slow"></i>
-          {{ prediccionCargando ? 'Analizando con IA...' : 'Generar Predicción Climática' }}
-        </button>
-      </div>
-
-      <!-- RESULTADO DE LA PREDICCIÓN -->
-      <div 
-        *ngIf="temperaturaPredicha !== null" 
-        class="result-card"
-      >
-        <div class="bg-blur-1"></div>
-        <div class="bg-blur-2"></div>
-
-        <div class="result-content">
-          <div class="result-header">
-            <div class="result-icon">
-              <i class="bx bx-thermometer animate-pulse-slow"></i>
-            </div>
-            <div class="result-texts">
-              <span class="result-badge">Predicción de Temperatura</span>
-              <h3>Estimación de Clima Inteligente</h3>
-              <p>Regresión Lineal Múltiple basada en Humedad, Presión y Radiación Solar.</p>
-            </div>
-          </div>
-          <div class="result-value-box">
-            <span class="value-label">Temperatura Predicha</span>
-            <h2 class="value-number">{{ temperaturaPredicha | number:'1.2-2' }} °C</h2>
-          </div>
+        <div class="result-value-box">
+          <span class="value-label">Valor Estimado</span>
+          <h2 class="value-number">
+            {{ resultadoIA | number:'1.2-2' }} <span class="unit-text">{{ modeloActualInfo.unidad }}</span>
+          </h2>
         </div>
       </div>
     </div>

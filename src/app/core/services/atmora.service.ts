@@ -90,4 +90,8 @@ export class AtmoraService {
   predecirTemperatura(datos: { humedad: number; presion: number; radiacion: number }): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/predecir`, datos);
   }
+
+  predecirPorFecha(modelo: string, fecha: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/predecir/${modelo}`, { fecha });
+  }
 }

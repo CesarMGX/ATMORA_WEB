@@ -82,6 +82,7 @@ export class RegistrosComponent implements OnInit, AfterViewInit, OnDestroy {
       icon: customIcon
     }).addTo(this.map);
 
+    
     this.marker.on('dragend', () => {
       const position = this.marker.getLatLng();
       this.actualizarCoordenadas(position.lat, position.lng);
