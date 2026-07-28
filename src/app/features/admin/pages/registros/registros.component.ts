@@ -20,6 +20,9 @@ export class RegistrosComponent implements OnInit, AfterViewInit, OnDestroy {
   ubicaciones: any[] = [];
   dispositivos: any[] = [];
 
+  // Ubicación seleccionada para edición
+  ubicacionSeleccionada: any = null;
+
   // Configuración de Mapa con Leaflet (OpenStreetMap)
   private map!: L.Map;
   private marker!: L.Marker;
@@ -51,7 +54,6 @@ export class RegistrosComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private initLeafletMap(): void {
-    // Ícono personalizado para asegurar la correcta carga del marcador en Leaflet
     const customIcon = L.icon({
       iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
       iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -65,38 +67,32 @@ export class RegistrosComponent implements OnInit, AfterViewInit, OnDestroy {
     const initialLat = this.ubicacionForm.get('latitud')?.value || this.defaultLat;
     const initialLng = this.ubicacionForm.get('longitud')?.value || this.defaultLng;
 
-    // Inicializamos mapa centrado en Córdoba, Veracruz por defecto
     this.map = L.map('leaflet-map', {
       center: [initialLat, initialLng],
       zoom: 13
     });
 
-    // Capa de OpenStreetMap (100% gratuita y sin marcas ni errores de API key)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
     }).addTo(this.map);
 
-    // Marcador arrastrable
     this.marker = L.marker([initialLat, initialLng], {
       draggable: true,
       icon: customIcon
     }).addTo(this.map);
 
-    // Evento de arrastre del marcador
     this.marker.on('dragend', () => {
       const position = this.marker.getLatLng();
       this.actualizarCoordenadas(position.lat, position.lng);
     });
 
-    // Evento de clic en cualquier punto del mapa
     this.map.on('click', (e: L.LeafletMouseEvent) => {
       const { lat, lng } = e.latlng;
       this.marker.setLatLng([lat, lng]);
       this.actualizarCoordenadas(lat, lng);
     });
 
-    // Redimensionar el mapa para evitar inconsistencias de dibujado
     setTimeout(() => {
       if (this.map) {
         this.map.invalidateSize();
@@ -105,7 +101,6 @@ export class RegistrosComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private initForms(): void {
-    // Formulario de Ubicación (latitud y longitud en Córdoba, Veracruz por defecto)
     this.ubicacionForm = this.fb.group({
       nombre_ubicacion: ['', [Validators.required, Validators.minLength(3)]],
       descripcion: ['', [Validators.required, Validators.maxLength(500)]],
@@ -113,7 +108,6 @@ export class RegistrosComponent implements OnInit, AfterViewInit, OnDestroy {
       longitud: [this.defaultLng, [Validators.required]]
     });
 
-    // Formulario de Dispositivo
     this.dispositivoForm = this.fb.group({
       nombre_dispositivo: ['', [Validators.required, Validators.minLength(3)]],
       estado: ['activo', [Validators.required]],
@@ -122,7 +116,6 @@ export class RegistrosComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private setupCoordinateSync(): void {
-    // Escucha cambios manuales en los inputs para reubicar el marcador en el mapa
     this.ubicacionForm.valueChanges.subscribe(val => {
       if (val.latitud && val.longitud) {
         const lat = parseFloat(val.latitud);
@@ -144,7 +137,6 @@ export class RegistrosComponent implements OnInit, AfterViewInit, OnDestroy {
     const latFormatted = parseFloat(lat.toFixed(6));
     const lngFormatted = parseFloat(lng.toFixed(6));
     
-    // Actualizamos el formulario sin activar suscripciones infinitas
     this.ubicacionForm.patchValue({
       latitud: latFormatted,
       longitud: lngFormatted
@@ -155,7 +147,6 @@ export class RegistrosComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private obtenerDireccion(lat: number, lng: number): void {
-    // Geocodificación inversa gratuita con la API Nominatim de OpenStreetMap
     const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
     fetch(url)
       .then(res => res.json())
@@ -203,12 +194,56 @@ export class RegistrosComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  onRegistrarUbicacion(): void {
+  // ─── Selección y Edición de Ubicación ─────────────────────────────────────
+  seleccionarUbicacionParaEditar(u: any): void {
+    this.ubicacionSeleccionada = u;
+    const lat = parseFloat(u.latitud) || this.defaultLat;
+    const lng = parseFloat(u.longitud) || this.defaultLng;
+
+    this.ubicacionForm.patchValue({
+      nombre_ubicacion: u.nombre_ubicacion || u.nombre,
+      descripcion: u.descripcion || '',
+      latitud: lat,
+      longitud: lng
+    });
+
+    if (this.marker && this.map) {
+      this.marker.setLatLng([lat, lng]);
+      this.map.setView([lat, lng], 15);
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  cancelarEdicionUbicacion(): void {
+    this.ubicacionSeleccionada = null;
+    this.ubicacionForm.reset({
+      latitud: this.defaultLat,
+      longitud: this.defaultLng
+    });
+
+    if (this.marker && this.map) {
+      this.marker.setLatLng([this.defaultLat, this.defaultLng]);
+      this.map.setView([this.defaultLat, this.defaultLng], 13);
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  onGuardarUbicacion(): void {
     if (this.ubicacionForm.invalid) {
       this.ubicacionForm.markAllAsTouched();
       return;
     }
 
+    if (this.ubicacionSeleccionada) {
+      this.onActualizarUbicacion();
+    } else {
+      this.onRegistrarUbicacion();
+    }
+  }
+
+  onRegistrarUbicacion(): void {
     const payload: Ubicacion = this.ubicacionForm.value;
 
     this.atmoraService.crearUbicacion(payload).subscribe({
@@ -220,12 +255,7 @@ export class RegistrosComponent implements OnInit, AfterViewInit, OnDestroy {
           confirmButtonColor: '#f77f00'
         });
         
-        // Reseteamos formulario y mapa a Córdoba, Veracruz
-        this.ubicacionForm.reset({ latitud: this.defaultLat, longitud: this.defaultLng });
-        if (this.marker && this.map) {
-          this.marker.setLatLng([this.defaultLat, this.defaultLng]);
-          this.map.setView([this.defaultLat, this.defaultLng], 13);
-        }
+        this.cancelarEdicionUbicacion();
         this.cargarUbicaciones();
       },
       error: (err) => {
@@ -237,6 +267,84 @@ export class RegistrosComponent implements OnInit, AfterViewInit, OnDestroy {
         });
       }
     });
+  }
+
+  onActualizarUbicacion(): void {
+    const id = this.ubicacionSeleccionada.id_ubicacion || this.ubicacionSeleccionada.id;
+    if (!id) return;
+
+    const payload: Ubicacion = this.ubicacionForm.value;
+
+    this.atmoraService.actualizarUbicacion(id, payload).subscribe({
+      next: (response) => {
+        Swal.fire({
+          icon: 'success',
+          title: 'Ubicación Actualizada',
+          text: 'Los datos de la zona han sido modificados correctamente.',
+          confirmButtonColor: '#f77f00'
+        });
+
+        this.cancelarEdicionUbicacion();
+        this.cargarUbicaciones();
+      },
+      error: (err) => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error de Actualización',
+          text: err.error?.message || 'No se pudo actualizar la ubicación.',
+          confirmButtonColor: '#e74c3c'
+        });
+      }
+    });
+  }
+
+  confirmarEliminarUbicacion(u: any): void {
+    const id = u.id_ubicacion || u.id;
+    const nombre = u.nombre_ubicacion || u.nombre || 'Ubicación';
+
+    if (!id) return;
+
+    Swal.fire({
+      title: '¿Eliminar ubicación?',
+      html: `¿Estás seguro de eliminar la zona <strong>"${nombre}"</strong>?<br><small style="color: #64748b;">Esta acción eliminará el registro de la base de datos.</small>`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#e74c3c',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.atmoraService.eliminarUbicacion(id).subscribe({
+          next: () => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Ubicación Eliminada',
+              text: `La ubicación "${nombre}" fue eliminada con éxito.`,
+              confirmButtonColor: '#f77f00'
+            });
+
+            if (this.ubicacionSeleccionada && (this.ubicacionSeleccionada.id_ubicacion === id || this.ubicacionSeleccionada.id === id)) {
+              this.cancelarEdicionUbicacion();
+            }
+            this.cargarUbicaciones();
+          },
+          error: (err) => {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error al Eliminar',
+              text: err.error?.message || 'No se pudo eliminar la ubicación.',
+              confirmButtonColor: '#e74c3c'
+            });
+          }
+        });
+      }
+    });
+  }
+
+  onEliminarUbicacionDirecta(u: any, event: MouseEvent): void {
+    event.stopPropagation(); // Evitamos seleccionar la ubicación para editar cuando solo presiona el botón eliminar
+    this.confirmarEliminarUbicacion(u);
   }
 
   onRegistrarDispositivo(): void {

@@ -309,3 +309,116 @@
     }
   }
 }
+
+/* ─── ESTILOS PARA EDICIÓN Y ELIMINACIÓN DE UBICACIONES ─────────────────── */
+.edit-mode-header {
+  color: #f77f00 !important;
+  span {
+    color: #0f3460;
+    font-weight: 700;
+  }
+}
+
+.btn-cancel-edit {
+  margin-left: auto;
+  padding: 4px 10px;
+  background: #e2e8f0;
+  color: #475569;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #cbd5e1;
+    color: #0f3460;
+  }
+}
+
+.button-group-edit {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  
+  .btn-submit {
+    flex: 1;
+    min-width: 140px;
+  }
+  
+  .btn-update {
+    background: linear-gradient(135deg, #f77f00 0%, #d66c00 100%);
+  }
+
+  .btn-delete {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
+    
+    &:hover {
+      background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+    }
+  }
+
+  .btn-secondary-action {
+    background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+    box-shadow: 0 4px 15px rgba(100, 116, 139, 0.2);
+    
+    &:hover {
+      background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+    }
+  }
+}
+
+.quick-list-hint {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-bottom: 10px;
+}
+
+.clickable-zone {
+  position: relative;
+  padding-right: 32px !important;
+  transition: all 0.25 ease;
+  
+  .icon-pin {
+    color: #f77f00;
+    font-size: 1rem;
+  }
+
+  &.active-zone {
+    background: #fff7ed !important;
+    border-color: #f77f00 !important;
+    color: #c2410c !important;
+    font-weight: 700;
+    box-shadow: 0 0 0 2px rgba(247, 127, 0, 0.2);
+  }
+
+  .icon-btn-delete {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      color: #ef4444;
+      background: #fee2e2;
+    }
+  }
+}
+

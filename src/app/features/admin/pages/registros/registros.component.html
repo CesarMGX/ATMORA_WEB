@@ -10,11 +10,23 @@
     <div class="registro-card">
       <div class="card-header">
         <i class="bx bx-map-pin"></i>
-        <h3>1. Registrar Nueva Ubicación</h3>
+        <h3 *ngIf="!ubicacionSeleccionada">1. Registrar Nueva Ubicación</h3>
+        <h3 *ngIf="ubicacionSeleccionada" class="edit-mode-header">
+          1. Editar Ubicación: <span>{{ ubicacionSeleccionada.nombre_ubicacion || ubicacionSeleccionada.nombre }}</span>
+        </h3>
+        <button 
+          *ngIf="ubicacionSeleccionada" 
+          type="button" 
+          class="btn-cancel-edit" 
+          (click)="cancelarEdicionUbicacion()"
+          title="Volver a modo creación"
+        >
+          <i class="bx bx-x"></i> Cancelar Edición
+        </button>
       </div>
       
       <div class="card-body">
-        <form [formGroup]="ubicacionForm" (ngSubmit)="onRegistrarUbicacion()">
+        <form [formGroup]="ubicacionForm" (ngSubmit)="onGuardarUbicacion()">
           <div class="form-group">
             <label>Nombre de la Ubicación</label>
             <input 
@@ -63,18 +75,49 @@
             </p>
           </div>
 
-          <button type="submit" class="btn-submit">
-            <i class="bx bx-save"></i> Guardar Ubicación
-          </button>
+          <!-- Botones de Acción -->
+          <div class="button-group" *ngIf="!ubicacionSeleccionada">
+            <button type="submit" class="btn-submit">
+              <i class="bx bx-save"></i> Guardar Ubicación
+            </button>
+          </div>
+
+          <div class="button-group-edit" *ngIf="ubicacionSeleccionada">
+            <button type="submit" class="btn-submit btn-update">
+              <i class="bx bx-refresh"></i> Actualizar Ubicación
+            </button>
+            <button type="button" class="btn-submit btn-delete" (click)="confirmarEliminarUbicacion(ubicacionSeleccionada)">
+              <i class="bx bx-trash"></i> Eliminar Ubicación
+            </button>
+            <button type="button" class="btn-submit btn-secondary-action" (click)="cancelarEdicionUbicacion()">
+              <i class="bx bx-x-circle"></i> Cancelar
+            </button>
+          </div>
         </form>
 
         <!-- Listado rápido de zonas registradas -->
         <div class="quick-list">
           <h4>Zonas Registradas ({{ ubicaciones.length }})</h4>
+          <p class="quick-list-hint">Selecciona una ubicación para cargarla en el mapa, actualizarla o eliminarla:</p>
           <div class="items-wrapper">
-            <span *ngFor="let u of ubicaciones" class="badge-chip">
-              {{ u.nombre_ubicacion }}
-            </span>
+            <div 
+              *ngFor="let u of ubicaciones" 
+              class="badge-chip clickable-zone"
+              [class.active-zone]="ubicacionSeleccionada && ((ubicacionSeleccionada.id_ubicacion && ubicacionSeleccionada.id_ubicacion === u.id_ubicacion) || (ubicacionSeleccionada.id && ubicacionSeleccionada.id === u.id))"
+              (click)="seleccionarUbicacionParaEditar(u)"
+              title="Haz clic para cargar en mapa y editar"
+            >
+              <i class="bx bx-map-pin icon-pin"></i>
+              <span>{{ u.nombre_ubicacion || u.nombre }}</span>
+              <button 
+                type="button" 
+                class="icon-btn-delete" 
+                (click)="onEliminarUbicacionDirecta(u, $event)"
+                title="Eliminar esta ubicación"
+              >
+                <i class="bx bx-trash"></i>
+              </button>
+            </div>
             <p *ngIf="ubicaciones.length === 0" class="empty-text">No hay ubicaciones creadas aún.</p>
           </div>
         </div>
@@ -121,8 +164,8 @@
                 [class.invalid-field]="dispositivoForm.get('id_ubicacion')?.invalid && dispositivoForm.get('id_ubicacion')?.touched"
               >
                 <option value="" disabled selected>Selecciona una ubicación...</option>
-                <option *ngFor="let u of ubicaciones" [value]="u.id_ubicacion">
-                  {{ u.nombre_ubicacion }}
+                <option *ngFor="let u of ubicaciones" [value]="u.id_ubicacion || u.id">
+                  {{ u.nombre_ubicacion || u.nombre }}
                 </option>
               </select>
               <span *ngIf="dispositivoForm.get('id_ubicacion')?.invalid && dispositivoForm.get('id_ubicacion')?.touched" class="error-msg">
