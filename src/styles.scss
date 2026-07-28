@@ -1,5 +1,5 @@
-/* You can add global styles to this file, and also import other style files */
-/* src/styles.scss */
+/* Importa estilos de Leaflet (OpenStreetMap) */
+@import 'leaflet/dist/leaflet.css';
 
 /* Importa una fuente bonita de Google Fonts (opcional pero recomendado) */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
@@ -88,4 +88,4 @@ html {
    para que el navbar no tape el título */
 #problema, #solucion, #beneficios, #equipo {
   scroll-margin-top: 100px; /* Ajusta este número según el alto de tu navbar */
-}
+}

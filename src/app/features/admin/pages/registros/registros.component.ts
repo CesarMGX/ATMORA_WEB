@@ -1,33 +1,30 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { GoogleMap, MapMarker } from '@angular/google-maps';
 import { AtmoraService, Ubicacion, Dispositivo } from '../../../../core/services/atmora.service';
 import Swal from 'sweetalert2';
-
-declare var google: any;
+import * as L from 'leaflet';
 
 @Component({
   selector: 'app-registros',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, GoogleMap, MapMarker],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './registros.component.html',
   styleUrl: './registros.component.scss'
 })
-export class RegistrosComponent implements OnInit {
+export class RegistrosComponent implements OnInit, AfterViewInit, OnDestroy {
   ubicacionForm!: FormGroup;
   dispositivoForm!: FormGroup;
   
   ubicaciones: any[] = [];
   dispositivos: any[] = [];
 
-  // Configuración de Google Maps (Córdoba, Veracruz por defecto)
-  mapCenter = { lat: 18.8943, lng: -96.9353 };
-  mapZoom = 13;
-  markerPosition = { lat: 18.8943, lng: -96.9353 };
-  markerOptions = { draggable: true };
-  apiLoaded = false;
+  // Configuración de Mapa con Leaflet (OpenStreetMap)
+  private map!: L.Map;
+  private marker!: L.Marker;
+  private defaultLat = 18.8943;
+  private defaultLng = -96.9353;
 
   constructor(
     private fb: FormBuilder,
@@ -38,10 +35,73 @@ export class RegistrosComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.cargarGoogleMapsScript();
     this.cargarUbicaciones();
     this.cargarDispositivos();
     this.setupCoordinateSync();
+  }
+
+  ngAfterViewInit(): void {
+    this.initLeafletMap();
+  }
+
+  ngOnDestroy(): void {
+    if (this.map) {
+      this.map.remove();
+    }
+  }
+
+  private initLeafletMap(): void {
+    // Ícono personalizado para asegurar la correcta carga del marcador en Leaflet
+    const customIcon = L.icon({
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+
+    const initialLat = this.ubicacionForm.get('latitud')?.value || this.defaultLat;
+    const initialLng = this.ubicacionForm.get('longitud')?.value || this.defaultLng;
+
+    // Inicializamos mapa centrado en Córdoba, Veracruz por defecto
+    this.map = L.map('leaflet-map', {
+      center: [initialLat, initialLng],
+      zoom: 13
+    });
+
+    // Capa de OpenStreetMap (100% gratuita y sin marcas ni errores de API key)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+    }).addTo(this.map);
+
+    // Marcador arrastrable
+    this.marker = L.marker([initialLat, initialLng], {
+      draggable: true,
+      icon: customIcon
+    }).addTo(this.map);
+
+    // Evento de arrastre del marcador
+    this.marker.on('dragend', () => {
+      const position = this.marker.getLatLng();
+      this.actualizarCoordenadas(position.lat, position.lng);
+    });
+
+    // Evento de clic en cualquier punto del mapa
+    this.map.on('click', (e: L.LeafletMouseEvent) => {
+      const { lat, lng } = e.latlng;
+      this.marker.setLatLng([lat, lng]);
+      this.actualizarCoordenadas(lat, lng);
+    });
+
+    // Redimensionar el mapa para evitar inconsistencias de dibujado
+    setTimeout(() => {
+      if (this.map) {
+        this.map.invalidateSize();
+      }
+    }, 250);
   }
 
   private initForms(): void {
@@ -49,8 +109,8 @@ export class RegistrosComponent implements OnInit {
     this.ubicacionForm = this.fb.group({
       nombre_ubicacion: ['', [Validators.required, Validators.minLength(3)]],
       descripcion: ['', [Validators.required, Validators.maxLength(500)]],
-      latitud: [18.8943, [Validators.required]],
-      longitud: [-96.9353, [Validators.required]]
+      latitud: [this.defaultLat, [Validators.required]],
+      longitud: [this.defaultLng, [Validators.required]]
     });
 
     // Formulario de Dispositivo
@@ -62,97 +122,57 @@ export class RegistrosComponent implements OnInit {
   }
 
   private setupCoordinateSync(): void {
-    // Escucha cambios manuales en el formulario para mover el marcador en el mapa
+    // Escucha cambios manuales en los inputs para reubicar el marcador en el mapa
     this.ubicacionForm.valueChanges.subscribe(val => {
       if (val.latitud && val.longitud) {
         const lat = parseFloat(val.latitud);
         const lng = parseFloat(val.longitud);
         if (!isNaN(lat) && !isNaN(lng)) {
-          if (this.markerPosition.lat !== lat || this.markerPosition.lng !== lng) {
-            this.markerPosition = { lat, lng };
-            this.mapCenter = { lat, lng };
+          if (this.marker && this.map) {
+            const currentPos = this.marker.getLatLng();
+            if (Math.abs(currentPos.lat - lat) > 0.000001 || Math.abs(currentPos.lng - lng) > 0.000001) {
+              this.marker.setLatLng([lat, lng]);
+              this.map.panTo([lat, lng]);
+            }
           }
         }
       }
     });
   }
 
-  // Manejador de clic en el mapa
-  onMapClick(event: any): void {
-    if (event.latLng) {
-      const lat = event.latLng.lat();
-      const lng = event.latLng.lng();
-      this.actualizarCoordenadas(lat, lng);
-    }
-  }
-
-  // Manejador de arrastre finalizado del marcador
-  onMarkerDragend(event: any): void {
-    if (event.latLng) {
-      const lat = event.latLng.lat();
-      const lng = event.latLng.lng();
-      this.actualizarCoordenadas(lat, lng);
-    }
-  }
-
   private actualizarCoordenadas(lat: number, lng: number): void {
-    this.markerPosition = { lat, lng };
-    this.mapCenter = { lat, lng };
+    const latFormatted = parseFloat(lat.toFixed(6));
+    const lngFormatted = parseFloat(lng.toFixed(6));
     
-    // Actualizamos el formulario con 6 decimales de precisión
+    // Actualizamos el formulario sin activar suscripciones infinitas
     this.ubicacionForm.patchValue({
-      latitud: parseFloat(lat.toFixed(6)),
-      longitud: parseFloat(lng.toFixed(6))
-    }, { emitEvent: false }); // Evitamos loops infinitos de eventos
-    
-    this.obtenerDireccion(lat, lng);
+      latitud: latFormatted,
+      longitud: lngFormatted
+    }, { emitEvent: false });
+
+    this.obtenerDireccion(latFormatted, lngFormatted);
     this.cdr.detectChanges();
   }
 
   private obtenerDireccion(lat: number, lng: number): void {
-    if (typeof google === 'undefined' || typeof google.maps === 'undefined') return;
-    const geocoder = new google.maps.Geocoder();
-    geocoder.geocode({ location: { lat, lng } }, (results: any, status: any) => {
-      if (status === 'OK' && results && results[0]) {
-        const direccion = results[0].formatted_address;
-        const descripcionControl = this.ubicacionForm.get('descripcion');
-        
-        // Autorellena la descripción solo si está vacía
-        if (descripcionControl && (!descripcionControl.value || descripcionControl.value.trim() === '')) {
-          this.ubicacionForm.patchValue({
-            descripcion: `Ubicación registrada cerca de: ${direccion}`
-          });
+    // Geocodificación inversa gratuita con la API Nominatim de OpenStreetMap
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.display_name) {
+          const direccion = data.display_name;
+          const descripcionControl = this.ubicacionForm.get('descripcion');
+          
+          // Autorellena la descripción solo si está vacía
+          if (descripcionControl && (!descripcionControl.value || descripcionControl.value.trim() === '')) {
+            this.ubicacionForm.patchValue({
+              descripcion: `Ubicación registrada cerca de: ${direccion}`
+            });
+          }
         }
-      }
-    });
-  }
-
-  private cargarGoogleMapsScript(): void {
-    // Si la librería 'google.maps' ya existe globalmente, marcamos como cargado inmediatamente
-    if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
-      this.apiLoaded = true;
-      return;
-    }
-    
-    // Obscurecemos/dividimos el prefijo y sufijo para prevenir que los escáneres de GitHub marquen
-    // la clave pública de Google Maps como falso positivo (las claves de mapas son públicas en el cliente
-    // y se restringen por dominio/HTTP Referrer en la Consola de Google Cloud).
-    const prefix = 'AIzaSy';
-    const suffix = 'BDDNDlCZqTaFR_FUw2Bu1bJ0afubFPE6Q';
-    const apiKey = prefix + suffix;
-
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-    script.async = true;
-    script.defer = true;
-    script.onload = () => {
-      this.apiLoaded = true;
-      this.cdr.detectChanges();
-    };
-    script.onerror = () => {
-      console.error('No se pudo cargar el SDK de Google Maps');
-    };
-    document.head.appendChild(script);
+      })
+      .catch(err => console.error('Error al obtener dirección:', err));
   }
 
   cargarUbicaciones(): void {
@@ -203,10 +223,13 @@ export class RegistrosComponent implements OnInit {
           text: 'La zona ha sido añadida correctamente.',
           confirmButtonColor: '#f77f00'
         });
-        // Reseteamos el formulario con las coordenadas por defecto de Córdoba, Veracruz
-        this.ubicacionForm.reset({ latitud: 18.8943, longitud: -96.9353 });
-        this.markerPosition = { lat: 18.8943, lng: -96.9353 };
-        this.mapCenter = { lat: 18.8943, lng: -96.9353 };
+        
+        // Reseteamos formulario y mapa a Córdoba, Veracruz
+        this.ubicacionForm.reset({ latitud: this.defaultLat, longitud: this.defaultLng });
+        if (this.marker && this.map) {
+          this.marker.setLatLng([this.defaultLat, this.defaultLng]);
+          this.map.setView([this.defaultLat, this.defaultLng], 13);
+        }
         this.cargarUbicaciones();
       },
       error: (err) => {
@@ -228,7 +251,7 @@ export class RegistrosComponent implements OnInit {
 
     const payload: Dispositivo = {
       ...this.dispositivoForm.value,
-      fecha_instalacion: new Date().toISOString().split('T')[0] // Fecha de hoy
+      fecha_instalacion: new Date().toISOString().split('T')[0]
     };
 
     this.atmoraService.crearDispositivo(payload).subscribe({
