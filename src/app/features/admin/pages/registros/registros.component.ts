@@ -162,14 +162,10 @@ export class RegistrosComponent implements OnInit, AfterViewInit, OnDestroy {
       .then(data => {
         if (data && data.display_name) {
           const direccion = data.display_name;
-          const descripcionControl = this.ubicacionForm.get('descripcion');
-          
-          // Autorellena la descripción solo si está vacía
-          if (descripcionControl && (!descripcionControl.value || descripcionControl.value.trim() === '')) {
-            this.ubicacionForm.patchValue({
-              descripcion: `Ubicación registrada cerca de: ${direccion}`
-            });
-          }
+          this.ubicacionForm.patchValue({
+            descripcion: `Ubicación registrada cerca de: ${direccion}`
+          });
+          this.cdr.detectChanges();
         }
       })
       .catch(err => console.error('Error al obtener dirección:', err));
