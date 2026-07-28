@@ -70,15 +70,25 @@ const obtenerTodos = async (req, res) => {
 
     const mapped = usuarios.map(u => {
       const json = u.toJSON();
+      const rolStr = (json.rol || '').toString().toLowerCase();
+      const esAdmin = rolStr === 'admin' || rolStr === 'administrador';
+      
+      let fechaReg = '2026-03-26';
+      if (json.createdAt) {
+        fechaReg = new Date(json.createdAt).toISOString().split('T')[0];
+      } else if (json.fecha_registro) {
+        fechaReg = new Date(json.fecha_registro).toISOString().split('T')[0];
+      }
+
       return {
         id: json.id_usuario,
         nombre: json.nombre + (json.ap_paterno ? ' ' + json.ap_paterno : ''),
         correo: json.correo,
         password: json.contrasena,
-        rol: json.rol === 'admin' ? 'Admin' : 'Usuario',
-        estado: 'Activo',
+        rol: esAdmin ? 'Admin' : 'Usuario',
+        estado: json.estado || 'Activo',
         avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(json.nombre)}&background=0f3460&color=fff`,
-        fechaRegistro: '2026-03-26', // Fecha base
+        fechaRegistro: fechaReg,
         primerIngreso: false
       };
     });
