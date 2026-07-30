@@ -87,21 +87,12 @@ export class Dashboard implements OnInit, AfterViewInit {
     usuarios.forEach(u => {
       const fechaStr = u.fechaRegistro || u.createdAt || u.fecha_registro;
       if (fechaStr) {
-        let mesIndex = -1;
-        if (typeof fechaStr === 'string' && fechaStr.includes('-')) {
-          const partes = fechaStr.split('-');
-          if (partes.length >= 2) {
-            mesIndex = parseInt(partes[1], 10) - 1;
+        const fecha = new Date(fechaStr);
+        if (!isNaN(fecha.getTime())) {
+          const mesIndex = fecha.getMonth();
+          if (mesIndex >= 0 && mesIndex <= 11) {
+            conteoPorMes[nombresMeses[mesIndex]]++;
           }
-        } else {
-          const fecha = new Date(fechaStr);
-          if (!isNaN(fecha.getTime())) {
-            mesIndex = fecha.getMonth();
-          }
-        }
-
-        if (mesIndex >= 0 && mesIndex <= 11) {
-          conteoPorMes[nombresMeses[mesIndex]]++;
         }
       }
     });
