@@ -106,6 +106,13 @@ const startServer = async () => {
       console.error('⚠️ No se pudo verificar la columna "presion" automáticamente:', sqlError.message);
     }
 
+    try {
+      await sequelize.query('ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP;');
+      console.log('✅ Columna "fecha_registro" verificada/creada en usuarios.');
+    } catch (sqlError) {
+      console.error('⚠️ No se pudo verificar la columna "fecha_registro" automáticamente:', sqlError.message);
+    }
+
     await sequelize.sync({ alter: false });
     console.log('Modelos sincronizados con la base de datos');
 

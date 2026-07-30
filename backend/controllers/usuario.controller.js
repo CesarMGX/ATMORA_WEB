@@ -75,9 +75,19 @@ const obtenerTodos = async (req, res) => {
       
       let fechaReg = new Date().toISOString().split('T')[0];
       if (json.fecha_registro) {
-        fechaReg = new Date(json.fecha_registro).toISOString().split('T')[0];
+        try {
+          const d = new Date(json.fecha_registro);
+          if (!isNaN(d.getTime())) {
+            fechaReg = d.toISOString().split('T')[0];
+          }
+        } catch (e) {}
       } else if (json.createdAt) {
-        fechaReg = new Date(json.createdAt).toISOString().split('T')[0];
+        try {
+          const d = new Date(json.createdAt);
+          if (!isNaN(d.getTime())) {
+            fechaReg = d.toISOString().split('T')[0];
+          }
+        } catch (e) {}
       }
 
       return {
