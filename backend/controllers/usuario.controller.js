@@ -73,11 +73,11 @@ const obtenerTodos = async (req, res) => {
       const rolStr = (json.rol || '').toString().toLowerCase();
       const esAdmin = rolStr === 'admin' || rolStr === 'administrador';
       
-      let fechaReg = '2026-03-26';
-      if (json.createdAt) {
-        fechaReg = new Date(json.createdAt).toISOString().split('T')[0];
-      } else if (json.fecha_registro) {
+      let fechaReg = new Date().toISOString().split('T')[0];
+      if (json.fecha_registro) {
         fechaReg = new Date(json.fecha_registro).toISOString().split('T')[0];
+      } else if (json.createdAt) {
+        fechaReg = new Date(json.createdAt).toISOString().split('T')[0];
       }
 
       return {
@@ -346,7 +346,8 @@ const crear = async (req, res) => {
       ap_paterno: lastName,
       correo,
       contrasena,
-      rol: mappedRol
+      rol: mappedRol,
+      fecha_registro: new Date()
     });
 
     const json = nuevoUsuario.toJSON();

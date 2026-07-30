@@ -49,6 +49,12 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: 'visualizador',
         comment: 'Rol del usuario en el sistema',
       },
+      fecha_registro: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        defaultValue: DataTypes.NOW,
+        comment: 'Fecha y hora de registro del usuario',
+      },
     },
     {
       tableName: 'usuarios',
