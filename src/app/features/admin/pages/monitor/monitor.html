@@ -161,7 +161,7 @@
         <p>Este equipo aún no ha enviado datos de telemetría. La información se desplegará en cuanto emita lecturas.</p>
       </div>
 
-      <!-- CONTENEDOR DE LAS 3 GRÁFICAS -->
+      <!-- CONTENEDOR DE LAS 4 GRÁFICAS (HIGHCHARTS) -->
       <div *ngIf="!cargandoHistorial && historialLecturas.length > 0" class="charts-grid">
         
         <!-- GRÁFICA 1: TEMPERATURA Y HUMEDAD -->
@@ -169,16 +169,20 @@
           <div id="chart-temp-hum" class="chart-container"></div>
         </div>
 
-        <!-- GRÁFICA 2: LLUVIA Y RADIACIÓN SOLAR -->
+        <!-- GRÁFICA 2: PRECIPITACIÓN Y RADIACIÓN SOLAR -->
         <div class="chart-card">
           <div id="chart-rain-rad" class="chart-container"></div>
         </div>
 
-        <!-- GRÁFICA 3: PRESIÓN ATMOSFÉRICA -->
+        <!-- GRÁFICA 3: GASES Y CALIDAD DE AIRE (CO2 / CO) -->
+        <div class="chart-card">
+          <div id="chart-co2-co" class="chart-container"></div>
+        </div>
+
+        <!-- GRÁFICA 4: PRESIÓN ATMOSFÉRICA (ANCHO COMPLETO - HIGHCHARTS) -->
         <div class="chart-card full-width">
           <div id="chart-pressure" class="chart-container"></div>
         </div>
-
       </div>
     </div>
 

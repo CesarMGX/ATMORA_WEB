@@ -245,24 +245,39 @@ export class Monitor implements OnInit {
     const humSeries: number[] = [];
     const rainSeries: number[] = [];
     const radSeries: number[] = [];
+    const co2Series: number[] = [];
+    const coSeries: number[] = [];
     const pressSeries: number[] = [];
 
-    ordenados.forEach((item) => {
-      const dateObj = new Date(item.fecha_hora || item.fecha_registro);
-      const label = isNaN(dateObj.getTime())
-        ? 'N/A'
-        : `${dateObj.getDate()}/${dateObj.getMonth() + 1} ${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`;
+    ordenados.forEach((item, index) => {
+      let label = '';
+      const fStr = item.fecha_hora || item.fecha_registro;
+      if (fStr) {
+        const d = new Date(fStr);
+        if (!isNaN(d.getTime())) {
+          const dia = d.getDate();
+          const mes = d.getMonth() + 1;
+          const hora = d.getHours().toString().padStart(2, '0');
+          const min = d.getMinutes().toString().padStart(2, '0');
+          label = `${dia}/${mes} ${hora}:${min}`;
+        }
+      }
+      if (!label) {
+        label = `Reg #${ordenados.length - index}`;
+      }
 
       timeLabels.push(label);
       tempSeries.push(Number((item.temperatura ?? 0).toFixed(1)));
       humSeries.push(Number((item.humedad ?? 0).toFixed(1)));
       rainSeries.push(Number((item.precipitacion ?? item.lluvia ?? 0).toFixed(2)));
       radSeries.push(Number((item.radiacion_solar ?? item.radiacion ?? 0).toFixed(1)));
+      co2Series.push(Number((item.co2 ?? 410.0).toFixed(1)));
+      coSeries.push(Number((item.co ?? 0.45).toFixed(2)));
       pressSeries.push(Number((item.presion ?? 1013.25).toFixed(1)));
     });
 
     setTimeout(() => {
-      this.renderCharts(timeLabels, tempSeries, humSeries, rainSeries, radSeries, pressSeries);
+      this.renderCharts(timeLabels, tempSeries, humSeries, rainSeries, radSeries, co2Series, coSeries, pressSeries);
     }, 150);
   }
 
@@ -272,6 +287,8 @@ export class Monitor implements OnInit {
     hum: number[],
     rain: number[],
     rad: number[],
+    co2: number[],
+    co: number[],
     press: number[]
   ): void {
     // 1. Gráfica Temperatura y Humedad
@@ -279,15 +296,15 @@ export class Monitor implements OnInit {
     if (tempHumElement) {
       Highcharts.chart(tempHumElement, {
         chart: { type: 'line', backgroundColor: 'transparent' },
-        title: { text: 'Temperatura vs Humedad' },
-        xAxis: { categories: labels },
+        title: { text: 'Temperatura vs Humedad', style: { fontSize: '15px', fontWeight: 'bold', color: '#0f3460' } },
+        xAxis: { categories: labels, labels: { style: { fontSize: '10px' } } },
         yAxis: [
           { title: { text: 'Temperatura (°C)' } },
           { title: { text: 'Humedad (%)' }, opposite: true }
         ],
         series: [
-          { name: 'Temperatura (°C)', data: temp, color: '#f77f00', type: 'line' },
-          { name: 'Humedad (%)', data: hum, color: '#0f3460', yAxis: 1, type: 'line' }
+          { name: 'Temperatura (°C)', data: temp, color: '#f77f00', type: 'line', marker: { symbol: 'circle' } },
+          { name: 'Humedad (%)', data: hum, color: '#0f3460', yAxis: 1, type: 'line', marker: { symbol: 'diamond' } }
         ],
         credits: { enabled: false }
       });
@@ -298,15 +315,64 @@ export class Monitor implements OnInit {
     if (rainRadElement) {
       Highcharts.chart(rainRadElement, {
         chart: { backgroundColor: 'transparent' },
-        title: { text: 'Precipitación y Radiación Solar' },
-        xAxis: { categories: labels },
+        title: { text: 'Precipitación y Radiación Solar', style: { fontSize: '15px', fontWeight: 'bold', color: '#0f3460' } },
+        xAxis: { categories: labels, labels: { style: { fontSize: '10px' } } },
         yAxis: [
           { title: { text: 'Precipitación (mm)' } },
           { title: { text: 'Radiación (W/m²)' }, opposite: true }
         ],
         series: [
           { name: 'Precipitación (mm)', data: rain, color: '#38bdf8', type: 'column' },
-          { name: 'Radiación (W/m²)', data: rad, color: '#eab308', yAxis: 1, type: 'line' }
+          { name: 'Radiación (W/m²)', data: rad, color: '#eab308', yAxis: 1, type: 'line', marker: { symbol: 'circle' } }
+        ],
+        credits: { enabled: false }
+      });
+    }
+
+    // 3. Gráfica Gases y Calidad de Aire (CO2 / CO) - Columna 3
+    const co2CoElement = document.getElementById('chart-co2-co');
+    if (co2CoElement) {
+      Highcharts.chart(co2CoElement, {
+        chart: { type: 'line', backgroundColor: 'transparent' },
+        title: { text: 'Gases Ambientales (CO₂ / CO)', style: { fontSize: '15px', fontWeight: 'bold', color: '#0f3460' } },
+        xAxis: { categories: labels, labels: { style: { fontSize: '10px' } } },
+        yAxis: [
+          { title: { text: 'CO₂ (ppm)' } },
+          { title: { text: 'CO (ppm)' }, opposite: true }
+        ],
+        series: [
+          { name: 'CO₂ (ppm)', data: co2, color: '#10b981', type: 'line', marker: { symbol: 'circle' } },
+          { name: 'CO (ppm)', data: co, color: '#f43f5e', yAxis: 1, type: 'line', marker: { symbol: 'square' } }
+        ],
+        credits: { enabled: false }
+      });
+    }
+
+    // 4. Gráfica Presión Atmosférica - Ancho Completo (Imagen 2)
+    const pressElement = document.getElementById('chart-pressure');
+    if (pressElement) {
+      Highcharts.chart(pressElement, {
+        chart: { type: 'line', backgroundColor: 'transparent' },
+        title: { text: 'Presión Atmosférica', style: { fontSize: '18px', fontWeight: 'bold', color: '#0f3460' } },
+        xAxis: {
+          categories: labels,
+          labels: {
+            rotation: -45,
+            style: { fontSize: '10px', color: '#475569' }
+          }
+        },
+        yAxis: {
+          title: { text: 'hPa', style: { color: '#64748b' } }
+        },
+        series: [
+          {
+            name: 'Presión',
+            data: press,
+            color: '#8b5cf6',
+            lineWidth: 2,
+            type: 'line',
+            marker: { symbol: 'diamond', radius: 4 }
+          }
         ],
         credits: { enabled: false }
       });
