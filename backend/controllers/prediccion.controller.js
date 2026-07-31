@@ -385,10 +385,136 @@ const predecirPresion = (req, res) => {
   ejecutarModeloMovil(req, res, 'presion');
 };
 
+/**
+ * @swagger
+ * /api/predecir/co:
+ *   post:
+ *     summary: Predicción de Monóxido de Carbono (CO) por Fecha
+ *     description: Ejecuta el modelo Random Forest en Python para estimar la concentración de Monóxido de Carbono (CO en ppm) a partir del Mes y Día extraídos de la fecha ingresada.
+ *     tags:
+ *       - Predicciones
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - fecha
+ *             properties:
+ *               fecha:
+ *                 type: string
+ *                 format: date
+ *                 example: "2026-07-31"
+ *     responses:
+ *       200:
+ *         description: Predicción realizada exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 resultado:
+ *                   type: number
+ *                   example: 0.48
+ *       400:
+ *         description: Fecha no proporcionada o formato inválido.
+ *       500:
+ *         description: Error interno al ejecutar el modelo de predicción.
+ */
+const predecirCO = (req, res) => {
+  ejecutarModeloMovil(req, res, 'co');
+};
+
+/**
+ * @swagger
+ * /api/predecir/co2:
+ *   post:
+ *     summary: Predicción de Dióxido de Carbono (CO2) por Fecha
+ *     description: Ejecuta el modelo Random Forest en Python para estimar la concentración de Dióxido de Carbono (CO2 en ppm) a partir del Mes y Día extraídos de la fecha ingresada.
+ *     tags:
+ *       - Predicciones
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - fecha
+ *             properties:
+ *               fecha:
+ *                 type: string
+ *                 format: date
+ *                 example: "2026-07-31"
+ *     responses:
+ *       200:
+ *         description: Predicción realizada exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 resultado:
+ *                   type: number
+ *                   example: 410.14
+ *       400:
+ *         description: Fecha no proporcionada o formato inválido.
+ *       500:
+ *         description: Error interno al ejecutar el modelo de predicción.
+ */
+const predecirCO2 = (req, res) => {
+  ejecutarModeloMovil(req, res, 'co2');
+};
+
+/**
+ * @swagger
+ * /api/predecir/temperatura:
+ *   post:
+ *     summary: Predicción de Temperatura Ambiental por Fecha
+ *     description: Ejecuta el modelo Random Forest en Python para estimar la Temperatura Ambiental (°C) a partir del Mes y Día extraídos de la fecha ingresada.
+ *     tags:
+ *       - Predicciones
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - fecha
+ *             properties:
+ *               fecha:
+ *                 type: string
+ *                 format: date
+ *                 example: "2026-07-31"
+ *     responses:
+ *       200:
+ *         description: Predicción realizada exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 resultado:
+ *                   type: number
+ *                   example: 24.8
+ *       400:
+ *         description: Fecha no proporcionada o formato inválido.
+ *       500:
+ *         description: Error interno al ejecutar el modelo de predicción.
+ */
+const predecirTemperaturaFecha = (req, res) => {
+  ejecutarModeloMovil(req, res, 'temperatura');
+};
+
 module.exports = {
   predecirTemperatura,
   predecirHumedad,
   predecirRadiacion,
   predecirViento,
-  predecirPresion
+  predecirPresion,
+  predecirCO,
+  predecirCO2,
+  predecirTemperaturaFecha
 };

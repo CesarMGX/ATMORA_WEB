@@ -28,11 +28,14 @@ def main():
         'humedad': 'modelo_humedad.pkl',
         'radiacion': 'modelo_radiacion.pkl',
         'viento': 'modelo_viento.pkl',
-        'presion': 'modelo_presion.pkl'
+        'presion': 'modelo_presion.pkl',
+        'co': 'modelo_co.pkl',
+        'co2': 'modelo_co2.pkl',
+        'temperatura': 'modelo_temperatura_fecha.pkl'
     }
 
     if tipo not in modelos:
-        error_msg = {"status": "error", "message": f"Tipo de predicción inválido: '{tipo}'. Opciones válidas: humedad, radiacion, viento, presion"}
+        error_msg = {"status": "error", "message": f"Tipo de predicción inválido: '{tipo}'. Opciones válidas: humedad, radiacion, viento, presion, co, co2, temperatura"}
         print(json.dumps(error_msg), file=sys.stderr)
         sys.exit(1)
 
