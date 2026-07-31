@@ -103,4 +103,13 @@ export class AtmoraService {
   clasificarEntornoSensores(datos: { humedad: number; presion: number; radiacion: number }): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/ia/clasificar-entorno`, datos);
   }
+
+  // ─── Gestión de Usuarios ──────────────────────────────────────────────────
+  actualizarUsuario(id: number, datos: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/usuarios/${id}`, datos);
+  }
+
+  eliminarUsuario(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/usuarios/${id}`);
+  }
 }

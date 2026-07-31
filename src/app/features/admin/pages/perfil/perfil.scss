@@ -36,7 +36,7 @@
 
 .header-section {
   margin-bottom: 30px;
-  h1 { color: #0f3460; font-size: 2.2rem; margin: 0 0 5px 0; }
+  h1 { color: #0f3460; font-size: 2.2rem; margin: 0 0 5px 0; font-weight: 700; }
   p { color: #64748b; margin: 0; font-size: 1rem; }
 }
 
@@ -108,27 +108,55 @@
 
   .display-name {
     color: #0f3460;
-    margin: 0;
-    font-size: 1.4rem;
+    margin: 0 0 4px 0;
+    font-size: 1.35rem;
     font-weight: 700;
     text-align: center;
+  }
+
+  .display-email {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    margin-bottom: 15px;
+    text-align: center;
+    word-break: break-all;
+  }
+
+  .role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: #e2e8f0;
+    color: #475569;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+
+    &.badge-admin {
+      background: rgba(15, 52, 96, 0.12);
+      color: #0f3460;
+      border: 1px solid rgba(15, 52, 96, 0.25);
+    }
+
+    i { font-size: 1rem; }
   }
 }
 
 /* --- SECCIÓN DEL FORMULARIO --- */
 .form-section {
-  padding: 50px 40px;
+  padding: 40px;
   flex: 1;
 
   .form-group {
-    margin-bottom: 25px;
+    margin-bottom: 22px;
 
     label {
       display: block;
       margin-bottom: 8px;
       color: #475569;
       font-weight: 600;
-      font-size: 0.95rem;
+      font-size: 0.92rem;
     }
 
     .input-with-icon {
@@ -140,18 +168,18 @@
         top: 50%;
         transform: translateY(-50%);
         color: #94a3b8;
-        font-size: 1.3rem;
+        font-size: 1.25rem;
       }
 
       input {
         width: 100%;
-        padding: 14px 15px 14px 45px;
+        padding: 13px 15px 13px 45px;
         border: 2px solid #e2e8f0;
         border-radius: 10px;
         outline: none;
         transition: 0.3s;
         box-sizing: border-box;
-        font-size: 1rem;
+        font-size: 0.95rem;
         color: #334155;
         background: #f8fafc;
 
@@ -164,8 +192,66 @@
     }
   }
 
+  /* --- SECCIÓN SEGURIDAD & CONTRASEÑA --- */
+  .security-box {
+    margin-top: 30px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+
+    .security-header {
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+
+      &:hover {
+        background: #f1f5f9;
+      }
+
+      .security-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+        color: #0f3460;
+        font-size: 0.95rem;
+
+        i {
+          font-size: 1.2rem;
+          color: #f77f00;
+        }
+      }
+
+      .btn-toggle-security {
+        background: none;
+        border: none;
+        color: #f77f00;
+        font-weight: 700;
+        font-size: 0.85rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        i { font-size: 1.1rem; }
+      }
+    }
+
+    .security-body {
+      padding: 20px;
+      border-top: 1px solid #e2e8f0;
+      background: white;
+      animation: fadeIn 0.3s ease;
+    }
+  }
+
   .form-actions {
-    margin-top: 40px;
+    margin-top: 30px;
     display: flex;
     justify-content: flex-end;
 
@@ -173,28 +259,118 @@
       background: #0f3460;
       color: white;
       border: none;
-      padding: 14px 30px;
+      padding: 13px 28px;
       border-radius: 10px;
-      font-weight: 600;
-      font-size: 1rem;
+      font-weight: 700;
+      font-size: 0.95rem;
       cursor: pointer;
       transition: all 0.3s;
       display: flex;
       align-items: center;
       gap: 10px;
 
-      &:hover {
+      &:hover:not(:disabled) {
         background: #f77f00;
         transform: translateY(-2px);
         box-shadow: 0 8px 20px rgba(247, 127, 0, 0.3);
       }
       
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
       i { font-size: 1.2rem; }
+    }
+  }
+
+  /* --- ZONA DE PELIGRO: ELIMINAR CUENTA --- */
+  .danger-zone {
+    margin-top: 40px;
+    padding: 20px;
+    background: #fff5f5;
+    border: 1px solid #fed7d7;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+
+    .danger-text {
+      h4 {
+        margin: 0 0 4px 0;
+        color: #c53030;
+        font-size: 0.95rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        i { font-size: 1.1rem; }
+      }
+
+      p {
+        margin: 0;
+        color: #742a2a;
+        font-size: 0.82rem;
+      }
+    }
+
+    .btn-delete-account {
+      background: transparent;
+      border: 1.5px solid #e74c3c;
+      color: #e74c3c;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      &:hover:not(:disabled) {
+        background: #e74c3c;
+        color: white;
+        box-shadow: 0 4px 14px rgba(231, 76, 60, 0.35);
+        transform: translateY(-1px);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      i { font-size: 1.1rem; }
     }
   }
 }
 
+.spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid white;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+.spinner-small-danger {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e74c3c;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 @keyframes fadeIn { 
-  from { opacity: 0; transform: translateY(20px); } 
+  from { opacity: 0; transform: translateY(15px); } 
   to { opacity: 1; transform: translateY(0); } 
 }

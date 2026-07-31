@@ -7,11 +7,12 @@
 
     <div class="header-section">
       <h1>Mi Perfil</h1>
-      <p>Administra tu información personal y foto de cuenta.</p>
+      <p>Administra tu información personal, foto de cuenta y credenciales de acceso.</p>
     </div>
 
     <div class="profile-card">
       
+      <!-- SECCIÓN DEL AVATAR -->
       <div class="avatar-section">
         <div class="avatar-wrapper">
           <img [src]="previewUrl" alt="Foto de perfil">
@@ -22,8 +23,15 @@
           </label>
         </div>
         <h3 class="display-name">{{ user.nombre }}</h3>
+        <span class="display-email">{{ user.correo }}</span>
+
+        <div class="role-badge" [class.badge-admin]="user.rol === 'Admin'">
+          <i class='bx' [ngClass]="user.rol === 'Admin' ? 'bx-shield-quarter' : 'bx-user'"></i>
+          Rol: {{ user.rol }}
+        </div>
       </div>
 
+      <!-- SECCIÓN DEL FORMULARIO -->
       <div class="form-section">
         <form (ngSubmit)="guardarCambios()">
           
@@ -31,7 +39,7 @@
             <label>Nombre Completo</label>
             <div class="input-with-icon">
               <i class='bx bx-user'></i>
-              <input type="text" [(ngModel)]="user.nombre" name="nombre" required>
+              <input type="text" [(ngModel)]="user.nombre" name="nombre" required placeholder="Tu nombre completo">
             </div>
           </div>
 
@@ -39,17 +47,80 @@
             <label>Correo Electrónico</label>
             <div class="input-with-icon">
               <i class='bx bx-envelope'></i>
-              <input type="email" [(ngModel)]="user.correo" name="correo" required>
+              <input type="email" [(ngModel)]="user.correo" name="correo" required placeholder="correo@atmora.io">
+            </div>
+          </div>
+
+          <!-- SECCIÓN DESPLEGABLE: CAMBIAR CONTRASEÑA -->
+          <div class="security-box">
+            <div class="security-header" (click)="toggleCambioPassword()">
+              <div class="security-title">
+                <i class='bx bx-lock-alt'></i>
+                <span>Seguridad de la Cuenta</span>
+              </div>
+              <button type="button" class="btn-toggle-security">
+                <i class='bx' [ngClass]="mostrarCambioPassword ? 'bx-chevron-up' : 'bx-chevron-down'"></i>
+                {{ mostrarCambioPassword ? 'Cancelar' : 'Cambiar Contraseña' }}
+              </button>
+            </div>
+
+            <div class="security-body" *ngIf="mostrarCambioPassword">
+              <div class="form-group">
+                <label>Nueva Contraseña</label>
+                <div class="input-with-icon">
+                  <i class='bx bx-key'></i>
+                  <input 
+                    type="password" 
+                    [(ngModel)]="newPassword" 
+                    name="newPassword" 
+                    placeholder="Escribe la nueva contraseña (mín. 6 caracteres)"
+                  >
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Confirmar Nueva Contraseña</label>
+                <div class="input-with-icon">
+                  <i class='bx bx-check-shield'></i>
+                  <input 
+                    type="password" 
+                    [(ngModel)]="confirmPassword" 
+                    name="confirmPassword" 
+                    placeholder="Repite la nueva contraseña"
+                  >
+                </div>
+              </div>
             </div>
           </div>
 
           <div class="form-actions">
-            <button type="submit" class="btn-save">
-              <i class='bx bx-save'></i> Guardar Cambios
+            <button type="submit" class="btn-save" [disabled]="cargandoGuardar">
+              <i class='bx bx-save' *ngIf="!cargandoGuardar"></i>
+              <span class="spinner-small" *ngIf="cargandoGuardar"></span>
+              {{ cargandoGuardar ? 'Guardando...' : 'Guardar Cambios' }}
             </button>
           </div>
 
         </form>
+
+        <!-- ZONA DE PELIGRO: ELIMINAR CUENTA -->
+        <div class="danger-zone">
+          <div class="danger-text">
+            <h4><i class='bx bx-error-alt'></i> Zona de Peligro</h4>
+            <p>Eliminar de forma permanente esta cuenta de usuario y revocar el acceso.</p>
+          </div>
+          <button 
+            type="button" 
+            class="btn-delete-account" 
+            (click)="confirmarEliminarCuenta()"
+            [disabled]="cargandoEliminar"
+          >
+            <i class='bx bx-trash' *ngIf="!cargandoEliminar"></i>
+            <span class="spinner-small-danger" *ngIf="cargandoEliminar"></span>
+            {{ cargandoEliminar ? 'Eliminando...' : 'Eliminar Cuenta' }}
+          </button>
+        </div>
+
       </div>
 
     </div>
