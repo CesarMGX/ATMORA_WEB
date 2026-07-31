@@ -24,11 +24,6 @@
         </div>
         <h3 class="display-name">{{ user.nombre }}</h3>
         <span class="display-email">{{ user.correo }}</span>
-
-        <div class="role-badge" [class.badge-admin]="user.rol === 'Admin'">
-          <i class='bx' [ngClass]="user.rol === 'Admin' ? 'bx-shield-quarter' : 'bx-user'"></i>
-          Rol: {{ user.rol }}
-        </div>
       </div>
 
       <!-- SECCIÓN DEL FORMULARIO -->
@@ -107,7 +102,7 @@
         <div class="danger-zone">
           <div class="danger-text">
             <h4><i class='bx bx-error-alt'></i> Zona de Peligro</h4>
-            <p>Eliminar de forma permanente esta cuenta de usuario y revocar el acceso.</p>
+            <p>Eliminar de forma permanente tu cuenta.</p>
           </div>
           <button 
             type="button" 
