@@ -37,10 +37,9 @@
         (change)="onParametrosChange()"
         class="device-select"
       >
-        <option value="humedad">Humedad (%)</option>
-        <option value="radiacion">Radiación Solar (W/m²)</option>
-        <option value="viento">Velocidad del Viento (km/h)</option>
-        <option value="presion">Presión Atmosférica (hPa)</option>
+        <option *ngFor="let m of modelosPredictivos" [value]="m.id">
+          {{ m.nombre }}
+        </option>
       </select>
     </div>
 

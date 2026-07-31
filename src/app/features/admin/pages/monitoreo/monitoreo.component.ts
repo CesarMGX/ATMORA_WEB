@@ -28,7 +28,10 @@ export class MonitoreoComponent implements OnInit {
     { id: 'humedad', nombre: 'Humedad (%)', unidad: '%', icono: 'bx-water', descripcion: 'Porcentaje de humedad relativa estimada' },
     { id: 'radiacion', nombre: 'Radiación Solar (W/m²)', unidad: 'W/m²', icono: 'bx-sun', descripcion: 'Intensidad de radiación solar estimada' },
     { id: 'viento', nombre: 'Velocidad del Viento (km/h)', unidad: 'km/h', icono: 'bx-wind', descripcion: 'Velocidad estimada del viento' },
-    { id: 'presion', nombre: 'Presión Atmosférica (hPa)', unidad: 'hPa', icono: 'bx-tachometer', descripcion: 'Presión atmosférica estimada' }
+    { id: 'presion', nombre: 'Presión Atmosférica (hPa)', unidad: 'hPa', icono: 'bx-tachometer', descripcion: 'Presión atmosférica estimada' },
+    { id: 'co', nombre: 'Monóxido de Carbono - CO (ppm)', unidad: 'ppm', icono: 'bx-cloud-drizzle', descripcion: 'Concentración estimada de monóxido de carbono (CO)' },
+    { id: 'co2', nombre: 'Dióxido de Carbono - CO2 (ppm)', unidad: 'ppm', icono: 'bx-cloud', descripcion: 'Concentración estimada de dióxido de carbono (CO2)' },
+    { id: 'temperatura', nombre: 'Temperatura Ambiental (°C)', unidad: '°C', icono: 'bx-thermometer', descripcion: 'Temperatura ambiental estimada' }
   ];
   
   modeloSeleccionado: string = 'humedad';
