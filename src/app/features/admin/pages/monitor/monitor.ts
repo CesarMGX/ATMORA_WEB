@@ -29,6 +29,14 @@ export class Monitor implements OnInit {
   
   searchTerm = '';
 
+  // Variables de Inteligencia Artificial en tiempo real
+  cargandoClasificacionClima = false;
+  entornoClimaGrupo: number | null = null;
+  entornoClimaTexto: string = 'Calculando...';
+
+  cargandoValidacionTemp = false;
+  temperaturaValidadaIA: number | null = null;
+
   constructor(
     private atmoraService: AtmoraService,
     private route: ActivatedRoute,
@@ -74,6 +82,10 @@ export class Monitor implements OnInit {
 
   seleccionarDispositivo(dispositivo: any): void {
     this.dispositivoSeleccionado = dispositivo;
+    this.entornoClimaGrupo = null;
+    this.entornoClimaTexto = 'Calculando...';
+    this.temperaturaValidadaIA = null;
+
     const deviceId = dispositivo.id_dispositivo || dispositivo.id;
     if (deviceId) {
       this.cargarHistorialDispositivo(deviceId);
@@ -99,11 +111,84 @@ export class Monitor implements OnInit {
         this.historialLecturas = data;
         this.actualizarPaginacion();
         this.procesarYRenderizarGraficas(data);
+        this.ejecutarClasificacionEntorno(); // Ejecutar K-Means con la última lectura del dispositivo
         this.cdr.detectChanges();
       },
       error: (err: any) => {
         this.cargandoHistorial = false;
         console.error('Error al cargar historial del dispositivo:', err);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // ─── LÓGICA DE INTELIGENCIA ARTIFICIAL EN TIEMPO REAL ─────────────────────
+  ejecutarClasificacionEntorno(): void {
+    const lectura = this.historialLecturas.length > 0 ? this.historialLecturas[0] : {};
+    
+    const payload = {
+      humedad: Number(lectura.humedad ?? 65.0),
+      presion: Number(lectura.presion ?? 1013.25),
+      radiacion: Number(lectura.radiacion_solar ?? lectura.radiacion ?? 0.0)
+    };
+
+    this.cargandoClasificacionClima = true;
+    this.entornoClimaTexto = 'Calculando...';
+    this.cdr.detectChanges();
+
+    this.atmoraService.clasificarEntornoSensores(payload).subscribe({
+      next: (res: any) => {
+        this.cargandoClasificacionClima = false;
+        if (res && res.grupo !== undefined) {
+          this.entornoClimaGrupo = Number(res.grupo);
+          if (this.entornoClimaGrupo === 0) {
+            this.entornoClimaTexto = 'Templado';
+          } else if (this.entornoClimaGrupo === 1) {
+            this.entornoClimaTexto = 'Húmedo';
+          } else if (this.entornoClimaGrupo === 2) {
+            this.entornoClimaTexto = 'Caluroso';
+          } else {
+            this.entornoClimaTexto = `Grupo ${this.entornoClimaGrupo}`;
+          }
+        } else {
+          this.entornoClimaTexto = 'Sin datos';
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        this.cargandoClasificacionClima = false;
+        this.entornoClimaTexto = 'No disponible';
+        console.error('Error al clasificar entorno IA:', err);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  ejecutarValidacionTemperatura(): void {
+    const lectura = this.historialLecturas.length > 0 ? this.historialLecturas[0] : {};
+
+    const payload = {
+      humedad: Number(lectura.humedad ?? 65.0),
+      presion: Number(lectura.presion ?? 1013.25),
+      radiacion: Number(lectura.radiacion_solar ?? lectura.radiacion ?? 0.0)
+    };
+
+    this.cargandoValidacionTemp = true;
+    this.cdr.detectChanges();
+
+    this.atmoraService.validarTemperaturaSensores(payload).subscribe({
+      next: (res: any) => {
+        this.cargandoValidacionTemp = false;
+        if (res && res.temperatura_predicha !== undefined) {
+          this.temperaturaValidadaIA = Number(res.temperatura_predicha);
+        } else if (res && res.resultado !== undefined) {
+          this.temperaturaValidadaIA = Number(res.resultado);
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        this.cargandoValidacionTemp = false;
+        console.error('Error al validar temperatura IA:', err);
         this.cdr.detectChanges();
       }
     });
@@ -139,17 +224,21 @@ export class Monitor implements OnInit {
     }
   }
 
-  procesarYRenderizarGraficas(data: any[]): void {
-    if (!data || data.length === 0) {
-      return;
-    }
+  onSearch(): void {
+    this.currentPage = 1;
+    this.actualizarPaginacion();
+  }
 
-    // Ordenar cronológicamente ascendente para las gráficas (los registros más antiguos primero)
-    const ordenados = [...data].sort((a, b) => {
-      const fA = new Date(a.fecha_hora || a.fecha_registro).getTime();
-      const fB = new Date(b.fecha_hora || b.fecha_registro).getTime();
-      return fA - fB;
-    });
+  getBadgeEstadoClass(estado: string): string {
+    const e = (estado || '').toLowerCase();
+    if (e === 'activo') return 'badge-activo';
+    if (e === 'mantenimiento') return 'badge-mantenimiento';
+    if (e === 'falla') return 'badge-falla';
+    return 'badge-inactivo';
+  }
+
+  private procesarYRenderizarGraficas(data: any[]): void {
+    const ordenados = [...data].reverse();
 
     const timeLabels: string[] = [];
     const tempSeries: number[] = [];
@@ -188,67 +277,39 @@ export class Monitor implements OnInit {
     // 1. Gráfica Temperatura y Humedad
     const tempHumElement = document.getElementById('chart-temp-hum');
     if (tempHumElement) {
-      Highcharts.chart('chart-temp-hum', {
-        chart: { type: 'spline', backgroundColor: 'transparent' },
-        title: { text: 'Temperatura (°C) y Humedad (%)', style: { color: '#0f3460', fontWeight: '700' } },
-        xAxis: { categories: labels, crosshair: true },
+      Highcharts.chart(tempHumElement, {
+        chart: { type: 'line', backgroundColor: 'transparent' },
+        title: { text: 'Temperatura vs Humedad' },
+        xAxis: { categories: labels },
         yAxis: [
-          { title: { text: 'Temp (°C)', style: { color: '#e74c3c' } }, labels: { format: '{value} °C' } },
-          { title: { text: 'Humedad (%)', style: { color: '#3498db' } }, labels: { format: '{value} %' }, opposite: true }
+          { title: { text: 'Temperatura (°C)' } },
+          { title: { text: 'Humedad (%)' }, opposite: true }
         ],
-        tooltip: { shared: true },
         series: [
-          { name: 'Temperatura', data: temp, color: '#e74c3c', yAxis: 0, tooltip: { valueSuffix: ' °C' } },
-          { name: 'Humedad', data: hum, color: '#3498db', yAxis: 1, tooltip: { valueSuffix: ' %' } }
-        ] as any,
+          { name: 'Temperatura (°C)', data: temp, color: '#f77f00', type: 'line' },
+          { name: 'Humedad (%)', data: hum, color: '#0f3460', yAxis: 1, type: 'line' }
+        ],
         credits: { enabled: false }
       });
     }
 
-    // 2. Gráfica Lluvia y Radiación Solar
+    // 2. Gráfica Precipitaciones y Radiación Solar
     const rainRadElement = document.getElementById('chart-rain-rad');
     if (rainRadElement) {
-      Highcharts.chart('chart-rain-rad', {
+      Highcharts.chart(rainRadElement, {
         chart: { backgroundColor: 'transparent' },
-        title: { text: 'Precipitación (mm) y Radiación Solar (W/m²)', style: { color: '#0f3460', fontWeight: '700' } },
-        xAxis: { categories: labels, crosshair: true },
+        title: { text: 'Precipitación y Radiación Solar' },
+        xAxis: { categories: labels },
         yAxis: [
-          { title: { text: 'Lluvia (mm)', style: { color: '#2ecc71' } }, labels: { format: '{value} mm' }, min: 0 },
-          { title: { text: 'Radiación (W/m²)', style: { color: '#f77f00' } }, labels: { format: '{value} W/m²' }, opposite: true, min: 0 }
+          { title: { text: 'Precipitación (mm)' } },
+          { title: { text: 'Radiación (W/m²)' }, opposite: true }
         ],
-        tooltip: { shared: true },
         series: [
-          { name: 'Lluvia', type: 'column', data: rain, color: '#2ecc71', yAxis: 0, tooltip: { valueSuffix: ' mm' } },
-          { name: 'Radiación Solar', type: 'area', data: rad, color: '#f77f00', yAxis: 1, opacity: 0.35, tooltip: { valueSuffix: ' W/m²' } }
-        ] as any,
+          { name: 'Precipitación (mm)', data: rain, color: '#38bdf8', type: 'column' },
+          { name: 'Radiación (W/m²)', data: rad, color: '#eab308', yAxis: 1, type: 'line' }
+        ],
         credits: { enabled: false }
       });
-    }
-
-    // 3. Gráfica Presión Atmosférica
-    const pressureElement = document.getElementById('chart-pressure');
-    if (pressureElement) {
-      Highcharts.chart('chart-pressure', {
-        chart: { type: 'spline', backgroundColor: 'transparent' },
-        title: { text: 'Presión Atmosférica (hPa)', style: { color: '#0f3460', fontWeight: '700' } },
-        xAxis: { categories: labels, crosshair: true },
-        yAxis: { title: { text: 'Presión (hPa)', style: { color: '#9b59b6' } }, labels: { format: '{value} hPa' } },
-        tooltip: { valueSuffix: ' hPa' },
-        series: [
-          { name: 'Presión Atmosférica', data: press, color: '#9b59b6' }
-        ] as any,
-        credits: { enabled: false }
-      });
-    }
-  }
-
-  getBadgeEstadoClass(estado: string): string {
-    switch ((estado || '').toLowerCase()) {
-      case 'activo': return 'badge-activo';
-      case 'inactivo': return 'badge-inactivo';
-      case 'mantenimiento': return 'badge-mantenimiento';
-      case 'falla': return 'badge-falla';
-      default: return 'badge-activo';
     }
   }
 }

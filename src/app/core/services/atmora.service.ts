@@ -94,4 +94,13 @@ export class AtmoraService {
   predecirPorFecha(modelo: string, fecha: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/predecir/${modelo}`, { fecha });
   }
+
+  // ─── IA basada en sensores en tiempo real ─────────────────────────────────
+  validarTemperaturaSensores(datos: { humedad: number; presion: number; radiacion: number }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/ia/validar-temperatura`, datos);
+  }
+
+  clasificarEntornoSensores(datos: { humedad: number; presion: number; radiacion: number }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/ia/clasificar-entorno`, datos);
+  }
 }

@@ -69,9 +69,29 @@
             <span class="subtitle">Detalles operativos y de ubicación asignada</span>
           </div>
         </div>
-        <span class="badge {{ getBadgeEstadoClass(dispositivoSeleccionado.estado) }}">
-          Estado: {{ dispositivoSeleccionado.estado | titlecase }}
-        </span>
+        <div class="metadata-badges">
+          <!-- BADGE K-MEANS CLIMA IA -->
+          <span 
+            class="badge badge-kmeans" 
+            [ngClass]="{
+              'badge-templado': entornoClimaGrupo === 0,
+              'badge-humedo': entornoClimaGrupo === 1,
+              'badge-caluroso': entornoClimaGrupo === 2,
+              'badge-loading': cargandoClasificacionClima
+            }"
+            title="Clasificación de Entorno basada en K-Means"
+          >
+            <i class="bx bx-brain animate-pulse" *ngIf="cargandoClasificacionClima"></i>
+            <i class="bx bx-cloud-sun" *ngIf="!cargandoClasificacionClima && entornoClimaGrupo === 0"></i>
+            <i class="bx bx-water" *ngIf="!cargandoClasificacionClima && entornoClimaGrupo === 1"></i>
+            <i class="bx bx-sun" *ngIf="!cargandoClasificacionClima && entornoClimaGrupo === 2"></i>
+            Clima IA: {{ entornoClimaTexto }}
+          </span>
+
+          <span class="badge {{ getBadgeEstadoClass(dispositivoSeleccionado.estado) }}">
+            Estado: {{ dispositivoSeleccionado.estado | titlecase }}
+          </span>
+        </div>
       </div>
 
       <div class="metadata-grid">
@@ -97,6 +117,26 @@
         <div class="meta-item">
           <span class="meta-label">Lecturas Registradas</span>
           <span class="meta-value text-orange">{{ historialLecturas.length }} registros</span>
+        </div>
+        <div class="meta-item meta-item-ai">
+          <span class="meta-label">Auditoría IA</span>
+          <div class="ai-action-box">
+            <button 
+              *ngIf="temperaturaValidadaIA === null"
+              (click)="ejecutarValidacionTemperatura()"
+              [disabled]="cargandoValidacionTemp"
+              class="btn-outline-orange"
+            >
+              <span *ngIf="cargandoValidacionTemp" class="spinner-small"></span>
+              <i *ngIf="!cargandoValidacionTemp" class="bx bx-target-lock"></i>
+              {{ cargandoValidacionTemp ? 'Procesando...' : 'Validar Temperatura' }}
+            </button>
+
+            <span *ngIf="temperaturaValidadaIA !== null" class="result-highlight-temp">
+              <i class="bx bx-thermometer"></i>
+              Temp. Estimada: <strong>{{ temperaturaValidadaIA | number:'1.2-2' }}°C</strong>
+            </span>
+          </div>
         </div>
       </div>
     </div>
