@@ -649,10 +649,84 @@ const eliminar = async (req, res) => {
   }
 };
 
+/**
+ * @swagger
+ * /api/usuarios/perfil/foto:
+ *   put:
+ *     summary: Subir o actualizar foto de perfil de usuario en Cloudinary
+ *     description: Recibe una imagen multipart/form-data (campo 'foto'), la sube a la carpeta 'atmora_perfiles' en Cloudinary y retorna la URL pública secure (secure_url).
+ *     tags:
+ *       - Usuarios
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - foto
+ *             properties:
+ *               foto:
+ *                 type: string
+ *                 format: binary
+ *                 description: Archivo de imagen (PNG, JPG, JPEG, WEBP) hasta 5MB.
+ *     responses:
+ *       200:
+ *         description: Imagen subida exitosamente a Cloudinary.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: "Foto de perfil subida correctamente"
+ *                 secure_url:
+ *                   type: string
+ *                   example: "https://res.cloudinary.com/dodpgluzp/image/upload/v123456789/atmora_perfiles/sample.jpg"
+ *                 public_id:
+ *                   type: string
+ *                   example: "atmora_perfiles/sample"
+ *       400:
+ *         description: No se proporcionó archivo o el formato/tamaño no es válido.
+ *       500:
+ *         description: Error interno al subir el archivo a Cloudinary.
+ */
+const subirFotoPerfil = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'No se ha adjuntado ninguna imagen. Asegúrate de enviar el archivo en el campo "foto" como multipart/form-data.'
+      });
+    }
+
+    const secureUrl = req.file.path || req.file.secure_url;
+    const publicId = req.file.filename || req.file.public_id;
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Foto de perfil subida correctamente',
+      secure_url: secureUrl,
+      public_id: publicId
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error al procesar la subida de la foto a Cloudinary',
+      details: error.message
+    });
+  }
+};
+
 module.exports = {
   obtenerTodos,
   obtenerPorId,
   crear,
   actualizar,
-  eliminar
+  eliminar,
+  subirFotoPerfil
 };
