@@ -4,12 +4,20 @@ const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
 
-// Configurar credenciales de Cloudinary leyendo variables de entorno (con valores fallback)
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dodpgluzp',
-  api_key: process.env.CLOUDINARY_API_KEY || '785771948593921',
-  api_secret: process.env.CLOUDINARY_API_SECRET || 'qOALpdh8ESkgOYKLWGJi6HH-lyc',
-});
+// Configuración de Cloudinary: Soporta CLOUDINARY_URL o las variables individuales
+if (process.env.CLOUDINARY_URL) {
+  cloudinary.config({
+    cloudinary_url: process.env.CLOUDINARY_URL.trim(),
+    secure: true,
+  });
+} else {
+  cloudinary.config({
+    cloud_name: (process.env.CLOUDINARY_CLOUD_NAME || 'dodpgluzp').trim(),
+    api_key: (process.env.CLOUDINARY_API_KEY || '785771948593921').trim(),
+    api_secret: (process.env.CLOUDINARY_API_SECRET || 'qOALpdh8ESkgOYKLWGJi6HH-lyc').trim(),
+    secure: true,
+  });
+}
 
 // Configurar el almacenamiento Multer apuntando a la carpeta 'atmora_perfiles' en Cloudinary
 const storage = new CloudinaryStorage({
