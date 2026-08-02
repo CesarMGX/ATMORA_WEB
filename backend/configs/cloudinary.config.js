@@ -13,8 +13,8 @@ if (process.env.CLOUDINARY_URL) {
 } else {
   cloudinary.config({
     cloud_name: (process.env.CLOUDINARY_CLOUD_NAME || 'dodpgluzp').trim(),
-    api_key: (process.env.CLOUDINARY_API_KEY || '785771948593921').trim(),
-    api_secret: (process.env.CLOUDINARY_API_SECRET || 'qOALpdh8ESkgOYKLWGJi6HH-lyc').trim(),
+    api_key: (process.env.CLOUDINARY_API_KEY || '113596888817294').trim(),
+    api_secret: (process.env.CLOUDINARY_API_SECRET || 'Fwdwlf9ZdkcHXzaUej1jBnLcubI').trim(),
     secure: true,
   });
 }
