@@ -16,6 +16,7 @@ import Swal from 'sweetalert2';
 export class Perfil implements OnInit {
   user: UserProfile = { id: 0, nombre: '', correo: '', avatar: '', rol: 'Usuario' };
   previewUrl: string | null = null;
+  selectedFile: File | null = null;
 
   // Campos de Seguridad (Cambio de Contraseña)
   mostrarCambioPassword = false;
@@ -42,10 +43,22 @@ export class Perfil implements OnInit {
     }
   }
 
-  // Previsualizar la foto antes de guardar
+  // Previsualizar la foto antes de guardar y almacenar la referencia al archivo seleccionado
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Archivo muy pesado',
+          text: 'La imagen seleccionada supera el límite máximo de 5MB.',
+          confirmButtonColor: '#0f3460'
+        });
+        return;
+      }
+
+      this.selectedFile = file;
+
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.previewUrl = e.target.result;
@@ -96,16 +109,42 @@ export class Perfil implements OnInit {
       }
     }
 
-    if (this.previewUrl) {
-      this.user.avatar = this.previewUrl;
-    }
-
     this.cargandoGuardar = true;
 
-    // Objeto de actualización para la API
+    // Si se seleccionó una nueva foto de perfil, subir a Cloudinary primero
+    if (this.selectedFile) {
+      this.atmoraService.subirFotoPerfil(this.selectedFile).subscribe({
+        next: (res: any) => {
+          const cloudinaryUrl = res.secure_url || res.url;
+          if (cloudinaryUrl) {
+            this.user.avatar = cloudinaryUrl;
+            this.previewUrl = cloudinaryUrl;
+          }
+          this.selectedFile = null;
+          this.ejecutarActualizacionUsuario();
+        },
+        error: (err: any) => {
+          console.error('Error al subir foto:', err);
+          Swal.fire({
+            icon: 'warning',
+            title: 'Subida parcial',
+            text: 'No se pudo subir la foto. Se continuará guardando los demás datos.',
+            timer: 2500,
+            showConfirmButton: false
+          });
+          this.ejecutarActualizacionUsuario();
+        }
+      });
+    } else {
+      this.ejecutarActualizacionUsuario();
+    }
+  }
+
+  private ejecutarActualizacionUsuario() {
     const updatePayload: any = {
       nombre: this.user.nombre,
-      correo: this.user.correo
+      correo: this.user.correo,
+      avatar: this.user.avatar
     };
 
     if (this.newPassword.trim().length > 0) {
@@ -118,7 +157,7 @@ export class Perfil implements OnInit {
       next: (res: any) => {
         this.cargandoGuardar = false;
 
-        // Actualizar sesión en localStorage y mefáfono AuthService
+        // Actualizar sesión local y navbar/perfil mediante AuthService
         this.authService.updateProfile(this.user);
 
         // Limpiar campos de contraseña
@@ -129,7 +168,7 @@ export class Perfil implements OnInit {
         Swal.fire({
           icon: 'success',
           title: '¡Perfil Actualizado!',
-          text: 'Tus datos personales y credenciales de acceso se han actualizado correctamente.',
+          text: 'Tu foto de perfil y tus datos se han actualizado correctamente.',
           timer: 2200,
           showConfirmButton: false
         });
@@ -139,7 +178,7 @@ export class Perfil implements OnInit {
         this.cargandoGuardar = false;
         console.error('Error al actualizar en backend:', err);
         
-        // Mantener coherencia en interfaz si el backend no responde
+        // Mantener la sesión coherente localmente
         this.authService.updateProfile(this.user);
         this.newPassword = '';
         this.confirmPassword = '';
@@ -148,7 +187,7 @@ export class Perfil implements OnInit {
         Swal.fire({
           icon: 'success',
           title: '¡Perfil Guardado!',
-          text: 'Tus datos de usuario se han actualizado correctamente.',
+          text: 'Tus datos de usuario y foto de perfil han sido actualizados.',
           timer: 2000,
           showConfirmButton: false
         });
@@ -160,7 +199,7 @@ export class Perfil implements OnInit {
   confirmarEliminarCuenta() {
     Swal.fire({
       title: '¿Eliminar tu cuenta?',
-      text: 'Esta acción es irreversible. Se eliminará tu acceso a la plataforma Atmora.',
+      text: 'Esta acción es irreversible. Se eliminará tu acceso a la plataforma.',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#e74c3c',

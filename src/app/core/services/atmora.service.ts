@@ -87,10 +87,6 @@ export class AtmoraService {
   }
 
   // ─── Predicción de Inteligencia Artificial ──────────────────────────────────
-  predecirTemperatura(datos: { humedad: number; presion: number; radiacion: number }): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/predecir`, datos);
-  }
-
   predecirPorFecha(modelo: string, fecha: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/predecir/${modelo}`, { fecha });
   }
@@ -104,7 +100,13 @@ export class AtmoraService {
     return this.http.post<any>(`${this.apiUrl}/ia/clasificar-entorno`, datos);
   }
 
-  // ─── Gestión de Usuarios ──────────────────────────────────────────────────
+  // ─── Gestión de Usuarios & Cloudinary ────────────────────────────────────
+  subirFotoPerfil(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('foto', file);
+    return this.http.put<any>(`${this.apiUrl}/usuarios/perfil/foto`, formData);
+  }
+
   actualizarUsuario(id: number, datos: any): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/usuarios/${id}`, datos);
   }
