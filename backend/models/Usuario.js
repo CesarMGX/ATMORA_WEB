@@ -2,7 +2,7 @@
 
 /**
  * Modelo Usuario
- * Representa a los usuarios del sistema con su información personal y rol.
+ * Representa a los usuarios del sistema con su información personal, avatar y rol.
  */
 module.exports = (sequelize, DataTypes) => {
   const Usuario = sequelize.define(
@@ -48,6 +48,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: 'visualizador',
         comment: 'Rol del usuario en el sistema',
+      },
+      avatar: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        comment: 'URL de la foto de perfil en Cloudinary',
       },
       fecha_registro: {
         type: DataTypes.DATE,

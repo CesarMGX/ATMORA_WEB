@@ -115,6 +115,13 @@ const startServer = async () => {
       console.error('⚠️ No se pudo verificar la columna "fecha_registro" automáticamente:', sqlError.message);
     }
 
+    try {
+      await sequelize.query('ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS avatar TEXT;');
+      console.log('✅ Columna "avatar" verificada/creada en usuarios.');
+    } catch (sqlError) {
+      console.error('⚠️ No se pudo verificar la columna "avatar" automáticamente:', sqlError.message);
+    }
+
     await sequelize.sync({ alter: false });
     console.log('Modelos sincronizados con la base de datos');
 

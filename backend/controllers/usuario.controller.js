@@ -98,7 +98,7 @@ const obtenerTodos = async (req, res) => {
         password: json.contrasena,
         rol: esAdmin ? 'Admin' : 'Usuario',
         estado: json.estado || 'Activo',
-        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(json.nombre)}&background=0f3460&color=fff`,
+        avatar: json.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(json.nombre)}&background=0f3460&color=fff`,
         fechaRegistro: fechaReg,
         primerIngreso: false
       };
@@ -208,7 +208,7 @@ const obtenerPorId = async (req, res) => {
       password: json.contrasena,
       rol: json.rol === 'admin' ? 'Admin' : 'Usuario',
       estado: 'Activo',
-      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(json.nombre)}&background=0f3460&color=fff`,
+      avatar: json.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(json.nombre)}&background=0f3460&color=fff`,
       fechaRegistro: '2026-03-26',
       primerIngreso: false
     };
@@ -358,6 +358,7 @@ const crear = async (req, res) => {
       correo,
       contrasena,
       rol: mappedRol,
+      avatar: req.body.avatar || null,
       fecha_registro: new Date()
     });
 
@@ -369,7 +370,7 @@ const crear = async (req, res) => {
       password: json.contrasena,
       rol: json.rol === 'admin' ? 'Admin' : 'Usuario',
       estado: 'Activo',
-      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(json.nombre)}&background=0f3460&color=fff`,
+      avatar: json.avatar || req.body.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(json.nombre)}&background=0f3460&color=fff`,
       fechaRegistro: new Date().toISOString().split('T')[0],
       primerIngreso: true
     };
@@ -534,6 +535,7 @@ const actualizar = async (req, res) => {
       updateData.ap_paterno = nameParts.slice(1).join(' ') || 'Paterno';
     }
     if (correo !== undefined) updateData.correo = correo;
+    if (req.body.avatar !== undefined) updateData.avatar = req.body.avatar;
     
     const plainPassword = password || contrasena;
     if (plainPassword !== undefined) updateData.contrasena = plainPassword;
@@ -554,7 +556,7 @@ const actualizar = async (req, res) => {
       password: json.contrasena,
       rol: json.rol === 'admin' ? 'Admin' : 'Usuario',
       estado: 'Activo',
-      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(json.nombre)}&background=0f3460&color=fff`,
+      avatar: json.avatar || req.body.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(json.nombre)}&background=0f3460&color=fff`,
       fechaRegistro: new Date().toISOString().split('T')[0],
       primerIngreso: primerIngreso !== undefined ? primerIngreso : false
     };
