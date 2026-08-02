@@ -12,7 +12,7 @@ if (process.env.CLOUDINARY_URL) {
   });
 } else {
   cloudinary.config({
-    cloud_name: (process.env.CLOUDINARY_CLOUD_NAME || 'dodpgluzp').trim(),
+    cloud_name: (process.env.CLOUDINARY_CLOUD_NAME || 'atmora-fotos').trim(),
     api_key: (process.env.CLOUDINARY_API_KEY || '113596888817294').trim(),
     api_secret: (process.env.CLOUDINARY_API_SECRET || 'Fwdwlf9ZdkcHXzaUej1jBnLcubI').trim(),
     secure: true,
