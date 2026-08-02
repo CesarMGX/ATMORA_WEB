@@ -4,17 +4,19 @@ const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
 
-// Configuración de Cloudinary: Soporta CLOUDINARY_URL o las variables individuales
+// Función auxiliar para limpiar comillas y espacios accidentales agregados en Railway
+const cleanEnv = (val) => (val || '').replace(/["']/g, '').trim();
+
 if (process.env.CLOUDINARY_URL) {
   cloudinary.config({
-    cloudinary_url: process.env.CLOUDINARY_URL.trim(),
+    cloudinary_url: cleanEnv(process.env.CLOUDINARY_URL),
     secure: true,
   });
 } else {
   cloudinary.config({
-    cloud_name: (process.env.CLOUDINARY_CLOUD_NAME || 'dodpgluzp').trim(),
-    api_key: (process.env.CLOUDINARY_API_KEY || '113596888817294').trim(),
-    api_secret: (process.env.CLOUDINARY_API_SECRET || 'Fwdwlf9ZdkcHXzaUej1jBnLcubI').trim(),
+    cloud_name: cleanEnv(process.env.CLOUDINARY_CLOUD_NAME) || 'dodpgluzp',
+    api_key: cleanEnv(process.env.CLOUDINARY_API_KEY) || '113596888817294',
+    api_secret: cleanEnv(process.env.CLOUDINARY_API_SECRET) || 'Fwdwlf9ZdkcHXzaUej1jBnLcubI',
     secure: true,
   });
 }
