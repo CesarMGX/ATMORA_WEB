@@ -20,6 +20,8 @@ Gestiona dispositivos IoT, sensores ambientales, alertas y usuarios del sistema.
 - **Dispositivos** — Administración de hardware IoT
 - **Historial de Sensores** — Lecturas ambientales (temperatura, humedad, CO₂, etc.)
 - **Alertas** — Notificaciones por valores críticos
+- **IA & Sensores** — Visualización del estado actual de los Arduinos
+- **Predicciones** — Algoritmos de predicción de parámetros ambientales
 - **Usuarios** — Control de acceso y roles
       `,
       contact: {
