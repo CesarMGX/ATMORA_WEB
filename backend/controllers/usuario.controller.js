@@ -1,6 +1,7 @@
 'use strict';
 
 const { Usuario } = require('../models');
+const { cloudinary } = require('../configs/cloudinary.config');
 
 /**
  * @swagger
@@ -704,16 +705,24 @@ const subirFotoPerfil = async (req, res) => {
       });
     }
 
-    const secureUrl = req.file.path || req.file.secure_url;
-    const publicId = req.file.filename || req.file.public_id;
+    // Convertir el buffer de Multer a Data URI base64
+    const b64 = Buffer.from(req.file.buffer).toString('base64');
+    const dataURI = `data:${req.file.mimetype};base64,${b64}`;
+
+    // Subir a Cloudinary
+    const uploadResult = await cloudinary.uploader.upload(dataURI, {
+      folder: 'atmora_perfiles',
+      resource_type: 'image',
+    });
 
     return res.status(200).json({
       status: 'success',
       message: 'Foto de perfil subida correctamente',
-      secure_url: secureUrl,
-      public_id: publicId
+      secure_url: uploadResult.secure_url,
+      public_id: uploadResult.public_id
     });
   } catch (error) {
+    console.error('Error al subir imagen a Cloudinary:', error);
     return res.status(500).json({
       status: 'error',
       message: 'Error al procesar la subida de la foto a Cloudinary',

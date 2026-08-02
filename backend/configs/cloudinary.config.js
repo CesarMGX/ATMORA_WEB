@@ -1,34 +1,29 @@
 'use strict';
 
 const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
 
-// Función auxiliar para limpiar comillas y espacios accidentales agregados en Railway
+// Función auxiliar para limpiar comillas y espacios de Railway
 const cleanEnv = (val) => (val || '').replace(/["']/g, '').trim();
 
-if (process.env.CLOUDINARY_URL) {
+const cloudinaryUrl = cleanEnv(process.env.CLOUDINARY_URL);
+
+if (cloudinaryUrl) {
   cloudinary.config({
-    cloudinary_url: cleanEnv(process.env.CLOUDINARY_URL),
+    cloudinary_url: cloudinaryUrl,
     secure: true,
   });
 } else {
   cloudinary.config({
-    cloud_name: cleanEnv(process.env.CLOUDINARY_CLOUD_NAME) || 'dodpgluzp',
+    cloud_name: cleanEnv(process.env.CLOUDINARY_CLOUD_NAME) || 'dodpgiuzp',
     api_key: cleanEnv(process.env.CLOUDINARY_API_KEY) || '113596888817294',
     api_secret: cleanEnv(process.env.CLOUDINARY_API_SECRET) || 'Fwdwlf9ZdkcHXzaUej1jBnLcubI',
     secure: true,
   });
 }
 
-// Configurar el almacenamiento Multer apuntando a la carpeta 'atmora_perfiles' en Cloudinary
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'atmora_perfiles',
-    allowed_formats: ['png', 'jpg', 'jpeg', 'webp'],
-  },
-});
+// Configurar almacenamiento Multer en Memoria para convertir a Data URI
+const storage = multer.memoryStorage();
 
 // Middleware Multer con límite de peso de 5MB y filtro de formato
 const uploadPerfilFoto = multer({
