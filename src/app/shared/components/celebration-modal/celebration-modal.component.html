@@ -1,0 +1,24 @@
+<div class="celebration-overlay" *ngIf="state.visible" (click)="cerrarAlHacerClicEnFondo($event)">
+  <div class="wrapper">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <span class="emoji">{{ state.emoji || '👏' }}</span>
+      <h1>{{ state.title }}</h1>
+      <p>{{ state.message }}</p>
+      <button type="button" class="modal-btn" (click)="cerrar()">
+        ¡Excelente, gracias!
+      </button>
+    </div>
+    
+    <div id="confetti-wrapper">
+      <div 
+        *ngFor="let piece of confettiPieces" 
+        class="confetti"
+        [style.top.px]="piece.top"
+        [style.left.px]="piece.left"
+        [style.background-color]="piece.color"
+        [style.transform]="piece.transform"
+        [style.animation-delay.s]="piece.delay"
+      ></div>
+    </div>
+  </div>
+</div>

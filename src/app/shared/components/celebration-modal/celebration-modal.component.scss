@@ -1,0 +1,138 @@
+:root {
+  --border-color: #D7DBE3;
+  --green: #0CD977;
+  --red: #FF1C1C;
+  --pink: #FF93DE;
+  --purple: #5767ED;
+  --yellow: #FFC61C;
+}
+
+.celebration-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 52, 96, 0.65);
+  backdrop-filter: blur(5px);
+  z-index: 99999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+  overflow: hidden;
+}
+
+.modal {
+  width: 32rem;
+  max-width: 90vw;
+  margin: 0 auto;
+  border: 1px solid #D7DBE3;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+  background-color: #fff;
+  border-radius: 0.75rem;
+  padding: 2.5rem 2rem 2rem 2rem;
+  z-index: 10;
+  text-align: center;
+  position: relative;
+  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.emoji {
+  display: block;
+  text-align: center;
+  font-size: 5rem;
+  line-height: 5rem;
+  margin-bottom: 1rem;
+}
+
+.modal h1 {
+  text-align: center;
+  color: #0f3460;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.modal p {
+  padding: 0 1.5rem; 
+  line-height: 1.6rem;
+  text-align: center;
+  color: #475569;
+  font-size: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.modal-btn {
+  display: block;
+  margin: 0 -2rem -2rem -2rem;
+  padding: 1.2rem 2rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  text-align: center;
+  color: #fff;
+  font-weight: 700;
+  border-radius: 0 0 0.75rem 0.75rem;
+  background-color: #0CD977;
+  text-decoration: none;
+  border: none;
+  width: calc(100% + 4rem);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+
+  &:hover {
+    background-color: #0abf68;
+    box-shadow: 0 4px 15px rgba(12, 217, 119, 0.4);
+  }
+}
+
+#confetti-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+@keyframes confettiRain {
+  0% {
+    opacity: 1;
+    margin-top: -100vh;
+    margin-left: -200px;
+  } 
+  100% {
+    opacity: 1;
+    margin-top: 100vh;
+    margin-left: 200px;
+  }
+}
+
+.confetti {
+  opacity: 0;
+  position: absolute;
+  width: 1rem;
+  height: 1.5rem;
+  animation: confettiRain 5s infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
