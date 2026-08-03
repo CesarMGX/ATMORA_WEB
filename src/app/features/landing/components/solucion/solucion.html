@@ -37,16 +37,26 @@
       <a href="#" class="btn-primary">Descarga la App</a>
     </div>
 
+    <!-- MOCKUP INTERACTIVO DEL SMARTPHONE CON VIDEO DE LA APP -->
     <div class="image-col" data-aos="fade-left">
-      <div class="placeholder-mockup">
-        <div class="screen">
-          <div class="app-header"></div>
-          <div class="app-body">
-            <div class="circle-indicator">95 ICA</div>
-            <div class="graph-line"></div>
-          </div>
+      <div class="phone-device-mockup">
+        <!-- Notch / Isla Dinámica -->
+        <div class="phone-notch"></div>
+        
+        <!-- Pantalla interactiva con video en bucle continuo -->
+        <div class="phone-screen">
+          <video autoplay loop muted playsinline preload="auto" class="app-video-player">
+            <source src="app-video.mp4" type="video/mp4">
+            Tu navegador no soporta la reproducción de video.
+          </video>
         </div>
+
+        <!-- Botones físicos laterales -->
+        <div class="phone-button power"></div>
+        <div class="phone-button volume-up"></div>
+        <div class="phone-button volume-down"></div>
       </div>
     </div>
+
   </div>
 </section>
