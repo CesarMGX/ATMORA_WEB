@@ -17,11 +17,11 @@
       <div class="footer-column">
         <h4>Navegación</h4>
         <ul class="footer-links">
-          <li><a href="#problema"><i class='bx bx-chevron-right'></i> El Problema</a></li>
-          <li><a href="#solucion"><i class='bx bx-chevron-right'></i> Nuestra Solución</a></li>
-          <li><a href="#beneficios"><i class='bx bx-chevron-right'></i> Beneficios</a></li>
-          <li><a href="#precios"><i class='bx bx-chevron-right'></i> Planes y Precios</a></li>
-          <li><a href="#equipo"><i class='bx bx-chevron-right'></i> Nuestro Equipo</a></li>
+          <li><a routerLink="/" fragment="problema"><i class='bx bx-chevron-right'></i> El Problema</a></li>
+          <li><a routerLink="/" fragment="solucion"><i class='bx bx-chevron-right'></i> Nuestra Solución</a></li>
+          <li><a routerLink="/" fragment="beneficios"><i class='bx bx-chevron-right'></i> Beneficios</a></li>
+          <li><a routerLink="/" fragment="precios"><i class='bx bx-chevron-right'></i> Precios</a></li>
+          <li><a routerLink="/" fragment="equipo"><i class='bx bx-chevron-right'></i> Nuestro Equipo</a></li>
         </ul>
       </div>
 
@@ -29,9 +29,9 @@
       <div class="footer-column">
         <h4>Plataforma</h4>
         <ul class="footer-links">
-          <li><a href="/login"><i class='bx bx-chevron-right'></i> Iniciar Sesión</a></li>
-          <li><a href="/register"><i class='bx bx-chevron-right'></i> Crear Cuenta</a></li>
-          <li><a href="/Atmora.apk" download="Atmora.apk"><i class='bx bx-chevron-right'></i> Descargar App Android (.apk)</a></li>
+          <li><a routerLink="/auth"><i class='bx bx-chevron-right'></i> Iniciar Sesión</a></li>
+          <li><a routerLink="/auth" [queryParams]="{ mode: 'register' }"><i class='bx bx-chevron-right'></i> Crear Cuenta</a></li>
+          <li><a href="#" (click)="descargarApp($event)"><i class='bx bx-chevron-right'></i> Descargar App Android (.apk)</a></li>
         </ul>
       </div>
 
