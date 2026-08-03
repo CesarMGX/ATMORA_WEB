@@ -1,87 +1,264 @@
 .footer-container {
-  background-color: #111111; /* Negro suave, muy elegante */
-  color: white;
-  padding-top: 60px;
-  font-family: var(--font-main); /* Tu fuente: Montaser Arabic / Poppins */
+  background-color: #0b1329; /* Azul muy oscuro y elegante */
+  color: #cbd5e1;
+  padding-top: 70px;
+  font-family: var(--font-main, 'Outfit', 'Inter', sans-serif);
   display: flex;
   flex-direction: column;
-  align-items: center;
+  border-top: 1px solid #1e293b;
 }
 
 .footer-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 30px;
-  margin-bottom: 50px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 25px 60px 25px;
+  box-sizing: border-box;
 }
 
-/* Estilo de los Iconos (Círculos blancos) */
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.2fr 1.5fr;
+  gap: 40px;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+    gap: 35px;
+  }
+}
+
+/* Columna de Marca */
+.footer-brand {
+  .brand-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+
+    .footer-logo {
+      height: 40px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .brand-name {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 1px;
+      background: linear-gradient(135deg, #ffffff 0%, #f77f00 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  }
+
+  .brand-description {
+    color: #94a3b8;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 24px;
+    max-width: 340px;
+  }
+}
+
+/* Iconos de Redes Sociales */
 .social-icons {
   display: flex;
-  gap: 15px;
+  gap: 12px;
 
   .icon-link {
-    width: 50px;
-    height: 50px;
-    background-color: white; /* Fondo blanco como en tu imagen */
-    color: #111; /* Icono oscuro */
+    width: 42px;
+    height: 42px;
+    background-color: #1e293b;
+    color: #f8fafc;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     text-decoration: none;
     transition: all 0.3s ease;
-    box-shadow: 0 5px 15px rgba(255,255,255,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 
-    /* Efecto Hover: Se vuelve naranja y sube un poco */
     &:hover {
-      background-color: var(--cta-orange);
+      background-color: var(--cta-orange, #f77f00);
       color: white;
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(247, 127, 0, 0.4);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(247, 127, 0, 0.4);
+      border-color: transparent;
     }
   }
 }
 
-/* Menú de navegación */
-.footer-nav {
+/* Columnas de Navegación y Recursos */
+.footer-column {
+  h4 {
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    position: relative;
+    padding-bottom: 10px;
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 30px;
+      height: 3px;
+      background: var(--cta-orange, #f77f00);
+      border-radius: 2px;
+    }
+  }
+
+  .footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      margin-bottom: 12px;
+
+      a {
+        color: #94a3b8;
+        text-decoration: none;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        i {
+          font-size: 1.1rem;
+          color: #64748b;
+          transition: transform 0.2s ease;
+        }
+
+        &:hover {
+          color: var(--cta-orange, #f77f00);
+          transform: translateX(4px);
+
+          i {
+            color: var(--cta-orange, #f77f00);
+          }
+        }
+      }
+    }
+  }
+}
+
+/* Contacto e Información */
+.contact-info {
   list-style: none;
   padding: 0;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 30px;
+  margin: 0 0 20px 0;
 
-  li a {
-    color: #ddd; /* Blanco no tan brillante para no cansar la vista */
-    text-decoration: none;
-    font-size: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: color 0.3s ease;
-    font-weight: 500;
+  li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    color: #94a3b8;
+    font-size: 0.95rem;
 
-    &:hover {
-      color: var(--cta-orange); /* Naranja al pasar el mouse */
+    i {
+      font-size: 1.2rem;
+      color: var(--cta-orange, #f77f00);
+      flex-shrink: 0;
     }
   }
 }
 
-/* Barra inferior negra total */
+/* Tarjeta de Estado de los Servidores */
+.system-status-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(46, 204, 113, 0.3);
+  border-radius: 50px;
+  margin-top: 5px;
+
+  .status-indicator-dot {
+    width: 10px;
+    height: 10px;
+    background-color: #2ecc71;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #2ecc71;
+    animation: pulseDot 2s infinite;
+  }
+
+  .status-text {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #2ecc71;
+  }
+}
+
+@keyframes pulseDot {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Barra Inferior */
 .footer-bottom {
-  background-color: #000000;
+  background-color: #070d1c;
   width: 100%;
-  padding: 20px;
-  text-align: center;
-  border-top: 1px solid #222; /* Línea sutil separadora */
-  
-  p {
-    margin: 0;
-    color: #666;
-    font-size: 0.9rem;
-    letter-spacing: 0.5px;
+  padding: 24px 25px;
+  border-top: 1px solid #1e293b;
+  box-sizing: border-box;
+
+  .footer-bottom-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+
+    @media (max-width: 640px) {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    p {
+      margin: 0;
+      color: #64748b;
+      font-size: 0.9rem;
+
+      strong {
+        color: #cbd5e1;
+      }
+    }
+
+    .legal-links {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      a {
+        color: #64748b;
+        text-decoration: none;
+        font-size: 0.85rem;
+        transition: color 0.2s ease;
+
+        &:hover {
+          color: #94a3b8;
+        }
+      }
+
+      span {
+        color: #334155;
+        font-size: 0.8rem;
+      }
+    }
   }
 }
