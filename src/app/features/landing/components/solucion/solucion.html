@@ -43,10 +43,10 @@
         <!-- Notch / Isla Dinámica -->
         <div class="phone-notch"></div>
         
-        <!-- Pantalla interactiva con video en bucle continuo -->
+        <!-- Pantalla interactiva con reproductor activado por desplazamiento -->
         <div class="phone-screen">
-          <video autoplay loop muted playsinline preload="auto" class="app-video-player">
-            <source src="app-video.mp4" type="video/mp4">
+          <video #appVideo autoplay loop muted playsinline preload="auto" class="app-video-player">
+            <source src="/app-video.mp4" type="video/mp4">
             Tu navegador no soporta la reproducción de video.
           </video>
         </div>
