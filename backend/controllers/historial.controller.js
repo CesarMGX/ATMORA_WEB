@@ -91,6 +91,7 @@ const getHistorialById = async (req, res, next) => {
 /**
  * @desc    Registra una nueva lectura de sensor en la base de datos.
  *          Asigna automáticamente la fecha/hora actual si la petición no incluye fecha.
+ *          Auto-registra el dispositivo si aún no existe para evitar pérdida de datos IoT.
  * @route   POST /api/historial
  * @access  Private (dispositivos IoT autorizados)
  */
@@ -103,35 +104,47 @@ const createHistorial = async (req, res, next) => {
       co2, co, pm_25, pm_10, id_dispositivo, dispositivo_id,
     } = req.body;
 
-    const targetDeviceId = id_dispositivo || dispositivo_id;
+    const targetDeviceId = Number(id_dispositivo || dispositivo_id || 1);
 
-    // Verificar que el dispositivo exista
-    const dispositivo = await Dispositivo.findByPk(targetDeviceId);
+    // Verificar que el dispositivo exista o auto-crearlo para no rechazar paquetes de hardware físico
+    let dispositivo = await Dispositivo.findByPk(targetDeviceId);
     if (!dispositivo) {
-      return res.status(404).json({
-        status: 'error',
-        message: `No existe el dispositivo con ID ${targetDeviceId}`,
-      });
+      try {
+        dispositivo = await Dispositivo.create({
+          id_dispositivo: targetDeviceId,
+          nombre_dispositivo: `Estación Sensor #${targetDeviceId}`,
+          estado: 'activo',
+          fecha_instalacion: new Date()
+        });
+      } catch (e) {
+        dispositivo = await Dispositivo.create({
+          nombre_dispositivo: `Estación Sensor #${targetDeviceId}`,
+          estado: 'activo',
+          fecha_instalacion: new Date()
+        });
+      }
     }
 
-    // Usar la fecha enviada o asignar la fecha/hora exacta actual
+    // Parseo seguro de números para aceptar cadenas "25.4" o valores numéricos puros
+    const parseNum = (val) => (val !== undefined && val !== null && val !== '' && !isNaN(Number(val)) ? Number(val) : null);
+
     const fechaFinal = fecha_hora || fecha_registro || new Date();
     const radiacionFinal = radiacion_solar !== undefined ? radiacion_solar : radiacion;
 
     const nuevoHistorial = await HistorialSensor.create({
       fecha_hora: fechaFinal,
-      temperatura,
-      humedad,
-      presion,
-      velocidad_viento,
-      direccion_viento,
-      precipitacion,
-      radiacion_solar: radiacionFinal,
-      co2,
-      co,
-      pm_25,
-      pm_10,
-      id_dispositivo: targetDeviceId,
+      temperatura: parseNum(temperatura),
+      humedad: parseNum(humedad),
+      presion: parseNum(presion),
+      velocidad_viento: parseNum(velocidad_viento),
+      direccion_viento: parseNum(direccion_viento),
+      precipitacion: parseNum(precipitacion),
+      radiacion_solar: parseNum(radiacionFinal),
+      co2: parseNum(co2),
+      co: parseNum(co),
+      pm_25: parseNum(pm_25),
+      pm_10: parseNum(pm_10),
+      id_dispositivo: dispositivo ? dispositivo.id_dispositivo : targetDeviceId,
     });
 
     res.status(201).json({
