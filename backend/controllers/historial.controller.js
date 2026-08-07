@@ -16,13 +16,16 @@ const getHistoriales = async (req, res, next) => {
       page = 1,
       limit = 20,
       id_dispositivo,
+      dispositivo_id,
       fecha_inicio,
       fecha_fin,
     } = req.query;
 
+    const targetDeviceId = id_dispositivo || dispositivo_id;
+
     // Construcción dinámica del filtro WHERE
     const where = {};
-    if (id_dispositivo) where.id_dispositivo = Number(id_dispositivo);
+    if (targetDeviceId) where.id_dispositivo = Number(targetDeviceId);
     if (fecha_inicio || fecha_fin) {
       where.fecha_hora = {};
       if (fecha_inicio) where.fecha_hora[Op.gte] = new Date(fecha_inicio);
@@ -87,30 +90,48 @@ const getHistorialById = async (req, res, next) => {
 // ─── CREAR UN NUEVO HISTORIAL ─────────────────────────────────────────────────
 /**
  * @desc    Registra una nueva lectura de sensor en la base de datos.
+ *          Asigna automáticamente la fecha/hora actual si la petición no incluye fecha.
  * @route   POST /api/historial
  * @access  Private (dispositivos IoT autorizados)
  */
 const createHistorial = async (req, res, next) => {
   try {
     const {
-      fecha_hora, temperatura, humedad, velocidad_viento,
-      direccion_viento, precipitacion, radiacion_solar,
-      co2, co, pm_25, pm_10, id_dispositivo,
+      fecha_hora, fecha_registro,
+      temperatura, humedad, presion, velocidad_viento,
+      direccion_viento, precipitacion, radiacion_solar, radiacion,
+      co2, co, pm_25, pm_10, id_dispositivo, dispositivo_id,
     } = req.body;
 
+    const targetDeviceId = id_dispositivo || dispositivo_id;
+
     // Verificar que el dispositivo exista
-    const dispositivo = await Dispositivo.findByPk(id_dispositivo);
+    const dispositivo = await Dispositivo.findByPk(targetDeviceId);
     if (!dispositivo) {
       return res.status(404).json({
         status: 'error',
-        message: `No existe el dispositivo con ID ${id_dispositivo}`,
+        message: `No existe el dispositivo con ID ${targetDeviceId}`,
       });
     }
 
+    // Usar la fecha enviada o asignar la fecha/hora exacta actual
+    const fechaFinal = fecha_hora || fecha_registro || new Date();
+    const radiacionFinal = radiacion_solar !== undefined ? radiacion_solar : radiacion;
+
     const nuevoHistorial = await HistorialSensor.create({
-      fecha_hora, temperatura, humedad, velocidad_viento,
-      direccion_viento, precipitacion, radiacion_solar,
-      co2, co, pm_25, pm_10, id_dispositivo,
+      fecha_hora: fechaFinal,
+      temperatura,
+      humedad,
+      presion,
+      velocidad_viento,
+      direccion_viento,
+      precipitacion,
+      radiacion_solar: radiacionFinal,
+      co2,
+      co,
+      pm_25,
+      pm_10,
+      id_dispositivo: targetDeviceId,
     });
 
     res.status(201).json({
