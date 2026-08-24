@@ -39,51 +39,71 @@ def get_engine():
 
 def reentrenar_todo():
     print("Iniciando extracción de datos para reentrenamiento continuo MLOps...")
-    print("Conectando a base de datos...")
+    print("Conectando a base de datos PostgreSQL...")
     
+    df = pd.DataFrame()
     try:
         engine = get_engine()
+        print(f"📡 Conectado a PostgreSQL ({engine.url.host}:{engine.url.port} / BD: {engine.url.database})")
         
         # 2. Descargar el historial de sensores (soporta 'historial_sensores' o 'historial')
         try:
             query = "SELECT * FROM historial_sensores"
             df = pd.read_sql(query, engine)
-        except Exception as e:
+            print(f"✅ Lectura exitosa de la tabla 'historial_sensores'. Total filas: {len(df)}")
+        except Exception as e1:
+            print(f"ℹ️ Reintentando con tabla alternativa 'historial' por: {e1}")
             query = "SELECT * FROM historial"
             df = pd.read_sql(query, engine)
+            print(f"✅ Lectura exitosa de la tabla 'historial'. Total filas: {len(df)}")
     except Exception as db_err:
         print(f"⚠️ Error de conexión a PostgreSQL ({DATABASE_URL}): {db_err}")
-        return
 
-    # Validar si el DataFrame está vacío (aborta SOLO si no hay registros, len == 0)
-    if df is None or len(df) == 0:
+    # Si df.empty, imprimir advertencia y salir
+    if df is None or df.empty:
         print("⚠️ No hay registros en la base de datos para reentrenar los modelos.")
         return
 
-    # Reemplazar valores nulos (sin eliminar filas con dropna)
-    df = df.fillna(0)
+    # Esquema exacto de columnas de PostgreSQL en Railway:
+    # id_historial, fecha_hora, temperatura, humedad, velocidad_viento, direccion_viento,
+    # precipitacion, radiacion_solar, co2, co, pm_25, pm_10, id_dispositivo, presion
+    cols_sensores_totales = [
+        'temperatura', 'humedad', 'velocidad_viento', 'direccion_viento',
+        'precipitacion', 'radiacion_solar', 'co2', 'co', 'pm_25', 'pm_10', 'presion'
+    ]
 
-    # Mapeo de alias de columnas si es necesario
+    # Mapear alias por si acaso
     if 'radiacion_solar' not in df.columns and 'radiacion' in df.columns:
         df['radiacion_solar'] = df['radiacion']
 
-    # Asegurar conversión numérica con pd.to_numeric(..., errors='coerce').fillna(0)
-    cols_sensores = ['temperatura', 'humedad', 'radiacion_solar', 'velocidad_viento', 'presion', 'co2', 'co']
-    for col in cols_sensores:
+    # Convertir todas las columnas de sensores a valores numéricos usando pd.to_numeric(..., errors='coerce').fillna(0)
+    for col in cols_sensores_totales:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
         else:
             df[col] = 0.0
 
+    # Parsear fecha_hora con pd.to_datetime y extraer Mes y Dia
+    fecha_col = 'fecha_hora' if 'fecha_hora' in df.columns else ('fecha_registro' if 'fecha_registro' in df.columns else None)
+    if fecha_col and fecha_col in df.columns:
+        df[fecha_col] = pd.to_datetime(df[fecha_col], errors='coerce').fillna(pd.Timestamp.now())
+        df['Mes'] = df[fecha_col].dt.month
+        df['Dia'] = df[fecha_col].dt.day
+    else:
+        now = pd.Timestamp.now()
+        df['Mes'] = now.month
+        df['Dia'] = now.day
+
     print(f"📊 Registros recuperados para entrenamiento: {len(df)}")
     print("🤖 Entrenando IA de Auditoría y Clasificación (K-Means y Regresión Lineal)...")
 
-    # --- ALGORITMO 1 y 2: K-MEANS Y REGRESIÓN LINEAL ---
+    # --- AUDITORÍA Y SEGMENTACIÓN ---
+    # Features: ['humedad', 'presion', 'radiacion_solar']
     X_auditoria = df[['humedad', 'presion', 'radiacion_solar']]
     y_temp_real = df['temperatura']
 
-    # K-Means (adapta clusters si hay pocos registros iniciales)
-    n_clusters = min(3, len(df))
+    # K-Means (k=3)
+    n_clusters = min(3, max(1, len(df)))
     modelo_kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
     modelo_kmeans.fit(X_auditoria)
     joblib.dump(modelo_kmeans, os.path.join(BASE_DIR, 'modelo_kmeans.pkl'))
@@ -95,40 +115,36 @@ def reentrenar_todo():
     joblib.dump(modelo_lin, os.path.join(BASE_DIR, 'modelo_temperatura.pkl'))
     print(" -> Guardado: modelo_temperatura.pkl")
 
-    print("🌲 Entrenando pronósticos a futuro (Bosques Aleatorios)...")
+    print("🌲 Entrenando pronósticos temporales (Bosques Aleatorios)...")
 
-    # --- ALGORITMO 3: RANDOM FOREST (Para App Móvil) ---
-    fecha_col = 'fecha_hora' if 'fecha_hora' in df.columns else ('fecha_registro' if 'fecha_registro' in df.columns else None)
+    # --- PRONÓSTICO TEMPORAL (RANDOM FOREST) ---
+    cols_promediar = ['temperatura', 'humedad', 'radiacion_solar', 'velocidad_viento', 'presion', 'co2', 'co', 'pm_25', 'pm_10']
     
-    if fecha_col and fecha_col in df.columns:
-        df[fecha_col] = pd.to_datetime(df[fecha_col], errors='coerce').fillna(pd.Timestamp.now())
-        df['Mes'] = df[fecha_col].dt.month
-        df['Dia'] = df[fecha_col].dt.day
-    else:
-        df['Mes'] = 8
-        df['Dia'] = 14
+    # Agrupar por ['Mes', 'Dia'] promediando las columnas especificadas
+    df_diario = df.groupby(['Mes', 'Dia'])[cols_promediar].mean().reset_index()
 
-    # Agrupamos por día y sacamos el promedio
-    df_diario = df.groupby(['Mes', 'Dia'])[cols_sensores].mean().reset_index()
-    X_fechas = df_diario[['Mes', 'Dia']]
+    if len(df_diario) >= 1:
+        X_fechas = df_diario[['Mes', 'Dia']]
 
-    modelos_rf = {
-        'temperatura': 'modelo_temperatura_fecha.pkl',
-        'humedad': 'modelo_humedad.pkl',
-        'radiacion_solar': 'modelo_radiacion.pkl',
-        'velocidad_viento': 'modelo_viento.pkl',
-        'presion': 'modelo_presion.pkl',
-        'co2': 'modelo_co2.pkl',
-        'co': 'modelo_co.pkl'
-    }
+        modelos_rf = {
+            'temperatura': 'modelo_temperatura_fecha.pkl',
+            'humedad': 'modelo_humedad.pkl',
+            'radiacion_solar': 'modelo_radiacion.pkl',
+            'velocidad_viento': 'modelo_viento.pkl',
+            'presion': 'modelo_presion.pkl',
+            'co2': 'modelo_co2.pkl',
+            'co': 'modelo_co.pkl',
+            'pm_25': 'modelo_pm25.pkl',
+            'pm_10': 'modelo_pm10.pkl'
+        }
 
-    # Bucle que entrena y exporta cada variable (funciona aun con len(df_diario) < 2)
-    for variable, archivo_pkl in modelos_rf.items():
-        modelo_rf = RandomForestRegressor(n_estimators=100, random_state=42)
-        modelo_rf.fit(X_fechas, df_diario[variable])
-        path_pkl = os.path.join(BASE_DIR, archivo_pkl)
-        joblib.dump(modelo_rf, path_pkl)
-        print(f" -> Guardado: {archivo_pkl}")
+        # Bucle que entrena un RandomForestRegressor para cada variable con X = df_diario[['Mes', 'Dia']]
+        for variable, archivo_pkl in modelos_rf.items():
+            modelo_rf = RandomForestRegressor(n_estimators=100, random_state=42)
+            modelo_rf.fit(X_fechas, df_diario[variable])
+            path_pkl = os.path.join(BASE_DIR, archivo_pkl)
+            joblib.dump(modelo_rf, path_pkl)
+            print(f" -> Guardado: {archivo_pkl}")
 
     print("✅ ¡Éxito! Todos los modelos de Inteligencia Artificial han sido reentrenados correctamente.")
 

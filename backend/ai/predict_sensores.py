@@ -49,7 +49,7 @@ def main():
         # Crear DataFrame con nombres de características exactas
         df = pd.DataFrame(
             [[humedad, presion, radiacion]],
-            columns=['Humedad exterior', 'Presion admosferica', 'Radiacion solar']
+            columns=['humedad', 'presion', 'radiacion_solar']
         )
 
         # Realizar la predicción
