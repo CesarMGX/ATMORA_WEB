@@ -149,6 +149,10 @@ const startServer = async () => {
     };
     await seedInitialAdmin();
 
+    // 2c. Iniciar la tarea programada MLOps (reentrenamiento diario a las 3:00 AM)
+    const { iniciarCronMLOps } = require('./services/cron.service');
+    iniciarCronMLOps();
+
     // 3. Iniciar el servidor HTTP
     app.listen(PORT, () => {
       console.log(`API corriendo en http://localhost:${PORT}`);
