@@ -8,6 +8,11 @@
     "dev": "nodemon server.js",
     "db:sync": "node -e \"require('./configs/database').sequelize.sync({ force: false }).then(() => { console.log('DB sincronizada'); process.exit(0); })\""
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@scarf/scarf"
+    ]
+  },
   "keywords": [
     "api",
     "monitoreo",

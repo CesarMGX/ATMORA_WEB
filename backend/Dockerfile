@@ -17,7 +17,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 
 # Instalar pnpm globalmente y luego instalar las dependencias del proyecto
-RUN npm install -g pnpm && pnpm install
+RUN npm install -g pnpm && pnpm install --frozen-lockfile
 
 # Copiar el resto de los archivos de la carpeta backend
 COPY . .
