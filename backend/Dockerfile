@@ -16,8 +16,8 @@ WORKDIR /app
 # Copiar solo los archivos de configuración de dependencias primero
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Instalar pnpm globalmente y luego instalar las dependencias del proyecto
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
+# Instalar pnpm11 y luego instalar las dependencias del proyecto
+RUN npm install -g pnpm@11 && pnpm install --frozen-lockfile
 
 # Copiar el resto de los archivos de la carpeta backend
 COPY . .
