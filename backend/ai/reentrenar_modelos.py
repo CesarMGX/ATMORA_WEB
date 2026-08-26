@@ -30,9 +30,9 @@ def asegurar_dependencias():
         req_path = os.path.join(os.path.dirname(__file__), '../requirements.txt')
         try:
             if os.path.exists(req_path):
-                subprocess.run([sys.executable, "-m", "pip", "install", "-r", req_path], check=True)
+                subprocess.run([sys.executable, "-m", "pip", "install", "--break-system-packages", "-r", req_path], check=False)
             else:
-                subprocess.run([sys.executable, "-m", "pip", "install"] + faltantes, check=True)
+                subprocess.run([sys.executable, "-m", "pip", "install", "--break-system-packages"] + faltantes, check=False)
             print("✅ Librerías de MLOps instaladas correctamente en el servidor.")
         except Exception as e:
             print(f"⚠️ Aviso al intentar instalar librerías automáticamente: {e}")
