@@ -1,0 +1,9 @@
+# Configuración de Nixpacks para Railway: instala Node.js y Python con sus dependencias
+[providers]
+providers = ["node", "python"]
+
+[phases.install]
+cmds = [
+  "pnpm install",
+  "pip install -r requirements.txt"
+]

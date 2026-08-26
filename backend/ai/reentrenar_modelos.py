@@ -1,10 +1,43 @@
 import os
 import sys
 import io
+import subprocess
 
-# Forzar codificación UTF-8 para evitar errores de consola CP1252 en Windows
+# Forzar codificación UTF-8 para evitar errores de consola CP1252 en Windows/Linux
 if hasattr(sys.stdout, 'buffer'):
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+
+# 0. Auto-instalación de librerías en caso de que el entorno de Railway no las tenga preinstaladas
+def asegurar_dependencias():
+    librerias_clave = {
+        'sqlalchemy': 'sqlalchemy',
+        'pandas': 'pandas',
+        'joblib': 'joblib',
+        'sklearn': 'scikit-learn',
+        'psycopg2': 'psycopg2-binary',
+        'dotenv': 'python-dotenv'
+    }
+    
+    faltantes = []
+    for mod, pkg in librerias_clave.items():
+        try:
+            __import__(mod)
+        except ImportError:
+            faltantes.append(pkg)
+            
+    if faltantes:
+        print(f"📦 [MLOps] Detectadas librerías faltantes ({', '.join(faltantes)}). Auto-instalando en Railway...")
+        req_path = os.path.join(os.path.dirname(__file__), '../requirements.txt')
+        try:
+            if os.path.exists(req_path):
+                subprocess.run([sys.executable, "-m", "pip", "install", "-r", req_path], check=True)
+            else:
+                subprocess.run([sys.executable, "-m", "pip", "install"] + faltantes, check=True)
+            print("✅ Librerías de MLOps instaladas correctamente en el servidor.")
+        except Exception as e:
+            print(f"⚠️ Aviso al intentar instalar librerías automáticamente: {e}")
+
+asegurar_dependencias()
 
 import pandas as pd
 import joblib
