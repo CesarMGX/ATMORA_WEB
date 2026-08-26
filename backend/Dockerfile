@@ -1,5 +1,5 @@
 # Usar una imagen ligera de Node.js
-FROM node:20-alpine
+FROM node:22-alpine
 
 # Instalar Python 3, pip y librerías científicas optimizadas y precompiladas para Alpine
 RUN apk add --no-cache \
