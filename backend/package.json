@@ -6,7 +6,6 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "postinstall": "pip install --break-system-packages -r requirements.txt || python3 -m pip install --break-system-packages -r requirements.txt || true",
     "db:sync": "node -e \"require('./configs/database').sequelize.sync({ force: false }).then(() => { console.log('DB sincronizada'); process.exit(0); })\""
   },
   "keywords": [
