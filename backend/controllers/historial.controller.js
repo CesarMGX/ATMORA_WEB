@@ -128,7 +128,9 @@ const createHistorial = async (req, res, next) => {
     // Parseo seguro de números para aceptar cadenas "25.4" o valores numéricos puros
     const parseNum = (val) => (val !== undefined && val !== null && val !== '' && !isNaN(Number(val)) ? Number(val) : null);
 
-    const fechaFinal = fecha_hora || fecha_registro || new Date();
+    // Garantizar que siempre se asigne la fecha y hora actual del servidor (new Date())
+    // Ignorando cualquier fecha estática, desactualizada o en blanco del payload Arduino/IoT
+    const fechaFinal = new Date();
     const radiacionFinal = radiacion_solar !== undefined ? radiacion_solar : radiacion;
 
     const nuevoHistorial = await HistorialSensor.create({
