@@ -46,7 +46,7 @@ def main():
         # Cargar modelo guardado (.pkl)
         model = joblib.load(model_path)
 
-        # Crear DataFrame con nombres de características exactas
+        # Crear DataFrame estrictamente con las lecturas numéricas y las features exactas del entrenamiento
         df = pd.DataFrame(
             [[humedad, presion, radiacion]],
             columns=['humedad', 'presion', 'radiacion_solar']
@@ -57,8 +57,16 @@ def main():
 
         if algoritmo == 'regresion':
             resultado_val = float(prediccion[0])
+            
+            # Clamp de seguridad: la temperatura predicha debe estar en el rango [-10°C, 60°C]
+            anomalia = False
+            if resultado_val < -10.0 or resultado_val > 60.0:
+                anomalia = True
+                resultado_val = max(-10.0, min(60.0, resultado_val))
+
             respuesta = {
-                "temperatura_predicha": round(resultado_val, 2)
+                "temperatura_predicha": round(resultado_val, 2),
+                "anomalia_detectada": anomalia
             }
         else:
             grupo_val = int(prediccion[0])

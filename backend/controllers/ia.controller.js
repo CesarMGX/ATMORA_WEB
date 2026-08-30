@@ -60,7 +60,29 @@ const ejecutarModeloSensores = (req, res, algoritmo) => {
     }
 
     try {
-      const resultadoJson = JSON.parse(stdoutData.trim());
+      let resultadoJson = JSON.parse(stdoutData.trim());
+
+      // Clamp de seguridad en Backend para auditoría de temperatura (-10°C a 60°C)
+      if (resultadoJson.temperatura_predicha !== undefined) {
+        let temp = parseFloat(resultadoJson.temperatura_predicha);
+        const tempMedida = req.body.temperatura !== undefined ? parseFloat(req.body.temperatura) : null;
+
+        if (isNaN(temp) || temp < -10.0 || temp > 60.0) {
+          console.warn(`⚠️ [IA Security Clamp] Temperatura predicha (${temp}°C) anómala. Aplicando fallback.`);
+
+          // Fallback a temperatura actual medida si fue enviada, o clamp seguro entre -10°C y 60°C
+          if (tempMedida !== null && !isNaN(tempMedida)) {
+            temp = tempMedida;
+          } else {
+            temp = Math.min(60.0, Math.max(-10.0, isNaN(temp) ? 20.0 : temp));
+          }
+
+          resultadoJson.temperatura_predicha = Math.round(temp * 100) / 100;
+          resultadoJson.anomalia_detectada = true;
+          resultadoJson.mensaje_seguridad = 'Valor predicho anómalo ajustado por límite de seguridad';
+        }
+      }
+
       return res.status(200).json(resultadoJson);
     } catch (parseError) {
       console.error(`Error al parsear JSON (${algoritmo}):`, stdoutData);

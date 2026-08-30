@@ -2,7 +2,7 @@ import sys
 import os
 import warnings
 warnings.filterwarnings("ignore")
-# pyrefly: ignore [missing-import]
+
 import joblib
 import pandas as pd
 
@@ -33,18 +33,21 @@ def main():
         # Cargar el modelo guardado en pkl
         model = joblib.load(model_path)
         
-        # Crear DataFrame con los nombres de características exactos con los que fue entrenado
-        # Nota: 'Presion admosferica' contiene un error ortográfico en el entrenamiento original
+        # Crear DataFrame estrictamente con las lecturas numéricas de sensores y las features exactas del entrenamiento
         df = pd.DataFrame(
             [[humedad, presion, radiacion]], 
-            columns=['Humedad exterior', 'Presion admosferica', 'Radiacion solar']
+            columns=['humedad', 'presion', 'radiacion_solar']
         )
         
         # Realizar la predicción
         prediccion = model.predict(df)
+        resultado_val = float(prediccion[0])
         
-        # Imprimir el resultado de la predicción (temperatura) para que lo capture Node.js
-        print(prediccion[0])
+        # Clamp de seguridad: la temperatura no debe exceder el rango [-10°C, 60°C]
+        resultado_val = max(-10.0, min(60.0, resultado_val))
+        
+        # Imprimir el resultado para que lo capture Node.js
+        print(round(resultado_val, 2))
         
     except Exception as e:
         print(f"Error al cargar el modelo o realizar la predicción: {e}", file=sys.stderr)

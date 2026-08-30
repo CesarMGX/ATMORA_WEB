@@ -40,11 +40,13 @@ def asegurar_dependencias():
 asegurar_dependencias()
 
 import pandas as pd
+import numpy as np
 import joblib
 from sqlalchemy import create_engine
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.cluster import KMeans
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 # Intentar cargar variables desde .env
 try:
@@ -131,7 +133,7 @@ def reentrenar_todo():
     print("🤖 Entrenando IA de Auditoría y Clasificación (K-Means y Regresión Lineal)...")
 
     # --- AUDITORÍA Y SEGMENTACIÓN ---
-    # Features: ['humedad', 'presion', 'radiacion_solar']
+    # Features estrictas de sensores (excluyendo IDs y timestamps): ['humedad', 'presion', 'radiacion_solar']
     X_auditoria = df[['humedad', 'presion', 'radiacion_solar']]
     y_temp_real = df['temperatura']
 
@@ -142,11 +144,22 @@ def reentrenar_todo():
     joblib.dump(modelo_kmeans, os.path.join(BASE_DIR, 'modelo_kmeans.pkl'))
     print(" -> Guardado: modelo_kmeans.pkl")
 
-    # Regresión Lineal Múltiple
+    # Regresión Lineal Múltiple para Auditoría de Temperatura
     modelo_lin = LinearRegression()
     modelo_lin.fit(X_auditoria, y_temp_real)
     joblib.dump(modelo_lin, os.path.join(BASE_DIR, 'modelo_temperatura.pkl'))
     print(" -> Guardado: modelo_temperatura.pkl")
+
+    # --- CÁLCULO DE MÉTRICAS DE PRECISIÓN EN AUDITORÍA ---
+    y_pred_lin = modelo_lin.predict(X_auditoria)
+    mae_lin = mean_absolute_error(y_temp_real, y_pred_lin)
+    rmse_lin = np.sqrt(mean_squared_error(y_temp_real, y_pred_lin))
+    r2_lin = r2_score(y_temp_real, y_pred_lin) if len(df) > 1 else 1.0
+
+    print("📈 [Métricas Auditoría Temperatura]")
+    print(f"    - MAE (Error Absoluto Medio): {mae_lin:.2f} °C")
+    print(f"    - RMSE (Raíz del Error Cuadrático Medio): {rmse_lin:.2f} °C")
+    print(f"    - R² Score (Coeficiente de Determinación): {r2_lin:.4f}")
 
     print("🌲 Entrenando pronósticos temporales (Bosques Aleatorios)...")
 
@@ -175,11 +188,17 @@ def reentrenar_todo():
         for variable, archivo_pkl in modelos_rf.items():
             modelo_rf = RandomForestRegressor(n_estimators=100, random_state=42)
             modelo_rf.fit(X_fechas, df_diario[variable])
+            
+            # Evaluación de precisión para Random Forest
+            y_pred_rf = modelo_rf.predict(X_fechas)
+            mae_rf = mean_absolute_error(df_diario[variable], y_pred_rf)
+            r2_rf = r2_score(df_diario[variable], y_pred_rf) if len(df_diario) > 1 else 1.0
+            
             path_pkl = os.path.join(BASE_DIR, archivo_pkl)
             joblib.dump(modelo_rf, path_pkl)
-            print(f" -> Guardado: {archivo_pkl}")
+            print(f" -> Guardado: {archivo_pkl} | MAE: {mae_rf:.2f} | R²: {r2_rf:.4f}")
 
-    print("✅ ¡Éxito! Todos los modelos de Inteligencia Artificial han sido reentrenados correctamente.")
+    print("✅ ¡Éxito! Todos los modelos de Inteligencia Artificial han sido reentrenados y evaluados correctamente.")
 
 if __name__ == "__main__":
     reentrenar_todo()
