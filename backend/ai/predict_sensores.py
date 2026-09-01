@@ -50,10 +50,11 @@ def main():
         # Cargar modelo guardado (.pkl)
         model = joblib.load(model_path)
 
-        # Crear DataFrame estrictamente con las lecturas numéricas y las features exactas del entrenamiento
+        # Crear DataFrame estrictamente con el orden exacto de columnas usado en reentrenar_modelos.py:
+        # ['humedad', 'radiacion_solar', 'presion']
         df = pd.DataFrame(
-            [[humedad, presion, radiacion]],
-            columns=['humedad', 'presion', 'radiacion_solar']
+            [[humedad, radiacion, presion]],
+            columns=['humedad', 'radiacion_solar', 'presion']
         )
 
         # Realizar la predicción
