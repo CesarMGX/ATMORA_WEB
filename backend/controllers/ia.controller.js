@@ -16,16 +16,13 @@ const ejecutarModeloSensores = (req, res, algoritmo) => {
     });
   }
 
-  const h = parseFloat(humedad);
-  const p = parseFloat(presion);
-  const r = parseFloat(radiacion);
+  let h = parseFloat(humedad);
+  let p = parseFloat(presion);
+  let r = parseFloat(radiacion);
 
-  if (isNaN(h) || isNaN(p) || isNaN(r)) {
-    return res.status(400).json({
-      status: 'error',
-      message: 'Los parámetros humedad, presion y radiacion deben ser valores numéricos.'
-    });
-  }
+  if (isNaN(h)) h = 65.0;
+  if (isNaN(p) || p <= 0) p = 1013.25;
+  if (isNaN(r)) r = 0.0;
 
   const scriptPath = path.join(__dirname, '../ai/predict_sensores.py');
   const pythonCmd = process.env.PYTHON_PATH || (process.platform === 'win32' ? 'python' : 'python3');

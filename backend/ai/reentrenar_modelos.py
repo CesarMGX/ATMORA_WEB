@@ -111,12 +111,20 @@ def reentrenar_todo():
     if 'radiacion_solar' not in df.columns and 'radiacion' in df.columns:
         df['radiacion_solar'] = df['radiacion']
 
-    # Convertir todas las columnas de sensores a valores numéricos usando pd.to_numeric(..., errors='coerce').fillna(0)
+    # Convertir todas las columnas de sensores a valores numéricos
     for col in cols_sensores_totales:
         if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+            df[col] = pd.to_numeric(df[col], errors='coerce')
         else:
-            df[col] = 0.0
+            df[col] = np.nan
+
+    # Reemplazar ceros o vacíos en presión por la presión atmosférica estándar (1013.25 hPa)
+    # para evitar que filas sin sensor de presión distorsionen la regresión lineal
+    if 'presion' in df.columns:
+        df['presion'] = df['presion'].replace(0, np.nan).fillna(1013.25)
+
+    # Rellenar resto de nulos de sensores de forma segura
+    df = df.fillna(0.0)
 
     # Parsear fecha_hora con pd.to_datetime y extraer Mes y Dia
     fecha_col = 'fecha_hora' if 'fecha_hora' in df.columns else ('fecha_registro' if 'fecha_registro' in df.columns else None)
@@ -134,8 +142,13 @@ def reentrenar_todo():
 
     # --- AUDITORÍA Y SEGMENTACIÓN ---
     # Features estrictas de sensores (excluyendo IDs y timestamps): ['humedad', 'presion', 'radiacion_solar']
-    X_auditoria = df[['humedad', 'presion', 'radiacion_solar']]
-    y_temp_real = df['temperatura']
+    # Filtrar solo lecturas con temperatura en rango válido para no contaminar la pendiente de la regresión
+    df_temp_valida = df[(df['temperatura'] >= -10) & (df['temperatura'] <= 60)]
+    if len(df_temp_valida) < 2:
+        df_temp_valida = df
+
+    X_auditoria = df_temp_valida[['humedad', 'presion', 'radiacion_solar']]
+    y_temp_real = df_temp_valida['temperatura']
 
     # K-Means (k=3)
     n_clusters = min(3, max(1, len(df)))
@@ -154,7 +167,7 @@ def reentrenar_todo():
     y_pred_lin = modelo_lin.predict(X_auditoria)
     mae_lin = mean_absolute_error(y_temp_real, y_pred_lin)
     rmse_lin = np.sqrt(mean_squared_error(y_temp_real, y_pred_lin))
-    r2_lin = r2_score(y_temp_real, y_pred_lin) if len(df) > 1 else 1.0
+    r2_lin = r2_score(y_temp_real, y_pred_lin) if len(df_temp_valida) > 1 else 1.0
 
     print("📈 [Métricas Auditoría Temperatura]")
     print(f"    - MAE (Error Absoluto Medio): {mae_lin:.2f} °C")

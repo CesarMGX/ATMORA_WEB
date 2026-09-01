@@ -19,6 +19,10 @@ def main():
         presion = float(sys.argv[2])
         radiacion = float(sys.argv[3])
         algoritmo = sys.argv[4].lower().strip()
+
+        # Si la presión enviada es <= 0 (sensor descalibrado o desconectado), usar 1013.25 hPa estándar
+        if presion <= 0:
+            presion = 1013.25
     except ValueError:
         error_msg = {"status": "error", "message": "Humedad, Presion y Radiacion deben ser valores numéricos"}
         print(json.dumps(error_msg), file=sys.stderr)
