@@ -97,7 +97,7 @@ export class MonitoreoComponent implements OnInit {
     this.errorMsg = null;
   }
 
-  ejecutarPruebaIA(): void {
+  ejecutarPrueba(): void {
     if (!this.fechaSeleccionada) {
       this.errorMsg = 'Por favor selecciona una fecha válida en el rango permitido.';
       return;
@@ -116,7 +116,7 @@ export class MonitoreoComponent implements OnInit {
         } else if (response && response.resultado !== undefined) {
           this.resultadoIA = parseFloat(response.resultado);
         } else {
-          this.errorMsg = 'Respuesta no válida del servicio de inteligencia artificial.';
+          this.errorMsg = 'Respuesta no válida.';
         }
         this.cdr.detectChanges();
       },
@@ -127,7 +127,7 @@ export class MonitoreoComponent implements OnInit {
         
         Swal.fire({
           icon: 'error',
-          title: 'Fallo en la prueba de IA',
+          title: 'Fallo en la prueba de predicción',
           text: this.errorMsg || 'No se pudo obtener el resultado del modelo.',
           confirmButtonColor: '#e74c3c'
         });

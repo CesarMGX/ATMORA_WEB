@@ -66,13 +66,13 @@
     <!-- 4. BOTÓN ORANGE SÓLIDO -->
     <div class="prediction-action">
       <button 
-        (click)="ejecutarPruebaIA()"
+        (click)="ejecutarPrueba()"
         [disabled]="isLoading || !fechaSeleccionada"
         class="btn-predict"
       >
         <span *ngIf="isLoading" class="spinner-small"></span>
         <i *ngIf="!isLoading" class="bx bx-play-circle animate-pulse-slow"></i>
-        {{ isLoading ? 'Procesando...' : 'Ejecutar Prueba de IA' }}
+        {{ isLoading ? 'Procesando...' : 'Ejecutar Prueba' }}
       </button>
     </div>
 
