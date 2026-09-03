@@ -161,7 +161,7 @@
         <p>Este equipo aún no ha enviado datos de telemetría. La información se desplegará en cuanto emita lecturas.</p>
       </div>
 
-      <!-- CONTENEDOR DE LAS 4 GRÁFICAS (HIGHCHARTS) -->
+      <!-- CONTENEDOR DE LAS GRÁFICAS (HIGHCHARTS) -->
       <div *ngIf="!cargandoHistorial && historialLecturas.length > 0" class="charts-grid">
         
         <!-- GRÁFICA 1: TEMPERATURA Y HUMEDAD -->
@@ -179,7 +179,17 @@
           <div id="chart-co2-co" class="chart-container"></div>
         </div>
 
-        <!-- GRÁFICA 4: PRESIÓN ATMOSFÉRICA (ANCHO COMPLETO - HIGHCHARTS) -->
+        <!-- GRÁFICA 4: PARTÍCULAS EN SUSPENSIÓN (PM 2.5 / PM 10) -->
+        <div class="chart-card">
+          <div id="chart-pm" class="chart-container"></div>
+        </div>
+
+        <!-- GRÁFICA 5: VELOCIDAD Y DIRECCIÓN DEL VIENTO -->
+        <div class="chart-card">
+          <div id="chart-wind" class="chart-container"></div>
+        </div>
+
+        <!-- GRÁFICA 6: PRESIÓN ATMOSFÉRICA (ANCHO COMPLETO) -->
         <div class="chart-card full-width">
           <div id="chart-pressure" class="chart-container"></div>
         </div>
@@ -201,63 +211,99 @@
             type="text" 
             [(ngModel)]="searchTerm" 
             (ngModelChange)="actualizarPaginacion()" 
-            placeholder="Buscar por fecha, temp..." 
+            placeholder="Buscar por fecha, temp, CO2..." 
           />
         </div>
       </div>
 
-      <!-- TABLA DE HISTÓRICO -->
+      <!-- TABLA DE HISTÓRICO CON SCROLL HORIZONTAL RESPONSIVO TAILWIND -->
       <div class="table-card">
-        <table class="modern-table">
-          <thead>
-            <tr>
-              <th>Fecha y Hora</th>
-              <th>Temperatura</th>
-              <th>Humedad</th>
-              <th>Presión</th>
-              <th>Radiación Solar</th>
-              <th>Lluvia</th>
-              <th>Velocidad Viento</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let item of historialPaginado">
-              <td class="fw-bold">
-                <i class="bx bx-calendar-event text-blue"></i>
-                {{ (item.fecha_hora || item.fecha_registro) | date:'medium' }}
-              </td>
-              <td>
-                <span class="value-chip temp">
-                  {{ item.temperatura ?? '--' }} °C
-                </span>
-              </td>
-              <td>
-                <span class="value-chip hum">
-                  {{ item.humedad ?? '--' }} %
-                </span>
-              </td>
-              <td>
-                <span class="value-chip press">
-                  {{ item.presion ?? 1013.25 }} hPa
-                </span>
-              </td>
-              <td>
-                <span class="value-chip rad">
-                  {{ item.radiacion_solar ?? item.radiacion ?? 0 }} W/m²
-                </span>
-              </td>
-              <td>{{ item.precipitacion ?? item.lluvia ?? 0 }} mm</td>
-              <td>{{ item.velocidad_viento ?? 0 }} km/h</td>
-            </tr>
+        <div class="w-full overflow-x-auto">
+          <table class="modern-table min-w-full">
+            <thead>
+              <tr>
+                <th class="whitespace-nowrap">Fecha y Hora</th>
+                <th class="whitespace-nowrap">Temperatura</th>
+                <th class="whitespace-nowrap">Humedad</th>
+                <th class="whitespace-nowrap">Presión</th>
+                <th class="whitespace-nowrap">Radiación Solar</th>
+                <th class="whitespace-nowrap">Lluvia</th>
+                <th class="whitespace-nowrap">Vel. Viento</th>
+                <th class="whitespace-nowrap">Dir. Viento</th>
+                <th class="whitespace-nowrap">CO₂</th>
+                <th class="whitespace-nowrap">CO</th>
+                <th class="whitespace-nowrap">PM 2.5</th>
+                <th class="whitespace-nowrap">PM 10</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of historialPaginado">
+                <td class="fw-bold whitespace-nowrap">
+                  <i class="bx bx-calendar-event text-blue"></i>
+                  {{ (item.fecha_hora || item.fecha_registro) | date:'medium' }}
+                </td>
+                <td class="whitespace-nowrap">
+                  <span class="value-chip temp">
+                    {{ item.temperatura ?? '--' }} °C
+                  </span>
+                </td>
+                <td class="whitespace-nowrap">
+                  <span class="value-chip hum">
+                    {{ item.humedad ?? '--' }} %
+                  </span>
+                </td>
+                <td class="whitespace-nowrap">
+                  <span class="value-chip press">
+                    {{ item.presion ?? 1013.25 }} hPa
+                  </span>
+                </td>
+                <td class="whitespace-nowrap">
+                  <span class="value-chip rad">
+                    {{ item.radiacion_solar ?? item.radiacion ?? 0 }} W/m²
+                  </span>
+                </td>
+                <td class="whitespace-nowrap">{{ item.precipitacion ?? item.lluvia ?? 0 }} mm</td>
+                <td class="whitespace-nowrap">
+                  <span class="value-chip wind">
+                    {{ item.velocidad_viento ?? 0 }} km/h
+                  </span>
+                </td>
+                <td class="whitespace-nowrap">
+                  <span class="value-chip dir">
+                    {{ item.direccion_viento ?? 0 }}°
+                  </span>
+                </td>
+                <td class="whitespace-nowrap">
+                  <span class="value-chip co2">
+                    {{ item.co2 ?? 400 }} ppm
+                  </span>
+                </td>
+                <td class="whitespace-nowrap">
+                  <span class="value-chip co">
+                    {{ item.co ?? 0.1 }} ppm
+                  </span>
+                </td>
+                <td class="whitespace-nowrap">
+                  <span class="value-chip pm25">
+                    {{ item.pm_25 ?? 0 }} µg/m³
+                  </span>
+                </td>
+                <td class="whitespace-nowrap">
+                  <span class="value-chip pm10">
+                    {{ item.pm_10 ?? 0 }} µg/m³
+                  </span>
+                </td>
+              </tr>
 
-            <tr *ngIf="historialPaginado.length === 0 && !cargandoHistorial">
-              <td colspan="7" class="empty-table-state">
-                <i class="bx bx-folder-open"></i>
-                <p>No se encontraron registros para la consulta.</p>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+              <tr *ngIf="historialPaginado.length === 0 && !cargandoHistorial">
+                <td colspan="12" class="empty-table-state">
+                  <i class="bx bx-folder-open"></i>
+                  <p>No se encontraron registros para la consulta.</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
         <!-- PAGINACIÓN DE LA TABLA -->
         <div class="pagination" *ngIf="historialFiltrado.length > 0">

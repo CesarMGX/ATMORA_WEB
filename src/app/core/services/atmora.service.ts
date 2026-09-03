@@ -35,6 +35,14 @@ export interface Lectura {
   radiacion: number;
   radiacion_solar?: number;
   temperatura: number;
+  precipitacion?: number;
+  lluvia?: number;
+  velocidad_viento?: number;
+  direccion_viento?: number;
+  co2?: number;
+  co?: number;
+  pm_25?: number;
+  pm_10?: number;
   fecha_registro?: string;
   fecha_hora?: string;
 }

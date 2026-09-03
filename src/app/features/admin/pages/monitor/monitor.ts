@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import * as Highcharts from 'highcharts';
-import { AtmoraService } from '../../../../core/services/atmora.service';
+import { AtmoraService, Lectura } from '../../../../core/services/atmora.service';
 
 @Component({
   selector: 'app-monitor',
@@ -16,8 +16,8 @@ export class Monitor implements OnInit {
   dispositivos: any[] = [];
   dispositivoSeleccionado: any | null = null;
   
-  historialLecturas: any[] = [];
-  historialPaginado: any[] = [];
+  historialLecturas: Lectura[] = [];
+  historialPaginado: Lectura[] = [];
   
   cargandoDispositivos = false;
   cargandoHistorial = false;
@@ -101,7 +101,7 @@ export class Monitor implements OnInit {
     this.atmoraService.obtenerHistorialPorDispositivo(dispositivoId, 1, 200).subscribe({
       next: (response: any) => {
         this.cargandoHistorial = false;
-        let data = [];
+        let data: Lectura[] = [];
         if (response.status === 'success' && Array.isArray(response.data)) {
           data = response.data;
         } else if (Array.isArray(response)) {
@@ -124,7 +124,7 @@ export class Monitor implements OnInit {
 
   // ─── LÓGICA DE INTELIGENCIA ARTIFICIAL EN TIEMPO REAL ─────────────────────
   ejecutarClasificacionEntorno(): void {
-    const lectura = this.historialLecturas.length > 0 ? this.historialLecturas[0] : {};
+    const lectura: any = this.historialLecturas.length > 0 ? this.historialLecturas[0] : {};
     
     const payload = {
       humedad: Number(lectura.humedad ?? 65.0),
@@ -165,7 +165,7 @@ export class Monitor implements OnInit {
   }
 
   ejecutarValidacionTemperatura(): void {
-    const lectura = this.historialLecturas.length > 0 ? this.historialLecturas[0] : {};
+    const lectura: any = this.historialLecturas.length > 0 ? this.historialLecturas[0] : {};
 
     const payload = {
       humedad: Number(lectura.humedad ?? 65.0),
@@ -194,7 +194,7 @@ export class Monitor implements OnInit {
     });
   }
 
-  get historialFiltrado(): any[] {
+  get historialFiltrado(): Lectura[] {
     if (!this.searchTerm.trim()) {
       return this.historialLecturas;
     }
@@ -203,7 +203,21 @@ export class Monitor implements OnInit {
       const fecha = (row.fecha_hora || row.fecha_registro || '').toLowerCase();
       const temp = (row.temperatura ?? '').toString();
       const hum = (row.humedad ?? '').toString();
-      return fecha.includes(term) || temp.includes(term) || hum.includes(term);
+      const co2 = (row.co2 ?? '').toString();
+      const co = (row.co ?? '').toString();
+      const pm25 = (row.pm_25 ?? (row as any).pm25 ?? '').toString();
+      const pm10 = (row.pm_10 ?? (row as any).pm10 ?? '').toString();
+      const dir = (row.direccion_viento ?? '').toString();
+      return (
+        fecha.includes(term) ||
+        temp.includes(term) ||
+        hum.includes(term) ||
+        co2.includes(term) ||
+        co.includes(term) ||
+        pm25.includes(term) ||
+        pm10.includes(term) ||
+        dir.includes(term)
+      );
     });
   }
 
@@ -237,7 +251,7 @@ export class Monitor implements OnInit {
     return 'badge-inactivo';
   }
 
-  private procesarYRenderizarGraficas(data: any[]): void {
+  private procesarYRenderizarGraficas(data: Lectura[]): void {
     const ordenados = [...data].reverse();
 
     const timeLabels: string[] = [];
@@ -248,8 +262,12 @@ export class Monitor implements OnInit {
     const co2Series: number[] = [];
     const coSeries: number[] = [];
     const pressSeries: number[] = [];
+    const pm25Series: number[] = [];
+    const pm10Series: number[] = [];
+    const windSpeedSeries: number[] = [];
+    const windDirSeries: number[] = [];
 
-    ordenados.forEach((item, index) => {
+    ordenados.forEach((item: any, index) => {
       let label = '';
       const fStr = item.fecha_hora || item.fecha_registro;
       if (fStr) {
@@ -274,10 +292,27 @@ export class Monitor implements OnInit {
       co2Series.push(Number((item.co2 ?? 410.0).toFixed(1)));
       coSeries.push(Number((item.co ?? 0.45).toFixed(2)));
       pressSeries.push(Number((item.presion ?? 1013.25).toFixed(1)));
+      pm25Series.push(Number((item.pm_25 ?? item.pm25 ?? 0.0).toFixed(1)));
+      pm10Series.push(Number((item.pm_10 ?? item.pm10 ?? 0.0).toFixed(1)));
+      windSpeedSeries.push(Number((item.velocidad_viento ?? 0.0).toFixed(1)));
+      windDirSeries.push(Number((item.direccion_viento ?? 0).toFixed(0)));
     });
 
     setTimeout(() => {
-      this.renderCharts(timeLabels, tempSeries, humSeries, rainSeries, radSeries, co2Series, coSeries, pressSeries);
+      this.renderCharts(
+        timeLabels,
+        tempSeries,
+        humSeries,
+        rainSeries,
+        radSeries,
+        co2Series,
+        coSeries,
+        pressSeries,
+        pm25Series,
+        pm10Series,
+        windSpeedSeries,
+        windDirSeries
+      );
     }, 150);
   }
 
@@ -289,7 +324,11 @@ export class Monitor implements OnInit {
     rad: number[],
     co2: number[],
     co: number[],
-    press: number[]
+    press: number[],
+    pm25: number[],
+    pm10: number[],
+    windSpeed: number[],
+    windDir: number[]
   ): void {
     // 1. Gráfica Temperatura y Humedad
     const tempHumElement = document.getElementById('chart-temp-hum');
@@ -329,7 +368,7 @@ export class Monitor implements OnInit {
       });
     }
 
-    // 3. Gráfica Gases y Calidad de Aire (CO2 / CO) - Columna 3
+    // 3. Gráfica Gases y Calidad de Aire (CO2 / CO)
     const co2CoElement = document.getElementById('chart-co2-co');
     if (co2CoElement) {
       Highcharts.chart(co2CoElement, {
@@ -348,7 +387,45 @@ export class Monitor implements OnInit {
       });
     }
 
-    // 4. Gráfica Presión Atmosférica - Ancho Completo (Imagen 2)
+    // 4. Gráfica Partículas en Suspensión (PM 2.5 y PM 10)
+    const pmElement = document.getElementById('chart-pm');
+    if (pmElement) {
+      Highcharts.chart(pmElement, {
+        chart: { type: 'column', backgroundColor: 'transparent' },
+        title: { text: 'Partículas en Suspensión (PM 2.5 / PM 10)', style: { fontSize: '15px', fontWeight: 'bold', color: '#0f3460' } },
+        xAxis: { categories: labels, labels: { style: { fontSize: '10px' } } },
+        yAxis: [
+          { title: { text: 'PM 2.5 (µg/m³)' } },
+          { title: { text: 'PM 10 (µg/m³)' }, opposite: true }
+        ],
+        series: [
+          { name: 'PM 2.5 (µg/m³)', data: pm25, color: '#6366f1', type: 'column' },
+          { name: 'PM 10 (µg/m³)', data: pm10, color: '#d946ef', yAxis: 1, type: 'column' }
+        ],
+        credits: { enabled: false }
+      });
+    }
+
+    // 5. Gráfica Velocidad y Dirección del Viento
+    const windElement = document.getElementById('chart-wind');
+    if (windElement) {
+      Highcharts.chart(windElement, {
+        chart: { type: 'line', backgroundColor: 'transparent' },
+        title: { text: 'Velocidad y Dirección del Viento', style: { fontSize: '15px', fontWeight: 'bold', color: '#0f3460' } },
+        xAxis: { categories: labels, labels: { style: { fontSize: '10px' } } },
+        yAxis: [
+          { title: { text: 'Velocidad (km/h)' } },
+          { title: { text: 'Dirección (°)' }, opposite: true }
+        ],
+        series: [
+          { name: 'Velocidad (km/h)', data: windSpeed, color: '#06b6d4', type: 'line', marker: { symbol: 'circle' } },
+          { name: 'Dirección (°)', data: windDir, color: '#64748b', yAxis: 1, type: 'line', marker: { symbol: 'triangle' } }
+        ],
+        credits: { enabled: false }
+      });
+    }
+
+    // 6. Gráfica Presión Atmosférica (Ancho Completo)
     const pressElement = document.getElementById('chart-pressure');
     if (pressElement) {
       Highcharts.chart(pressElement, {
