@@ -7,7 +7,8 @@ export interface UserProfile {
   nombre: string;
   correo: string;
   avatar: string;
-  rol: 'Admin' | 'Usuario'; 
+  rol: 'Admin' | 'Usuario';
+  tipo_suscripcion?: 'GRATIS' | 'PRO_MENSUAL';
 }
 
 @Injectable({
@@ -42,7 +43,8 @@ export class AuthService {
       nombre: 'Cesar Mundo', // Simulamos que entraste tú
       correo: correo,
       rol: 'Admin',
-      avatar: `https://ui-avatars.com/api/?name=Cesar+Mundo&background=0f3460&color=fff`
+      avatar: `https://ui-avatars.com/api/?name=Cesar+Mundo&background=0f3460&color=fff`,
+      tipo_suscripcion: 'GRATIS'
     };
 
     // 1. Guardamos en localStorage para no perder la sesión al recargar con F5
@@ -72,6 +74,15 @@ export class AuthService {
     
     // 2. Gritamos por el megáfono para que el Navbar y el Layout se actualicen al instante
     this.currentUserSubject.next(updatedUser);
+  }
+
+  // --- FUNCIÓN PARA ACTUALIZAR LA SUSCRIPCIÓN DE FORMA INMEDIATA ---
+  actualizarSuscripcion(tipo: 'GRATIS' | 'PRO_MENSUAL') {
+    const current = this.getCurrentUser();
+    if (current) {
+      const updated = { ...current, tipo_suscripcion: tipo };
+      this.updateProfile(updated);
+    }
   }
 
   // Utilidad para saber si hay sesión activa en un momento exacto

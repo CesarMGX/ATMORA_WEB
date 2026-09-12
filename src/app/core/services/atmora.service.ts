@@ -108,6 +108,11 @@ export class AtmoraService {
     return this.http.post<any>(`${this.apiUrl}/ia/clasificar-entorno`, datos);
   }
 
+  // ─── Pagos & Suscripción Mercado Pago ─────────────────────────────────────
+  crearSuscripcionPro(id_usuario: number, email: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/pagos/crear-suscripcion`, { id_usuario, email });
+  }
+
   // ─── Gestión de Usuarios & Cloudinary ────────────────────────────────────
   subirFotoPerfil(file: File): Observable<any> {
     const formData = new FormData();

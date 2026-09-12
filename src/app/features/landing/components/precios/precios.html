@@ -7,6 +7,12 @@
       <p>Desde el acceso ciudadano gratuito hasta herramientas avanzadas de predicción con IA.</p>
     </div>
 
+    <!-- ALERTA DE MENSAJE DE ERROR O ADVERTENCIA -->
+    <div *ngIf="mensajeError" class="max-w-md mx-auto mb-6 p-4 rounded-xl bg-red-900/40 border border-red-500/50 text-red-200 text-center text-sm flex items-center justify-between gap-3">
+      <span>{{ mensajeError }}</span>
+      <button type="button" (click)="mensajeError = null" class="text-red-300 hover:text-white font-bold">&times;</button>
+    </div>
+
     <div class="pricing-grid">
       
       <div class="card basic" data-aos="fade-right" data-aos-delay="100">
@@ -39,7 +45,7 @@
           <h3>Atmora PRO</h3>
           <div class="price">
             <span class="currency">$</span>
-            <span class="amount">99</span>
+            <span class="amount">39</span>
             <span class="period">MXN /mes</span>
           </div>
           <p class="desc">Potencia tus decisiones con Inteligencia Artificial.</p>
@@ -52,9 +58,44 @@
           <li><i class='bx bxs-bell-ring'></i> Alertas personalizadas</li>
         </ul>
 
-        <a href="#" class="btn-plan pro-btn">Obtener PRO</a>
+        <button 
+          type="button" 
+          class="btn-plan pro-btn cursor-pointer w-full flex items-center justify-center gap-2"
+          (click)="obtenerPro($event)"
+          [disabled]="cargandoPago"
+        >
+          <i class='bx bx-loader-alt bx-spin' *ngIf="cargandoPago"></i>
+          <i class='bx bxs-zap' *ngIf="!cargandoPago"></i>
+          {{ cargandoPago ? 'Procesando...' : 'Obtener PRO' }}
+        </button>
       </div>
 
+    </div>
+  </div>
+
+  <!-- MODAL VISUAL DE CONFIRMACIÓN DE SUSCRIPCIÓN EXITOSA -->
+  <div *ngIf="mostrarModalExito" class="modal-overlay" (click)="cerrarModalExito()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <button type="button" class="close-btn" (click)="cerrarModalExito()">&times;</button>
+      
+      <div class="modal-icon success">
+        <i class="bx bxs-check-shield"></i>
+      </div>
+
+      <h3>¡Te has suscrito con éxito a Atmora PRO!</h3>
+      
+      <p class="modal-desc">
+        Tu suscripción de <strong>$39 MXN/mes</strong> está activa. Ya puedes acceder sin restricciones a todas las predicciones avanzadas por IA.
+      </p>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-primary" (click)="irAlPanel()">
+          <i class="bx bx-run"></i> Ir al Panel de Control
+        </button>
+        <button type="button" class="btn-secondary" (click)="cerrarModalExito()">
+          Cerrar
+        </button>
+      </div>
     </div>
   </div>
 </section>

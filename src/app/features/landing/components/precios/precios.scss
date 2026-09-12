@@ -169,3 +169,105 @@
   .card { width: 100%; max-width: 350px; }
   .pro { transform: scale(1); margin-top: 20px; }
 }
+
+/* MODAL CONFIRMACIÓN SUSCRIPCIÓN PRO */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-card {
+  background: #0f172a;
+  border: 1px solid rgba(247, 127, 0, 0.4);
+  box-shadow: 0 20px 50px rgba(247, 127, 0, 0.25);
+  border-radius: 24px;
+  padding: 35px 30px;
+  max-width: 460px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  color: white;
+
+  .close-btn {
+    position: absolute;
+    top: 15px; right: 20px;
+    background: none; border: none;
+    color: #94a3b8; font-size: 1.8rem;
+    cursor: pointer; transition: color 0.2s;
+    &:hover { color: white; }
+  }
+
+  .modal-icon {
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    margin: 0 auto 20px auto;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.5rem;
+    &.success {
+      background: rgba(247, 127, 0, 0.15);
+      color: #f77f00;
+      border: 2px solid #f77f00;
+    }
+  }
+
+  h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #ffffff;
+  }
+
+  .modal-desc {
+    font-size: 0.95rem;
+    color: #cbd5e1;
+    line-height: 1.5;
+    margin-bottom: 25px;
+    strong { color: #f77f00; }
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+
+    .btn-primary {
+      background: #f77f00;
+      color: white;
+      border: none;
+      padding: 12px 22px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s;
+      &:hover { background: #e06d00; }
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      &:hover { background: rgba(255, 255, 255, 0.2); }
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
