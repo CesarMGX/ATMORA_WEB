@@ -11,10 +11,10 @@ if (accessToken) {
   try {
     mpClient = new MercadoPagoConfig({ accessToken });
   } catch (err) {
-    console.error('⚠️ Error al inicializar Mercado Pago SDK:', err.message);
+    console.error('Error al inicializar Mercado Pago SDK:', err.message);
   }
 } else {
-  console.warn('⚠️ MERCADOPAGO_ACCESS_TOKEN no está definido en las variables de entorno.');
+  console.warn('MERCADOPAGO_ACCESS_TOKEN no está definido en las variables de entorno.');
 }
 
 /**
@@ -25,7 +25,7 @@ const crearSuscripcion = async (req, res) => {
   try {
     const { id_usuario, email } = req.body;
     
-    // Si no vienen en req.body, intentar obtener del usuario autenticado si existe en el objeto req
+    // Obtener id de usuario
     const userId = id_usuario || (req.user && req.user.id_usuario);
     const userEmail = email || (req.user && req.user.correo);
 
@@ -36,7 +36,7 @@ const crearSuscripcion = async (req, res) => {
       });
     }
 
-    // Buscar al usuario en la base de datos para validar su correo
+    // Buscar al usuario en la base de datos
     const usuario = await Usuario.findByPk(userId);
     if (!usuario) {
       return res.status(404).json({
@@ -45,11 +45,10 @@ const crearSuscripcion = async (req, res) => {
       });
     }
 
-    const payerEmail = userEmail || usuario.correo;
     const frontendUrl = process.env.FRONTEND_URL || 'https://atmora-web.vercel.app';
+    const isTestToken = accessToken.startsWith('TEST-');
 
     if (!mpClient) {
-      // Si el cliente no está inicializado (por ejemplo en entorno de pruebas sin token), retornar URL simulada/sandbox
       return res.status(200).json({
         status: 'success',
         init_point: `${frontendUrl}/precios?status=success`,
@@ -65,69 +64,83 @@ const crearSuscripcion = async (req, res) => {
       pending: `${frontendUrl}/precios?status=pending`
     };
 
+    let rawEmail = userEmail || usuario.correo;
+    // Mercado Pago rechaza emails reales cuando el Access Token es de prueba (TEST-...)
+    // arrojando: "Both payer and collector must be real or test users".
+    // En modo TEST, si no es un email de testuser explícito, evitamos enviar payer_email para que el checkout no bloquee.
+    const isTestEmail = rawEmail && (rawEmail.toLowerCase().includes('test') || rawEmail.toLowerCase().includes('testuser'));
+    const validPayerEmail = isTestToken ? (isTestEmail ? rawEmail : undefined) : rawEmail;
+
     let initPoint = '';
     let sandboxInitPoint = '';
     let subscriptionId = '';
 
     try {
-      // Intentar primero con PreApproval (Suscripción Recurrente oficial de Mercado Pago)
+      // 1. Intentar con PreApproval (Suscripción Recurrente)
       const preapproval = new PreApproval(mpClient);
-      const preapprovalData = await preapproval.create({
-        body: {
-          reason: 'Atmora PRO - Acceso a Predicciones IA',
-          auto_recurring: {
-            frequency: 1,
-            frequency_type: 'months',
-            transaction_amount: 39,
-            currency_id: 'MXN'
-          },
-          back_url: `${frontendUrl}/precios?status=success`,
-          payer_email: payerEmail,
-          external_reference: String(userId),
-          status: 'authorized'
-        }
-      });
+      const bodyPayload = {
+        reason: 'Atmora PRO - Acceso a Predicciones IA',
+        auto_recurring: {
+          frequency: 1,
+          frequency_type: 'months',
+          transaction_amount: 39,
+          currency_id: 'MXN'
+        },
+        back_url: `${frontendUrl}/precios?status=success`,
+        external_reference: String(userId),
+        status: 'authorized'
+      };
+
+      if (validPayerEmail) {
+        bodyPayload.payer_email = validPayerEmail;
+      }
+
+      const preapprovalData = await preapproval.create({ body: bodyPayload });
 
       initPoint = preapprovalData.init_point;
       sandboxInitPoint = preapprovalData.sandbox_init_point || preapprovalData.init_point;
       subscriptionId = preapprovalData.id;
     } catch (preApprovalError) {
-      console.warn('ℹ️ Reintentando con Preference checkout por:', preApprovalError.message);
+      console.warn('ℹReintentando con Preference checkout por:', preApprovalError.message);
       
-      // Fallback a Preference de checkout
+      // 2. Fallback a Preference de checkout
       const preference = new Preference(mpClient);
-      const preferenceData = await preference.create({
-        body: {
-          items: [
-            {
-              id: 'atmora-pro-mensual',
-              title: 'Atmora PRO - Acceso a Predicciones IA',
-              unit_price: 39,
-              quantity: 1,
-              currency_id: 'MXN'
-            }
-          ],
-          payer: {
-            email: payerEmail
-          },
-          back_urls: backUrls,
-          auto_return: 'approved',
-          external_reference: String(userId),
-          metadata: {
-            id_usuario: userId
+      const prefBody = {
+        items: [
+          {
+            id: 'atmora-pro-mensual',
+            title: 'Atmora PRO - Acceso a Predicciones IA',
+            unit_price: 39,
+            quantity: 1,
+            currency_id: 'MXN'
           }
+        ],
+        back_urls: backUrls,
+        auto_return: 'approved',
+        external_reference: String(userId),
+        metadata: {
+          id_usuario: userId
         }
-      });
+      };
+
+      if (validPayerEmail) {
+        prefBody.payer = { email: validPayerEmail };
+      }
+
+      const preferenceData = await preference.create({ body: prefBody });
 
       initPoint = preferenceData.init_point;
       sandboxInitPoint = preferenceData.sandbox_init_point || preferenceData.init_point;
       subscriptionId = preferenceData.id;
     }
 
+    // Si se está usando un token de prueba (TEST-), preferir el sandbox_init_point
+    const finalUrl = (isTestToken && sandboxInitPoint) ? sandboxInitPoint : (initPoint || sandboxInitPoint);
+
     return res.status(200).json({
       status: 'success',
-      init_point: initPoint,
-      sandbox_init_point: sandboxInitPoint,
+      init_point: finalUrl,
+      sandbox_init_point: sandboxInitPoint || initPoint,
       subscription_id: subscriptionId
     });
 
@@ -151,7 +164,7 @@ const webhook = async (req, res) => {
     const topic = req.query.topic || req.query.type || type;
     const resourceId = (data && data.id) || req.query.id || req.body.id;
 
-    console.log(`🔔 Webhook recibido de Mercado Pago: topic=${topic}, action=${action}, resourceId=${resourceId}`);
+    console.log(`Webhook recibido de Mercado Pago: topic=${topic}, action=${action}, resourceId=${resourceId}`);
 
     if (topic === 'subscription_preapproval' || topic === 'preapproval') {
       if (mpClient && resourceId) {
@@ -170,7 +183,7 @@ const webhook = async (req, res) => {
               },
               { where: { id_usuario: userId } }
             );
-            console.log(`✅ Usuario #${userId} actualizado exitosamente a PRO_MENSUAL por Webhook PreApproval.`);
+            console.log(`Usuario #${userId} actualizado exitosamente a PRO_MENSUAL por Webhook PreApproval.`);
           }
         }
       }
@@ -186,15 +199,14 @@ const webhook = async (req, res) => {
             },
             { where: { id_usuario: userId } }
           );
-          console.log(`✅ Usuario #${userId} actualizado a PRO_MENSUAL por Webhook Payment.`);
+          console.log(`Usuario #${userId} actualizado a PRO_MENSUAL por Webhook Payment.`);
         }
       }
     }
 
-    // Responder siempre 200 OK a Mercado Pago para confirmar recepción
     return res.status(200).json({ status: 'ok' });
   } catch (error) {
-    console.error('⚠️ Error al procesar Webhook de Mercado Pago:', error.message);
+    console.error('Error al procesar Webhook de Mercado Pago:', error.message);
     return res.status(200).json({ status: 'ok', warning: error.message });
   }
 };
