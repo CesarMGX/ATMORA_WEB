@@ -22,6 +22,7 @@ const alertaRoutes      = require('./routes/alerta.routes');
 const usuarioRoutes     = require('./routes/usuario.routes');
 const prediccionRoutes  = require('./routes/prediccion.routes');
 const iaRoutes          = require('./routes/ia.routes');
+const pagoRoutes        = require('./routes/pago.routes');
 
 // ─── Modelos (necesario para sincronizar relaciones) ──────────────────────────
 require('./models');
@@ -70,6 +71,7 @@ app.use('/api/alertas',      alertaRoutes);
 app.use('/api/usuarios',     usuarioRoutes);
 app.use('/api/predecir',     prediccionRoutes);
 app.use('/api/ia',           iaRoutes);
+app.use('/api/pagos',        pagoRoutes);
 
 // ─── Ruta de salud del servidor ───────────────────────────────────────────────
 app.get('/health', (req, res) => {
@@ -120,6 +122,16 @@ const startServer = async () => {
       console.log('✅ Columna "avatar" verificada/creada en usuarios.');
     } catch (sqlError) {
       console.error('⚠️ No se pudo verificar la columna "avatar" automáticamente:', sqlError.message);
+    }
+
+    try {
+      await sequelize.query("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS tipo_suscripcion VARCHAR(50) DEFAULT 'GRATIS';");
+      await sequelize.query('ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS subscription_id VARCHAR(100);');
+      await sequelize.query('ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS payer_id VARCHAR(100);');
+      await sequelize.query('ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS subscription_status VARCHAR(50);');
+      console.log('✅ Columnas de suscripción (tipo_suscripcion, subscription_id, payer_id, subscription_status) verificadas/creadas en usuarios.');
+    } catch (sqlError) {
+      console.error('⚠️ No se pudieron verificar las columnas de suscripción automáticamente:', sqlError.message);
     }
 
     await sequelize.sync({ alter: false });

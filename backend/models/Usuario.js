@@ -60,6 +60,27 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: DataTypes.NOW,
         comment: 'Fecha y hora de registro del usuario',
       },
+      tipo_suscripcion: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+        defaultValue: 'GRATIS',
+        comment: 'Tipo de suscripción: GRATIS o PRO_MENSUAL',
+      },
+      subscription_id: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+        comment: 'ID de suscripción / preapproval en Mercado Pago',
+      },
+      payer_id: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+        comment: 'ID del pagador en Mercado Pago',
+      },
+      subscription_status: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+        comment: 'Estado de la suscripción en Mercado Pago (authorized, paused, cancelled, etc.)',
+      },
     },
     {
       tableName: 'usuarios',
