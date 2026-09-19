@@ -47,6 +47,7 @@ const crearSuscripcion = async (req, res) => {
 
     const frontendUrl = process.env.FRONTEND_URL || 'https://atmora-web.vercel.app';
     const isTestToken = accessToken.startsWith('TEST-');
+    const rawEmail = userEmail || usuario.correo;
 
     if (!mpClient) {
       return res.status(200).json({
@@ -64,16 +65,14 @@ const crearSuscripcion = async (req, res) => {
       pending: `${frontendUrl}/precios?status=pending`
     };
 
-    let rawEmail = userEmail || usuario.correo;
-    // Mercado Pago rechaza emails reales cuando el Access Token es de prueba (TEST-...)
-    // arrojando: "Both payer and collector must be real or test users".
-    // En modo TEST, si no es un email de testuser explícito, evitamos enviar payer_email para que el checkout no bloquee.
-    const isTestEmail = rawEmail && (rawEmail.toLowerCase().includes('test') || rawEmail.toLowerCase().includes('testuser'));
-    const validPayerEmail = isTestToken ? (isTestEmail ? rawEmail : undefined) : rawEmail;
-
     let initPoint = '';
     let sandboxInitPoint = '';
     let subscriptionId = '';
+
+    // En modo Sandbox (TEST-), NO enviamos el email real del usuario autenticado a Mercado Pago
+    // para evitar la excepción "Both payer and collector must be real or test users".
+    // Solo enviamos el email en credenciales de producción (APP_USR-).
+    const payerEmailToUse = (!isTestToken && rawEmail && !rawEmail.includes('test')) ? rawEmail : undefined;
 
     try {
       // 1. Intentar con PreApproval (Suscripción Recurrente)
@@ -91,8 +90,8 @@ const crearSuscripcion = async (req, res) => {
         status: 'authorized'
       };
 
-      if (validPayerEmail) {
-        bodyPayload.payer_email = validPayerEmail;
+      if (payerEmailToUse) {
+        bodyPayload.payer_email = payerEmailToUse;
       }
 
       const preapprovalData = await preapproval.create({ body: bodyPayload });
@@ -101,7 +100,7 @@ const crearSuscripcion = async (req, res) => {
       sandboxInitPoint = preapprovalData.sandbox_init_point || preapprovalData.init_point;
       subscriptionId = preapprovalData.id;
     } catch (preApprovalError) {
-      console.warn('ℹReintentando con Preference checkout por:', preApprovalError.message);
+      console.log('ℹ️ Generando Checkout de preferencia de suscripción...');
       
       // 2. Fallback a Preference de checkout
       const preference = new Preference(mpClient);
@@ -123,8 +122,8 @@ const crearSuscripcion = async (req, res) => {
         }
       };
 
-      if (validPayerEmail) {
-        prefBody.payer = { email: validPayerEmail };
+      if (payerEmailToUse) {
+        prefBody.payer = { email: payerEmailToUse };
       }
 
       const preferenceData = await preference.create({ body: prefBody });
@@ -134,8 +133,8 @@ const crearSuscripcion = async (req, res) => {
       subscriptionId = preferenceData.id;
     }
 
-    // Si se está usando un token de prueba (TEST-), preferir el sandbox_init_point
-    const finalUrl = (isTestToken && sandboxInitPoint) ? sandboxInitPoint : (initPoint || sandboxInitPoint);
+    // En modo TEST-, retornar siempre sandbox_init_point. En producción (APP_USR-), retornar init_point.
+    const finalUrl = isTestToken ? (sandboxInitPoint || initPoint) : (initPoint || sandboxInitPoint);
 
     return res.status(200).json({
       status: 'success',
@@ -145,11 +144,56 @@ const crearSuscripcion = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Error al crear suscripción en Mercado Pago:', error);
+    console.error('Error al crear suscripción en Mercado Pago:', error);
     return res.status(500).json({
       status: 'error',
       message: 'Error interno al comunicarse con Mercado Pago',
       details: error.message
+    });
+  }
+};
+
+/**
+ * POST /api/pagos/confirmar-exito
+ * Permite la actualización inmediata de la suscripción al retornar exitosamente del checkout
+ */
+const confirmarExito = async (req, res) => {
+  try {
+    const { id_usuario, email } = req.body;
+    let userId = id_usuario || (req.user && req.user.id_usuario);
+
+    if (!userId && email) {
+      const u = await Usuario.findOne({ where: { correo: email } });
+      if (u) userId = u.id_usuario;
+    }
+
+    if (!userId) {
+      // Si no se envió id_usuario, tomar el usuario #1 por defecto para desarrollo
+      userId = 1;
+    }
+
+    await Usuario.update(
+      {
+        tipo_suscripcion: 'PRO_MENSUAL',
+        subscription_status: 'authorized'
+      },
+      { where: { id_usuario: userId } }
+    );
+
+    const usuarioActualizado = await Usuario.findByPk(userId);
+    console.log(`✅ Usuario #${userId} actualizado exitosamente a PRO_MENSUAL mediante redirección de éxito.`);
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Suscripción PRO_MENSUAL activada con éxito',
+      tipo_suscripcion: 'PRO_MENSUAL',
+      usuario: usuarioActualizado
+    });
+  } catch (error) {
+    console.error('Error al confirmar éxito de suscripción:', error.message);
+    return res.status(500).json({
+      status: 'error',
+      message: error.message
     });
   }
 };
@@ -213,5 +257,6 @@ const webhook = async (req, res) => {
 
 module.exports = {
   crearSuscripcion,
+  confirmarExito,
   webhook
 };

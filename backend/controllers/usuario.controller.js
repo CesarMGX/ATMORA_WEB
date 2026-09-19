@@ -93,10 +93,14 @@ const obtenerTodos = async (req, res) => {
 
       return {
         id: json.id_usuario,
+        id_usuario: json.id_usuario,
         nombre: json.nombre + (json.ap_paterno ? ' ' + json.ap_paterno : ''),
         correo: json.correo,
         password: json.contrasena,
         rol: esAdmin ? 'Admin' : 'Usuario',
+        tipo_suscripcion: json.tipo_suscripcion || 'GRATIS',
+        subscription_id: json.subscription_id || null,
+        subscription_status: json.subscription_status || null,
         estado: json.estado || 'Activo',
         avatar: json.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(json.nombre)}&background=0f3460&color=fff`,
         fechaRegistro: fechaReg,
@@ -201,15 +205,107 @@ const obtenerPorId = async (req, res) => {
     }
 
     const json = usuario.toJSON();
+    const rolStr = (json.rol || '').toString().toLowerCase();
+    const esAdmin = rolStr === 'admin' || rolStr === 'administrador';
+
+    let fechaReg = new Date().toISOString().split('T')[0];
+    if (json.fecha_registro) {
+      try {
+        const d = new Date(json.fecha_registro);
+        if (!isNaN(d.getTime())) fechaReg = d.toISOString().split('T')[0];
+      } catch (e) {}
+    }
+
     const mappedResponse = {
       id: json.id_usuario,
+      id_usuario: json.id_usuario,
       nombre: json.nombre + (json.ap_paterno ? ' ' + json.ap_paterno : ''),
       correo: json.correo,
       password: json.contrasena,
-      rol: json.rol === 'admin' ? 'Admin' : 'Usuario',
-      estado: 'Activo',
+      rol: esAdmin ? 'Admin' : 'Usuario',
+      tipo_suscripcion: json.tipo_suscripcion || 'GRATIS',
+      subscription_id: json.subscription_id || null,
+      subscription_status: json.subscription_status || null,
+      estado: json.estado || 'Activo',
       avatar: json.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(json.nombre)}&background=0f3460&color=fff`,
-      fechaRegistro: '2026-03-26',
+      fechaRegistro: fechaReg,
+      primerIngreso: false
+    };
+
+    return res.status(200).json(mappedResponse);
+  } catch (error) {
+    return res.status(500).json({
+      status: 'error',
+      message: error.message
+    });
+  }
+};
+
+/**
+ * @swagger
+ * /api/usuarios/me:
+ *   get:
+ *     summary: Obtener perfil del usuario actualmente autenticado
+ *     description: Retorna la información completa del usuario incluyendo su tipo_suscripcion actualizado.
+ *     tags:
+ *       - Usuarios
+ *     responses:
+ *       200:
+ *         description: Perfil del usuario autenticado devuelto con éxito.
+ *       404:
+ *         description: Usuario no encontrado.
+ */
+const obtenerMe = async (req, res) => {
+  try {
+    let userId = req.user ? (req.user.id_usuario || req.user.id) : null;
+    let userEmail = req.user ? req.user.correo : null;
+
+    if (!userId && req.query.id) userId = req.query.id;
+    if (!userId && req.query.id_usuario) userId = req.query.id_usuario;
+    if (!userEmail && req.query.correo) userEmail = req.query.correo;
+    if (!userEmail && req.query.email) userEmail = req.query.email;
+
+    let usuario = null;
+    if (userId) {
+      usuario = await Usuario.findByPk(userId);
+    } else if (userEmail) {
+      usuario = await Usuario.findOne({ where: { correo: userEmail } });
+    } else {
+      usuario = await Usuario.findByPk(1);
+    }
+
+    if (!usuario) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'No se encontró el usuario solicitado'
+      });
+    }
+
+    const json = usuario.toJSON();
+    const rolStr = (json.rol || '').toString().toLowerCase();
+    const esAdmin = rolStr === 'admin' || rolStr === 'administrador';
+
+    let fechaReg = new Date().toISOString().split('T')[0];
+    if (json.fecha_registro) {
+      try {
+        const d = new Date(json.fecha_registro);
+        if (!isNaN(d.getTime())) fechaReg = d.toISOString().split('T')[0];
+      } catch (e) {}
+    }
+
+    const mappedResponse = {
+      id: json.id_usuario,
+      id_usuario: json.id_usuario,
+      nombre: json.nombre + (json.ap_paterno ? ' ' + json.ap_paterno : ''),
+      correo: json.correo,
+      password: json.contrasena,
+      rol: esAdmin ? 'Admin' : 'Usuario',
+      tipo_suscripcion: json.tipo_suscripcion || 'GRATIS',
+      subscription_id: json.subscription_id || null,
+      subscription_status: json.subscription_status || null,
+      estado: json.estado || 'Activo',
+      avatar: json.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(json.nombre)}&background=0f3460&color=fff`,
+      fechaRegistro: fechaReg,
       primerIngreso: false
     };
 
@@ -365,11 +461,15 @@ const crear = async (req, res) => {
     const json = nuevoUsuario.toJSON();
     const mappedResponse = {
       id: json.id_usuario,
+      id_usuario: json.id_usuario,
       nombre: json.nombre + (json.ap_paterno ? ' ' + json.ap_paterno : ''),
       correo: json.correo,
       password: json.contrasena,
       rol: json.rol === 'admin' ? 'Admin' : 'Usuario',
-      estado: 'Activo',
+      tipo_suscripcion: json.tipo_suscripcion || 'GRATIS',
+      subscription_id: json.subscription_id || null,
+      subscription_status: json.subscription_status || null,
+      estado: json.estado || 'Activo',
       avatar: json.avatar || req.body.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(json.nombre)}&background=0f3460&color=fff`,
       fechaRegistro: new Date().toISOString().split('T')[0],
       primerIngreso: true
@@ -551,11 +651,15 @@ const actualizar = async (req, res) => {
     const json = usuario.toJSON();
     const mappedResponse = {
       id: json.id_usuario,
+      id_usuario: json.id_usuario,
       nombre: json.nombre + (json.ap_paterno ? ' ' + json.ap_paterno : ''),
       correo: json.correo,
       password: json.contrasena,
       rol: json.rol === 'admin' ? 'Admin' : 'Usuario',
-      estado: 'Activo',
+      tipo_suscripcion: json.tipo_suscripcion || 'GRATIS',
+      subscription_id: json.subscription_id || null,
+      subscription_status: json.subscription_status || null,
+      estado: json.estado || 'Activo',
       avatar: json.avatar || req.body.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(json.nombre)}&background=0f3460&color=fff`,
       fechaRegistro: new Date().toISOString().split('T')[0],
       primerIngreso: primerIngreso !== undefined ? primerIngreso : false
@@ -736,6 +840,7 @@ const subirFotoPerfil = async (req, res) => {
 module.exports = {
   obtenerTodos,
   obtenerPorId,
+  obtenerMe,
   crear,
   actualizar,
   eliminar,

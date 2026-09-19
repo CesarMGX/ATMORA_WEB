@@ -33,6 +33,28 @@ router.post('/crear-suscripcion', pagoController.crearSuscripcion);
 
 /**
  * @swagger
+ * /api/pagos/confirmar-exito:
+ *   post:
+ *     summary: Confirmar y activar la suscripción PRO_MENSUAL al retornar exitosamente del checkout
+ *     tags: [Pagos]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id_usuario:
+ *                 type: integer
+ *                 example: 1
+ *     responses:
+ *       200:
+ *         description: Suscripción activada correctamente
+ */
+router.post('/confirmar-exito', pagoController.confirmarExito);
+
+/**
+ * @swagger
  * /api/pagos/webhook:
  *   post:
  *     summary: Recibir notificaciones IPN / Webhooks de Mercado Pago

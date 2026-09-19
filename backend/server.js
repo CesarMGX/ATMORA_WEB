@@ -69,6 +69,7 @@ app.use('/api/dispositivos', dispositivoRoutes);
 app.use('/api/ubicaciones',  ubicacionRoutes);
 app.use('/api/alertas',      alertaRoutes);
 app.use('/api/usuarios',     usuarioRoutes);
+app.use('/api/usuario',      usuarioRoutes);
 app.use('/api/predecir',     prediccionRoutes);
 app.use('/api/ia',           iaRoutes);
 app.use('/api/pagos',        pagoRoutes);

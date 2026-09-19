@@ -23,6 +23,7 @@ const handleMulterUpload = (req, res, next) => {
 router.put('/perfil/foto', handleMulterUpload, usuarioController.subirFotoPerfil);
 
 // Definición de endpoints de usuario
+router.get('/me', usuarioController.obtenerMe);
 router.get('/', usuarioController.obtenerTodos);
 router.get('/:id', usuarioController.obtenerPorId);
 router.post('/', usuarioController.crear);
