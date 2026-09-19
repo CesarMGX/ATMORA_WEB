@@ -15,6 +15,7 @@
 
     <div class="pricing-grid">
       
+      <!-- PLAN CIUDADANO (GRATIS) -->
       <div class="card basic" data-aos="fade-right" data-aos-delay="100">
         <div class="card-header">
           <h3>Ciudadano</h3>
@@ -38,6 +39,7 @@
         </button>
       </div>
 
+      <!-- PLAN ATMORA PRO -->
       <div class="card pro" data-aos="fade-left" data-aos-delay="200">
         <div class="popular-tag">Más Innovador</div>
         
@@ -58,7 +60,9 @@
           <li><i class='bx bxs-bell-ring'></i> Alertas personalizadas</li>
         </ul>
 
+        <!-- BOTÓN CUANDO EL USUARIO NO ES PRO (GRATIS O SIN SUSCRIPCIÓN) -->
         <button 
+          *ngIf="!usuario?.tipo_suscripcion || usuario?.tipo_suscripcion === 'GRATIS'"
           type="button" 
           class="btn-plan pro-btn cursor-pointer w-full flex items-center justify-center gap-2"
           (click)="obtenerPro($event)"
@@ -68,6 +72,15 @@
           <i class='bx bxs-zap' *ngIf="!cargandoPago"></i>
           {{ cargandoPago ? 'Procesando...' : 'Obtener PRO' }}
         </button>
+
+        <!-- BOTÓN/ETIQUETA CUANDO EL USUARIO YA TIENE SUSCRIPCIÓN PRO ACTIVA -->
+        <div 
+          *ngIf="usuario?.tipo_suscripcion === 'PRO_MENSUAL' || usuario?.tipo_suscripcion === 'LIFETIME'"
+          class="btn-pro-active"
+        >
+          <i class='bx bxs-check-shield text-xl'></i>
+          <span>Suscripción Activa (Ya eres PRO)</span>
+        </div>
       </div>
 
     </div>
@@ -82,7 +95,7 @@
         <i class="bx bxs-check-shield"></i>
       </div>
 
-      <h3>¡Te has suscrito con éxito a Atmora PRO!</h3>
+      <h3>¡Suscripción a Atmora PRO activada con éxito!</h3>
       
       <p class="modal-desc">
         Tu suscripción de <strong>$39 MXN/mes</strong> está activa. Ya puedes acceder sin restricciones a todas las predicciones avanzadas por IA.

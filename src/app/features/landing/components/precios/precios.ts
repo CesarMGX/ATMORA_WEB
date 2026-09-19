@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { CelebrationService } from '../../../../core/services/celebration.service';
 import { AtmoraService } from '../../../../core/services/atmora.service';
-import { AuthService } from '../../../../core/services/auth';
+import { AuthService, UserProfile } from '../../../../core/services/auth';
 
 @Component({
   selector: 'app-precios',
@@ -12,10 +13,12 @@ import { AuthService } from '../../../../core/services/auth';
   templateUrl: './precios.html',
   styleUrl: './precios.scss',
 })
-export class Precios implements OnInit {
+export class Precios implements OnInit, OnDestroy {
   cargandoPago = false;
   mostrarModalExito = false;
   mensajeError: string | null = null;
+  usuario: UserProfile | null = null;
+  private userSub?: Subscription;
 
   constructor(
     private celebrationService: CelebrationService,
@@ -26,20 +29,50 @@ export class Precios implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Escuchar parámetros de retorno de Mercado Pago en la URL (?status=success/failure/pending)
+    // 1. Suscribirse a los datos del usuario autenticado en el frontend
+    this.userSub = this.authService.currentUser$.subscribe(user => {
+      this.usuario = user;
+    });
+
+    // 2. Capturar parámetros de retorno de Mercado Pago en la URL
     this.route.queryParams.subscribe(params => {
-      const status = params['status'];
-      if (status === 'success') {
+      const status = params['status'] || params['collection_status'];
+      
+      if (status === 'approved' || status === 'success') {
         this.mostrarModalExito = true;
-        // Refrescar el estado del perfil en la sesión local a PRO_MENSUAL
+        
+        // Refrescar perfil localmente a PRO_MENSUAL
         this.authService.actualizarSuscripcion('PRO_MENSUAL');
         this.celebrationService.mostrarCelebracion();
-      } else if (status === 'failure') {
+
+        // Limpiar la URL para remover los parámetros de Mercado Pago y evitar re-ejecución al recargar (F5)
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: {},
+          replaceUrl: true
+        });
+      } else if (status === 'failure' || status === 'rejected') {
         this.mensajeError = 'El pago de la suscripción no pudo ser completado. Por favor, intenta de nuevo.';
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: {},
+          replaceUrl: true
+        });
       } else if (status === 'pending') {
         this.mensajeError = 'Tu pago está pendiente de confirmación. Te notificaremos en cuanto sea aprobado.';
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: {},
+          replaceUrl: true
+        });
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.userSub) {
+      this.userSub.unsubscribe();
+    }
   }
 
   descargarApp(event: Event) {

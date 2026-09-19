@@ -161,6 +161,21 @@
     border: none;
     &:hover { background: var(--cta-hover); }
   }
+
+  .btn-pro-active {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1.5px solid #10b981;
+    color: #34d399;
+    padding: 12px 20px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+  }
 }
 
 /* RESPONSIVE */

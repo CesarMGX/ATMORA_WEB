@@ -8,7 +8,7 @@ export interface UserProfile {
   correo: string;
   avatar: string;
   rol: 'Admin' | 'Usuario';
-  tipo_suscripcion?: 'GRATIS' | 'PRO_MENSUAL';
+  tipo_suscripcion?: 'GRATIS' | 'PRO_MENSUAL' | 'LIFETIME' | string;
 }
 
 @Injectable({
