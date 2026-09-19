@@ -40,8 +40,6 @@ export class Precios implements OnInit, OnDestroy {
       const isApproved = status === 'approved' || status === 'success' || status === 'authorized' || !!params['payment_id'] || !!params['collection_id'] || !!params['preapproval_id'];
       
       if (isApproved) {
-        this.mostrarModalExito = true;
-        
         // Obtener usuario autenticado actual o usar ID por defecto
         const currentUser = this.authService.getCurrentUser();
         const userId = currentUser ? currentUser.id : 1;
@@ -59,7 +57,8 @@ export class Precios implements OnInit, OnDestroy {
           }
         });
 
-        this.celebrationService.mostrarCelebracion();
+        // Mostrar el modal de celebración global de la app (el mismo de la APK pero para la suscripción PRO)
+        this.celebrationService.mostrarCelebracionSuscripcion();
 
         // Limpiar la URL para remover los parámetros de Mercado Pago y evitar re-ejecución al recargar (F5)
         this.router.navigate([], {

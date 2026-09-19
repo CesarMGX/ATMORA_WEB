@@ -85,30 +85,4 @@
 
     </div>
   </div>
-
-  <!-- MODAL VISUAL DE CONFIRMACIÓN DE SUSCRIPCIÓN EXITOSA -->
-  <div *ngIf="mostrarModalExito" class="modal-overlay" (click)="cerrarModalExito()">
-    <div class="modal-card" (click)="$event.stopPropagation()">
-      <button type="button" class="close-btn" (click)="cerrarModalExito()">&times;</button>
-      
-      <div class="modal-icon success">
-        <i class="bx bxs-check-shield"></i>
-      </div>
-
-      <h3>¡Suscripción a Atmora PRO activada con éxito!</h3>
-      
-      <p class="modal-desc">
-        Tu suscripción de <strong>$39 MXN/mes</strong> está activa. Ya puedes acceder sin restricciones a todas las predicciones avanzadas por IA en la app móvil.
-      </p>
-
-      <div class="modal-actions">
-        <button type="button" class="btn-primary" (click)="irAlInicio()">
-          <i class="bx bx-run"></i> Ir al Inicio
-        </button>
-        <button type="button" class="btn-secondary" (click)="cerrarModalExito()">
-          Cerrar
-        </button>
-      </div>
-    </div>
-  </div>
 </section>
