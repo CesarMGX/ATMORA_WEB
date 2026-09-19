@@ -50,7 +50,7 @@ export class Precios implements OnInit, OnDestroy {
         // Sincronización inmediata con el servidor backend (PostgreSQL en Railway)
         this.atmoraService.confirmarExitoSuscripcion(userId, userEmail).subscribe({
           next: () => {
-            console.log('✅ Suscripción PRO_MENSUAL confirmada y sincronizada en DB');
+            console.log('Suscripción PRO_MENSUAL confirmada y sincronizada en DB');
             this.authService.actualizarSuscripcion('PRO_MENSUAL');
           },
           error: (err) => {
@@ -129,8 +129,8 @@ export class Precios implements OnInit, OnDestroy {
     this.mostrarModalExito = false;
   }
 
-  irAlPanel() {
+  irAlInicio() {
     this.mostrarModalExito = false;
-    this.router.navigate(['/admin/dashboard']);
+    this.router.navigate(['/']);
   }
 }
