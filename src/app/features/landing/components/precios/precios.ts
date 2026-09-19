@@ -37,12 +37,28 @@ export class Precios implements OnInit, OnDestroy {
     // 2. Capturar parámetros de retorno de Mercado Pago en la URL
     this.route.queryParams.subscribe(params => {
       const status = params['status'] || params['collection_status'];
+      const isApproved = status === 'approved' || status === 'success' || status === 'authorized' || !!params['payment_id'] || !!params['collection_id'] || !!params['preapproval_id'];
       
-      if (status === 'approved' || status === 'success') {
+      if (isApproved) {
         this.mostrarModalExito = true;
         
-        // Refrescar perfil localmente a PRO_MENSUAL
-        this.authService.actualizarSuscripcion('PRO_MENSUAL');
+        // Obtener usuario autenticado actual o usar ID por defecto
+        const currentUser = this.authService.getCurrentUser();
+        const userId = currentUser ? currentUser.id : 1;
+        const userEmail = currentUser ? currentUser.correo : '';
+
+        // Sincronización inmediata con el servidor backend (PostgreSQL en Railway)
+        this.atmoraService.confirmarExitoSuscripcion(userId, userEmail).subscribe({
+          next: () => {
+            console.log('✅ Suscripción PRO_MENSUAL confirmada y sincronizada en DB');
+            this.authService.actualizarSuscripcion('PRO_MENSUAL');
+          },
+          error: (err) => {
+            console.error('Error al confirmar suscripción en backend:', err);
+            this.authService.actualizarSuscripcion('PRO_MENSUAL');
+          }
+        });
+
         this.celebrationService.mostrarCelebracion();
 
         // Limpiar la URL para remover los parámetros de Mercado Pago y evitar re-ejecución al recargar (F5)
