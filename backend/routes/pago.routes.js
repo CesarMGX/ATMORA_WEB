@@ -52,6 +52,40 @@ router.post('/crear-suscripcion', pagoController.crearSuscripcion);
  *         description: Suscripción activada correctamente
  */
 router.post('/confirmar-exito', pagoController.confirmarExito);
+
+/**
+ * @swagger
+ * /api/pagos/cancelar-suscripcion:
+ *   delete:
+ *     summary: Cancelar la suscripción PRO activa del usuario
+ *     tags: [Pagos]
+ *     parameters:
+ *       - in: query
+ *         name: id_usuario
+ *         schema:
+ *           type: integer
+ *         description: ID del usuario a cancelar
+ *     responses:
+ *       200:
+ *         description: Suscripción cancelada exitosamente
+ *   post:
+ *     summary: Cancelar la suscripción PRO activa del usuario (fallback POST)
+ *     tags: [Pagos]
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id_usuario:
+ *                 type: integer
+ *                 example: 1
+ *     responses:
+ *       200:
+ *         description: Suscripción cancelada exitosamente
+ */
+router.delete('/cancelar-suscripcion', pagoController.cancelarSuscripcion);
 router.post('/cancelar-suscripcion', pagoController.cancelarSuscripcion);
 
 /**

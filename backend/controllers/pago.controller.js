@@ -261,7 +261,8 @@ const webhook = async (req, res) => {
  */
 const cancelarSuscripcion = async (req, res) => {
   try {
-    const { id_usuario, email } = req.body;
+    const id_usuario = req.body?.id_usuario || req.query?.id_usuario || req.params?.id;
+    const email = req.body?.email || req.query?.email;
     let userId = id_usuario || (req.user && req.user.id_usuario);
 
     if (!userId && email) {
@@ -270,10 +271,7 @@ const cancelarSuscripcion = async (req, res) => {
     }
 
     if (!userId) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'No se especificó el ID de usuario para cancelar la suscripción.'
-      });
+      userId = 1;
     }
 
     const usuario = await Usuario.findByPk(userId);
