@@ -255,8 +255,73 @@ const webhook = async (req, res) => {
   }
 };
 
+/**
+ * POST /api/pagos/cancelar-suscripcion
+ * Cancela la suscripción activa del usuario en el sistema y en Mercado Pago (si aplica)
+ */
+const cancelarSuscripcion = async (req, res) => {
+  try {
+    const { id_usuario, email } = req.body;
+    let userId = id_usuario || (req.user && req.user.id_usuario);
+
+    if (!userId && email) {
+      const u = await Usuario.findOne({ where: { correo: email } });
+      if (u) userId = u.id_usuario;
+    }
+
+    if (!userId) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'No se especificó el ID de usuario para cancelar la suscripción.'
+      });
+    }
+
+    const usuario = await Usuario.findByPk(userId);
+    if (!usuario) {
+      return res.status(404).json({
+        status: 'error',
+        message: `No se encontró el usuario con ID #${userId}`
+      });
+    }
+
+    if (mpClient && usuario.subscription_id) {
+      try {
+        const preapproval = new PreApproval(mpClient);
+        await preapproval.update({
+          id: usuario.subscription_id,
+          body: { status: 'cancelled' }
+        });
+        console.log(`PreApproval #${usuario.subscription_id} cancelado en Mercado Pago.`);
+      } catch (mpErr) {
+        console.warn(`No se pudo cancelar en Mercado Pago directamente (${mpErr.message}), actualizando en BD local.`);
+      }
+    }
+
+    await usuario.update({
+      tipo_suscripcion: 'GRATIS',
+      subscription_status: 'cancelled'
+    });
+
+    console.log(`❌ Suscripción del usuario #${userId} cancelada exitosamente.`);
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Suscripción cancelada exitosamente.',
+      tipo_suscripcion: 'GRATIS',
+      subscription_status: 'cancelled'
+    });
+  } catch (error) {
+    console.error('Error al cancelar la suscripción:', error.message);
+    return res.status(500).json({
+      status: 'error',
+      message: error.message
+    });
+  }
+};
+
 module.exports = {
   crearSuscripcion,
   confirmarExito,
+  cancelarSuscripcion,
   webhook
 };

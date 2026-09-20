@@ -52,6 +52,7 @@ router.post('/crear-suscripcion', pagoController.crearSuscripcion);
  *         description: Suscripción activada correctamente
  */
 router.post('/confirmar-exito', pagoController.confirmarExito);
+router.post('/cancelar-suscripcion', pagoController.cancelarSuscripcion);
 
 /**
  * @swagger
