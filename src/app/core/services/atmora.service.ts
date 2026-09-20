@@ -117,6 +117,10 @@ export class AtmoraService {
     return this.http.post<any>(`${this.apiUrl}/pagos/confirmar-exito`, { id_usuario, email });
   }
 
+  cancelarSuscripcion(id_usuario: number, email?: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/pagos/cancelar-suscripcion`, { id_usuario, email });
+  }
+
   // ─── Gestión de Usuarios & Cloudinary ────────────────────────────────────
   subirFotoPerfil(file: File): Observable<any> {
     const formData = new FormData();

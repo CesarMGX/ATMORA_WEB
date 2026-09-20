@@ -250,6 +250,217 @@
     }
   }
 
+  /* --- SECCIÓN SUSCRIPCIÓN ATMORA PRO --- */
+  .subscription-box {
+    margin-top: 30px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+
+    .subscription-header {
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f1f5f9;
+      border-bottom: 1px solid #e2e8f0;
+
+      .subscription-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+        color: #0f3460;
+        font-size: 0.95rem;
+
+        i {
+          font-size: 1.3rem;
+          color: #f77f00;
+        }
+      }
+
+      .badge-subscription {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 700;
+
+        &.badge-pro {
+          background: #dcfce7;
+          color: #166534;
+          border: 1px solid #bbf7d0;
+        }
+
+        &.badge-free {
+          background: #e2e8f0;
+          color: #475569;
+          border: 1px solid #cbd5e1;
+        }
+      }
+    }
+
+    .subscription-body {
+      padding: 20px;
+      background: white;
+
+      .free-desc {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin: 0 0 15px 0;
+        line-height: 1.5;
+      }
+
+      .btn-upgrade-pro {
+        background: linear-gradient(135deg, #0f3460, #16213e);
+        color: #ffc107;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+
+        &:hover {
+          background: #f77f00;
+          color: white;
+          transform: translateY(-2px);
+          box-shadow: 0 5px 15px rgba(247, 127, 0, 0.3);
+        }
+      }
+
+      .countdown-card {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 18px;
+
+        .countdown-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 10px;
+          color: #166534;
+          font-weight: 600;
+          font-size: 0.9rem;
+
+          i {
+            font-size: 1.2rem;
+            margin-right: 6px;
+            vertical-align: middle;
+          }
+
+          .days-count {
+            background: #166534;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.82rem;
+            font-weight: 700;
+          }
+        }
+
+        .progress-bar-wrapper {
+          height: 8px;
+          background: #dcfce7;
+          border-radius: 4px;
+          overflow: hidden;
+          margin-bottom: 8px;
+
+          .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+          }
+        }
+
+        .renewal-note {
+          margin: 0;
+          font-size: 0.8rem;
+          color: #15803d;
+        }
+      }
+
+      .payment-method-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin-bottom: 18px;
+
+        .payment-icon {
+          width: 42px;
+          height: 42px;
+          background: #e0f2fe;
+          color: #0284c7;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.4rem;
+          flex-shrink: 0;
+        }
+
+        .payment-info {
+          h5 {
+            margin: 0 0 3px 0;
+            color: #0f3460;
+            font-size: 0.88rem;
+            font-weight: 700;
+          }
+
+          p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.8rem;
+          }
+        }
+      }
+
+      .cancel-sub-wrapper {
+        display: flex;
+        justify-content: flex-end;
+
+        .btn-cancel-sub {
+          background: #fff1f2;
+          border: 1px solid #fecdd3;
+          color: #e11d48;
+          padding: 9px 16px;
+          border-radius: 8px;
+          font-weight: 700;
+          font-size: 0.85rem;
+          cursor: pointer;
+          transition: all 0.25s ease;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+
+          &:hover:not(:disabled) {
+            background: #e11d48;
+            color: white;
+            box-shadow: 0 4px 12px rgba(225, 29, 72, 0.3);
+          }
+
+          &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+
+          i { font-size: 1.1rem; }
+        }
+      }
+    }
+  }
+
   .form-actions {
     margin-top: 30px;
     display: flex;

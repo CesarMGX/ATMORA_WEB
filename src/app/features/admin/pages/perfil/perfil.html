@@ -88,6 +88,73 @@
             </div>
           </div>
 
+          <!-- SECCIÓN DE SUSCRIPCIÓN -->
+          <div class="subscription-box">
+            <div class="subscription-header">
+              <div class="subscription-title">
+                <i class='bx bxs-zap'></i>
+                <span>Estado de la Suscripción</span>
+              </div>
+              <span 
+                class="badge-subscription" 
+                [ngClass]="user.tipo_suscripcion === 'PRO_MENSUAL' ? 'badge-pro' : 'badge-free'"
+              >
+                {{ user.tipo_suscripcion === 'PRO_MENSUAL' ? 'Atmora PRO' : 'Plan Gratuito' }}
+              </span>
+            </div>
+
+            <!-- SI ES USUARIO PRO -->
+            <div class="subscription-body" *ngIf="user.tipo_suscripcion === 'PRO_MENSUAL'">
+              <!-- CONTADOR DE DÍAS RESTANTES -->
+              <div class="countdown-card">
+                <div class="countdown-header">
+                  <div>
+                    <i class='bx bx-time-five'></i>
+                    <span>Días restantes de suscripción PRO</span>
+                  </div>
+                  <strong class="days-count">{{ diasRestantesSuscripcion }} días</strong>
+                </div>
+                <div class="progress-bar-wrapper">
+                  <div class="progress-bar-fill" [style.width.%]="porcentajeDiasRestantes"></div>
+                </div>
+                <p class="renewal-note">Tu suscripción se renovará automáticamente al término de los 30 días.</p>
+              </div>
+
+              <!-- DATOS BANCARIOS / MÉTODO DE PAGO -->
+              <div class="payment-method-card">
+                <div class="payment-icon">
+                  <i class='bx bxs-credit-card-front'></i>
+                </div>
+                <div class="payment-info">
+                  <h5>Método de Pago Vinculado</h5>
+                  <p>Gestión y cobros seguros mediante <strong>Mercado Pago</strong> (Tarjeta de Crédito / Débito).</p>
+                </div>
+              </div>
+
+              <!-- BOTÓN PARA CANCELAR SUSCRIPCIÓN -->
+              <div class="cancel-sub-wrapper">
+                <button 
+                  type="button" 
+                  class="btn-cancel-sub"
+                  (click)="confirmarCancelarSuscripcion()"
+                  [disabled]="cargandoCancelarSuscripcion"
+                >
+                  <i class='bx bx-x-circle' *ngIf="!cargandoCancelarSuscripcion"></i>
+                  <span class="spinner-small-danger" *ngIf="cargandoCancelarSuscripcion"></span>
+                  {{ cargandoCancelarSuscripcion ? 'Cancelando...' : 'Cancelar Suscripción' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- SI ES PLAN GRATUITO -->
+            <div class="subscription-body" *ngIf="user.tipo_suscripcion !== 'PRO_MENSUAL'">
+              <p class="free-desc">Actualmente estás en el plan Ciudadano (Gratuito). Actualiza a Atmora PRO por $39 MXN/mes para desbloquear predicciones por IA a 24 horas.</p>
+              <button type="button" class="btn-upgrade-pro" (click)="irAPrecios()">
+                <i class='bx bxs-star'></i> Obtener Atmora PRO
+              </button>
+            </div>
+          </div>
+
           <div class="form-actions">
             <button type="submit" class="btn-save" [disabled]="cargandoGuardar">
               <i class='bx bx-save' *ngIf="!cargandoGuardar"></i>

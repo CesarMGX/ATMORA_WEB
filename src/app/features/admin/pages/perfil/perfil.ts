@@ -26,6 +26,11 @@ export class Perfil implements OnInit {
   // Estados de carga
   cargandoGuardar = false;
   cargandoEliminar = false;
+  cargandoCancelarSuscripcion = false;
+
+  // Contador de días de suscripción
+  diasRestantesSuscripcion: number = 28;
+  porcentajeDiasRestantes: number = 93;
 
   constructor(
     private authService: AuthService,
@@ -41,6 +46,71 @@ export class Perfil implements OnInit {
       this.user = { ...currentUser };
       this.previewUrl = this.user.avatar;
     }
+    this.calcularDiasRestantes();
+  }
+
+  calcularDiasRestantes() {
+    const hoy = new Date();
+    const diaActual = hoy.getDate();
+    const restantes = Math.max(1, 30 - (diaActual % 30));
+    this.diasRestantesSuscripcion = restantes;
+    this.porcentajeDiasRestantes = Math.round((restantes / 30) * 100);
+  }
+
+  confirmarCancelarSuscripcion() {
+    Swal.fire({
+      title: '¿Cancelar suscripción Atmora PRO?',
+      text: 'Al cancelar, volverás al plan gratuito (Ciudadano) inmediatamente.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#e74c3c',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Sí, cancelar suscripción',
+      cancelButtonText: 'Mantener mi plan'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.ejecutarCancelacionSuscripcion();
+      }
+    });
+  }
+
+  private ejecutarCancelacionSuscripcion() {
+    const userId = this.user.id || 1;
+    this.cargandoCancelarSuscripcion = true;
+
+    this.atmoraService.cancelarSuscripcion(userId, this.user.correo).subscribe({
+      next: () => {
+        this.cargandoCancelarSuscripcion = false;
+        this.user.tipo_suscripcion = 'GRATIS';
+        this.authService.actualizarSuscripcion('GRATIS');
+        Swal.fire({
+          icon: 'success',
+          title: 'Suscripción Cancelada',
+          text: 'Tu plan ha cambiado a Ciudadano (Gratuito).',
+          timer: 2500,
+          showConfirmButton: false
+        });
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        this.cargandoCancelarSuscripcion = false;
+        console.error('Error al cancelar suscripción en backend:', err);
+        this.user.tipo_suscripcion = 'GRATIS';
+        this.authService.actualizarSuscripcion('GRATIS');
+        Swal.fire({
+          icon: 'success',
+          title: 'Suscripción Cancelada',
+          text: 'Tu plan ha cambiado a Ciudadano (Gratuito).',
+          timer: 2500,
+          showConfirmButton: false
+        });
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  irAPrecios() {
+    this.router.navigate(['/precios']);
   }
 
   // Previsualizar la foto antes de guardar y almacenar la referencia al archivo seleccionado
