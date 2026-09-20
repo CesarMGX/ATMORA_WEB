@@ -118,7 +118,7 @@ export class AtmoraService {
   }
 
   cancelarSuscripcion(id_usuario: number, email?: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/pagos/cancelar-suscripcion`, { id_usuario, email });
+    return this.http.delete<any>(`${this.apiUrl}/pagos/cancelar-suscripcion?id_usuario=${id_usuario}&email=${encodeURIComponent(email || '')}`);
   }
 
   // ─── Gestión de Usuarios & Cloudinary ────────────────────────────────────
