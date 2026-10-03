@@ -1,59 +1,154 @@
-# Atmora
+# ☁️ Atmora - Sistema Inteligente de Monitoreo Ambiental
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.3.
+Atmora es una plataforma integral de hardware y software diseñada para el monitoreo climático y de calidad del aire en tiempo real. Utiliza estaciones de sensores IoT (Arduino/ESP32) para recopilar datos ambientales y aplica modelos de Inteligencia Artificial (Machine Learning) para auditar las lecturas y generar pronósticos climáticos localizados.
 
-## Development server
+## 🚀 Características Principales
 
-To start a local development server, run:
+* **Monitoreo IoT en Tiempo Real:** Recepción de datos de temperatura, humedad, presión, radiación solar, precipitación, viento y gases (CO2, CO, PM2.5, PM10).
 
-```bash
-ng serve
+* **Auditoría y Predicción con IA:** Pipeline de Machine Learning (Python/Scikit-Learn) que audita la coherencia de los sensores y pronostica variables climáticas a futuro.
+
+* **Panel Web Administrativo:** Dashboard en Angular para visualización de métricas, gráficas históricas y gestión de dispositivos.
+
+* **Suscripción Atmora PRO:** Integración con Mercado Pago para acceso a analíticas avanzadas.
+
+* **Aplicación Móvil:** Acceso ciudadano a través de una app nativa (.apk).
+
+## 🛠️ Tecnologías Utilizadas
+
+* **Hardware (IoT):** Arduino / ESP32, C++, Sensores ambientales.
+
+* **Backend:** Node.js, Express.js.
+
+* **Base de Datos:** PostgreSQL.
+
+* **Inteligencia Artificial:** Python 3, Pandas, Scikit-Learn (Regresión Lineal, K-Means, Random Forest).
+
+* **Frontend:** Angular, Tailwind CSS.
+
+* **Despliegue:** Railway (Backend/BD/Cron ML), Vercel (Frontend).
+
+## ⚙️ Requisitos Previos
+
+Para ejecutar este proyecto en un entorno local, asegúrese de tener instalado:
+
+* [Node.js](https://nodejs.org/) (v16 o superior)
+
+* [Angular CLI](https://angular.io/cli) (`npm install -g @angular/cli`)
+
+* [Python 3](https://www.python.org/downloads/) (v3.9 o superior) y `pip`
+
+* [PostgreSQL](https://www.postgresql.org/) (v13 o superior)
+
+*Nota: Por motivos de seguridad y cumpliendo con los lineamientos de evaluación, no se incluyen contraseñas ni credenciales globales en este repositorio.*
+
+## 💻 Instalación y Ejecución Local
+
+Siga estos pasos para levantar el entorno de desarrollo:
+
+### 1. Clonar el repositorio
+
+```
+git clone https://github.com/TU_USUARIO/atmora.git
+cd atmora
+
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+### 2. Configuración de la Base de Datos y Backend (Node.js)
 
-## Code scaffolding
+1. Navegue a la carpeta del backend:
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+   ```
+   cd backend
+   
+   ```
 
-```bash
-ng generate component component-name
-```
+2. Instale las dependencias:
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+   ```
+   npm install
+   
+   ```
 
-```bash
-ng generate --help
-```
+3. Cree un archivo `.env` en la raíz de la carpeta `backend` basándose en el archivo `.env.example` proporcionado:
 
-## Building
+   ```
+   PORT=3000
+   DATABASE_URL=postgres://usuario:password@localhost:5432/atmora_db
+   
+   ```
 
-To build the project run:
+4. Inicie el servidor de desarrollo:
 
-```bash
-ng build
-```
+   ```
+   npm run dev
+   
+   ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+   *El servidor estará corriendo en `http://localhost:3000`.*
 
-## Running unit tests
+### 3. Configuración del Pipeline de IA (Python)
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+Los modelos de Machine Learning se ejecutan como un subproceso desde el backend, pero requieren sus propias librerías.
 
-```bash
-ng test
-```
+1. Navegue a la carpeta de Inteligencia Artificial (si aplica, usualmente dentro del backend):
 
-## Running end-to-end tests
+   ```
+   cd backend/ai
+   
+   ```
 
-For end-to-end (e2e) testing, run:
+2. Instale las dependencias de Python:
 
-```bash
-ng e2e
-```
+   ```
+   pip install -r requirements.txt
+   
+   ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+3. Para probar el reentrenamiento manual de los modelos:
 
-## Additional Resources
+   ```
+   python reentrenar_modelos.py
+   
+   ```
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+### 4. Configuración del Frontend (Angular)
+
+1. Abra una nueva terminal y navegue a la carpeta del frontend:
+
+   ```
+   cd frontend
+   
+   ```
+
+2. Instale las dependencias:
+
+   ```
+   npm install
+   
+   ```
+
+3. Ejecute la aplicación web:
+
+   ```
+   ng serve
+   
+   ```
+
+   *El panel web estará disponible en `http://localhost:4200`.*
+
+## 📱 Ejecutables y Entregables (.APK)
+
+Para instalar la aplicación en un dispositivo móvil, puedes acceder a este enlace de la página principal donde podrás crear una cuenta y poder descargar la aplicación.
+
+* **Ruta de la página: https://atmora-web.vercel.app** 
+
+Para instalar la aplicación en un dispositivo Android:
+
+1. Descargue el archivo `.apk` en su dispositivo móvil.
+
+2. Habilite la opción de "Instalar aplicaciones de orígenes desconocidos" en la configuración de seguridad de su dispositivo.
+
+3. Ejecute el archivo para completar la instalación.
+
+**Desarrollado por alumnos de la UTCV Cuitláhuac. Atmora - 2026**
